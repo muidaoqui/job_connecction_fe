@@ -5,6 +5,7 @@ import CustomerLayout from "./components/customer/CustomerLayout";
 import Home from "./pages/customer/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Profile from "./pages/customer/Profile";
 import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
     </Router>

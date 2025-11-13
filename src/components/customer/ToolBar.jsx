@@ -53,10 +53,10 @@ function ToolBar() {
           {/* Hiển thị nút đăng nhập hoặc đăng xuất */}
           {user ? (
             <button
-              onClick={handleLogout}
+              onClick={() => navigate("/profile")}
               className="hover:text-yellow-300 transition"
             >
-              Đăng xuất
+              {user.email}
             </button>
           ) : (
             <button

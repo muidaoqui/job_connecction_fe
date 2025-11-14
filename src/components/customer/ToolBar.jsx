@@ -25,9 +25,9 @@ function ToolBar() {
   return (
     <div className="fixed top-0 left-0 w-full z-50 bg-white flex flex-col items-center">
       {/* Thanh điều hướng dạng tai thỏ */}
-      <div className="relative w-full flex justify-between items-center px-8 py-4 rounded-b-[60px] shadow-sm bg-gradient-to-r from-blue-500 to-blue-700">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-full shadow-lg p-2 w-48 h-24 flex justify-center items-center mt-20">
-          <img src={logo} alt="Logo" className="h-16 w-auto px-4" />
+      <div className="relative w-full flex justify-between items-center px-8 py-4 rounded-b-[60px] shadow-sm bg-gradient-to-r from-blue-500 to-blue-700 h-24">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-full shadow-lg p-2 w-48 h-24 flex justify-center items-center mt-18">
+          <img onClick={() => navigate("/")} src={logo} alt="Logo" className="h-16 w-auto px-4" />
         </div>
 
         {/* Thanh tìm kiếm */}
@@ -53,7 +53,7 @@ function ToolBar() {
           {/* Hiển thị nút đăng nhập hoặc đăng xuất */}
           {user ? (
             <button
-              onClick={() => navigate("/profile")}
+              onClick={() => navigate("/customer/mysaramin")}
               className="hover:text-yellow-300 transition"
             >
               {user.email}
@@ -64,6 +64,14 @@ function ToolBar() {
               className="hover:text-yellow-300 transition"
             >
               Đăng nhập
+            </button>
+          )}
+          {user && (
+            <button
+              onClick={handleLogout}  
+              className="hover:text-yellow-300 transition"
+            >
+              Đăng xuất
             </button>
           )}
 

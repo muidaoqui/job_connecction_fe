@@ -7,7 +7,10 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/customer/Profile";
 import 'react-toastify/dist/ReactToastify.css';
-
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import JobDetail from "./pages/JobDetail";
+import JobSearch from "./pages/JobSearch";
 function App() {
   return (
     <Router>
@@ -18,6 +21,10 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/jobs" element={<JobSearch />} />
+          <Route path="/job/:id" element={<JobDetail />} />
         </Route>
       </Routes>
     </Router>

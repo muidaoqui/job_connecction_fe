@@ -5,14 +5,11 @@ import {
   Col,
   Tag,
   Button,
-  Switch,
   Table,
   Pagination,
-  Menu,
-  Progress,
+  Upload,
 } from "antd";
 import {
-  CheckCircleOutlined,
   UploadOutlined,
   PlusOutlined,
   EditOutlined,
@@ -22,84 +19,29 @@ import {
   LinkOutlined,
   CheckCircleFilled,
 } from "@ant-design/icons";
+import ProfileSidebar from "../../../components/customer/ProfileSidebar";
+import { useResumeManagement } from "../../../hooks/useResumeManagement";
+import { getProfile } from "../../../api/profileAPI";
 
-const CVManaSidebar = () => (
-  <Card bodyStyle={{ padding: "16px 20px" }}>
-          <div className="text-center mb-5">
-              <Progress type="circle" percent={20} width={80} />
-              <h3 className="mt-2">Múi Đào</h3>
-              <p className="text-gray-500">20%</p>
-          </div>
-  
-          <p>
-              Ứng tuyển nhanh hơn với Saramin CV bằng cách hoàn thành{" "}
-              <strong>Thông tin chung</strong>.
-          </p>
-          <p className="text-red-600 font-bold">
-              Bạn đang thiếu các thông tin sau:
-          </p>
-          <Menu mode="inline" selectable={false} className="border-r-0">
-              <Menu.Item key="1">
-                  Tỉnh/Thành phố <Tag color="blue">+5%</Tag>
-              </Menu.Item>
-              <Menu.Item key="2">
-                  Kỹ năng chuyên môn <Tag color="blue">+10%</Tag>
-              </Menu.Item>
-              <Menu.Item key="3">
-                  Số năm kinh nghiệm <Tag color="blue">+10%</Tag>
-              </Menu.Item>
-              <Menu.Item key="4">
-                  Vị trí <Tag color="blue">+5%</Tag>
-              </Menu.Item>
-          </Menu>
-  
-          <hr className="my-5" />
-  
-          <div className="flex items-center justify-between mt-5 mb-5 p-3 border border-gray-200 rounded-lg">
-              <div>
-                  <h4 className="font-medium text-sm">Sẵn sàng làm việc</h4>
-                  <p className="text-xs text-gray-600">
-                      Kích hoạt chế độ Sẵn sàng làm việc để kết nối với nhà tuyển dụng.
-                  </p>
-              </div>
-              <Switch defaultChecked={false} />
-          </div>
-  
-          <Button type="primary" className="w-full">
-              <CheckCircleOutlined /> Ứng tuyển ngay và nhận voucher &rarr;
-          </Button>
-      </Card>
+const CVManaSidebar = ({ userName }) => (
+  <ProfileSidebar userName={userName || "Người dùng"} />
 );
 
-const cvData = [
-  {
-    key: '1',
-    name: 'Đào Quí Mùi - Full Stack Web Developer',
-    createdOn: 'TopDev',
-    status: 'Software Engineer Intern / Thực tập sinh IT',
-    lastEdited: '2025-09-17 20:55:49',
-    isCompleted: true,
-  },
-  {
-    key: '2',
-    name: 'Đào Quí Mùi',
-    createdOn: 'TopDev',
-    status: 'Not yet applied for any position',
-    lastEdited: '2025-09-15 17:52:14',
-    isCompleted: false,
-  },
-];
+const SERVER_BASE = "http://localhost:8080";
 
-const columns = [
+const columns = (onView, onDownload, onSetMain) => [
   {
     title: "Tên CV",
     dataIndex: 'name',
     key: 'name',
     render: (text, record) => (
       <div>
-        <h4 className="font-medium text-base">{text}</h4>
+        <div className="flex items-center gap-2">
+          <h4 className="font-medium text-base">{text}</h4>
+          {record.isMain && <Tag color="blue">CV chính</Tag>}
+        </div>
         <p className="text-xs text-blue-500 hover:text-blue-700 cursor-pointer">
-          <LinkOutlined className="mr-1" /> Tạo trên {record.createdOn}
+          <LinkOutlined className="mr-1" /> Lưu vào hệ thống
         </p>
       </div>
     ),
@@ -109,14 +51,14 @@ const columns = [
     dataIndex: 'status',
     key: 'status',
     width: 280,
-    render: (text, record) => (
+    render: (_, record) => (
       <div className="flex items-center">
         {record.isCompleted ? (
           <CheckCircleFilled className="text-green-500 mr-2" />
         ) : (
           <ClockCircleOutlined className="text-red-500 mr-2" />
         )}
-        <span className="text-sm">{text}</span>
+        <span className="text-sm">{record.status || '—'}</span>
       </div>
     ),
   },
@@ -127,62 +69,99 @@ const columns = [
     width: 150,
     render: (text) => (
         <div className="flex items-center text-sm text-gray-600">
-            <ClockCircleOutlined className="mr-1" /> {text}
+            <ClockCircleOutlined className="mr-1" /> {text || '—'}
         </div>
     )
   },
   {
     title: "Hành động",
     key: 'action',
-    width: 100,
-    render: () => (
-      <div className="space-x-2 text-lg">
-        <EditOutlined className="text-gray-500 cursor-pointer hover:text-blue-500" title="Chỉnh sửa" />
-        <DownloadOutlined className="text-gray-500 cursor-pointer hover:text-green-500" title="Tải xuống" />
-        <DeleteOutlined className="text-gray-500 cursor-pointer hover:text-red-500" title="Xóa" />
+    width: 200,
+    render: (_, record) => (
+      <div className="space-x-2 flex flex-wrap">
+        <Button type="link" onClick={() => onView(record)} icon={<LinkOutlined />}>Xem</Button>
+        <Button type="link" onClick={() => onDownload(record)} icon={<DownloadOutlined />}>Tải</Button>
+        {!record.isMain && (
+          <Button type="link" onClick={() => onSetMain(record)} className="text-blue-500">Chọn chính</Button>
+        )}
       </div>
     ),
   },
 ];
 
 const MainContent = () => {
-    
+  const { resumes, mainResume, loading, uploadNewResume, setMainResume } = useResumeManagement();
+  const [profileName, setProfileName] = React.useState("");
+
+  React.useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const res = await getProfile();
+        setProfileName(res.data?.name || res.data?.candidate?.name || "");
+      } catch (err) {
+        // ignore
+      }
+    };
+    loadProfile();
+  }, []);
+
+  const onView = (rec) => {
+    if (!rec?.path) return;
+    const p = (rec.path || "").replace(/\\\\/g, "/");
+    const url = p.startsWith("http") ? p : p.startsWith("/") ? `${SERVER_BASE}${p}` : `${SERVER_BASE}/${p}`;
+    window.open(url, "_blank");
+  };
+
+  const onDownload = (rec) => {
+    if (!rec?.path) return;
+    const p = (rec.path || "").replace(/\\\\/g, "/");
+    const url = p.startsWith("http") ? p : p.startsWith("/") ? `${SERVER_BASE}${p}` : `${SERVER_BASE}/${p}`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = rec.name || '';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  const onSetMain = async (rec) => {
+    if (rec?.path) {
+      await setMainResume(rec.path);
+    }
+  };
+
+  const handleUpload = async (file) => {
+    await uploadNewResume(file);
+  };
+
+  const tableData = resumes.map((r, idx) => ({
+    key: r.id || idx,
+    name: r.name,
+    status: r.isMain ? 'CV chính' : 'Bản phụ',
+    lastEdited: r.uploadedAt ? new Date(r.uploadedAt).toLocaleString() : '-',
+    isCompleted: r.percent >= 100,
+    path: r.path,
+    isMain: r.isMain,
+  }));
+
   return (
     <div className="mt-5">
-      
       <div className="flex justify-end items-center mb-4 space-x-3">
-        <Button icon={<UploadOutlined />} className="border-blue-500 text-blue-500 hover:border-blue-700 hover:text-blue-700">
-          Tải CV của bạn lên
-        </Button>
-        <Button type="primary" icon={<PlusOutlined />} className="bg-blue-600 hover:bg-blue-700">
-          Tạo CV (Phiên bản mới)
-        </Button>
-        <a href="#" className="text-sm text-gray-600 hover:text-blue-500">
-          Tạo CV (Phiên bản cũ) &rarr;
-        </a>
+        <Upload beforeUpload={() => false} showUploadList={false} accept=".doc,.docx,.pdf" onChange={(info) => handleUpload(info.file)}>
+          <Button icon={<UploadOutlined />} className="border-blue-500 text-blue-500 hover:border-blue-700 hover:text-blue-700">Tải CV của bạn lên</Button>
+        </Upload>
+        <Button type="primary" icon={<PlusOutlined />} className="bg-blue-600 hover:bg-blue-700">Tạo CV (Phiên bản mới)</Button>
       </div>
 
       <Card bodyStyle={{ padding: 0 }} className="shadow-lg">
         <Table
-          columns={columns}
-          dataSource={cvData}
-          pagination={{ 
-            pageSize: 5, 
-            total: cvData.length,
-            showSizeChanger: false,
-            itemRender: (current, type, originalElement) => {
-                if (type === 'page' && current === 1) {
-                    return <Button type="primary" shape="circle" size="small">{current}</Button>;
-                }
-                if (type === 'page') {
-                    return <Button shape="circle" size="small">{current}</Button>;
-                }
-                return originalElement;
-            },
-            className: 'flex justify-center my-3'
-          }}
+          columns={columns(onView, onDownload, onSetMain)}
+          dataSource={tableData}
+          pagination={{ pageSize: 5, total: tableData.length, showSizeChanger: false }}
           rowKey="key"
           className="cv-management-table"
+          loading={loading}
         />
       </Card>
     </div>
@@ -195,7 +174,7 @@ function CVMana() {
     <div className="container mx-auto px-6 py-6 bg-gray-50 min-h-screen">
       <Row gutter={24}>
         <Col span={6}>
-          <CVManaSidebar />
+          <CVManaSidebar userName={null} />
         </Col>
 
         <Col span={18}>

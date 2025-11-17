@@ -29,10 +29,10 @@ function Login() {
         password,
       });
 
-      const { user, message } = res.data;
+      const { token, user, message } = res.data;
 
       // Nếu user undefined, hiện thông báo và return
-      if (!user) {
+      if (!user || !token) {
         toast.error(message || "Đăng nhập thất bại");
         setError(message || "Đăng nhập thất bại");
         setLoading(false);
@@ -57,7 +57,8 @@ function Login() {
         return;
       }
 
-      // Lưu thông tin user vào localStorage
+      // Lưu token và thông tin user vào localStorage
+      localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
       toast.success("Đăng nhập thành công!");

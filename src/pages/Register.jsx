@@ -37,7 +37,7 @@ function Register() {
     setMessage("");
 
     if (pass !== confPass) {
-      setMessage("❌ Mật khẩu nhập lại không khớp!");
+      setMessage("Mật khẩu nhập lại không khớp!");
       setMsgColor("red");
       return;
     }
@@ -54,10 +54,10 @@ function Register() {
       await axios.post(`${BASE_URL}/api/auth/email/send-otp`, { email });
       
       setShowOtpForm(true);
-      setMessage("✅ Vui lòng kiểm tra email và nhập mã OTP để xác thực tài khoản!");
+      setMessage("Vui lòng kiểm tra email và nhập mã OTP để xác thực tài khoản!");
       setMsgColor("green");
     } catch (err) {
-      setMessage(err.response?.data?.message || "❌ Đăng ký thất bại!");
+      setMessage(err.response?.data?.message || "Đăng ký thất bại!");
       setMsgColor("red");
     } finally {
       setLoading(false);

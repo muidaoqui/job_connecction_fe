@@ -59,7 +59,7 @@ function Login() {
 
       // Lưu thông tin user vào localStorage
       localStorage.setItem("user", JSON.stringify(user));
-
+      localStorage.setItem("token", res.data.token);
       toast.success("Đăng nhập thành công!");
 
       // Điều hướng dựa vào role

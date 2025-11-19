@@ -13,11 +13,15 @@ import EmailMana from "./pages/customer/profile/EmailMana";
 import PerTest from "./pages/customer/profile/PerTest";
 import Navbar from "./pages/customer/profile/Navbar";
 
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import JobDetail from "./pages/JobDetail";
 import JobSearch from "./pages/JobSearch";
+
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/Dashboard";
+import UsersPage from "./pages/admin/User";
 function App() {
   return (
     <Router>
@@ -41,9 +45,13 @@ function App() {
           <Route path="/jobs" element={<JobSearch />} />
           <Route path="/job/:id" element={<JobDetail />} />
         </Route>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="users" element={<UsersPage />} />
+        </Route>
       </Routes>
     </Router>
   );
 }
 
-export default App
+export default App;

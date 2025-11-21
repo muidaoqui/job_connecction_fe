@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 
 export default function CreateJob() {
+  const user = JSON.parse(localStorage.getItem("user")); // Lấy recruiter ID
+
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -15,11 +17,22 @@ export default function CreateJob() {
   };
 
   const handleSubmit = async () => {
+    if (!user?._id) {
+      alert("Không tìm thấy recruiterId!");
+      return;
+    }
+
+    const jobData = {
+      ...form,
+      recruiterId: user._id,   // 💥 FIX QUAN TRỌNG
+    };
+
     try {
-      await axios.post("http://localhost:8080/api/jobs", form);
+      await axios.post("http://localhost:8080/api/jobs", jobData);
       alert("Tạo tin tuyển dụng thành công!");
-    } catch {
-      alert("BE chưa kết nối!");
+    } catch (err) {
+      console.log(err);
+      alert("Không thể kết nối BE!");
     }
   };
 
@@ -31,7 +44,6 @@ export default function CreateJob() {
         </h1>
 
         <div className="space-y-4">
-          {/* INPUT */}
           <div>
             <label className="font-semibold">Tiêu đề</label>
             <input

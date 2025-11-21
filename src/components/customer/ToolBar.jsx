@@ -67,8 +67,7 @@ function ToolBar() {
 
             {/* Dropdown */}
             <div
-              className="
-      absolute left-0 top-full
+              className="absolute left-0 top-full
       bg-white text-gray-700 shadow-xl rounded-lg w-56 p-2
       opacity-0 invisible 
       group-hover:opacity-100 group-hover:visible

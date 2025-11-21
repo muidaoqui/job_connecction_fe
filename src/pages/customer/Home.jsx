@@ -57,7 +57,7 @@ function Home() {
               <img
                 src={img}
                 alt={`job-${idx + 1}`}
-                className="w-full h-[400px] object-cover rounded-2xl shadow-md"
+                className="w-auto h-[400px] object-cover rounded-2xl shadow-md mx-auto"
               />
               <div className="flex justify-between my-4 h-16">
                 <p>Job Title</p>

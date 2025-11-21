@@ -44,6 +44,9 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/jobs" element={<JobSearch />} />
           <Route path="/job/:id" element={<JobDetail />} />
+          <Route path="/recruiter/create-job" element={<CreateJob />} />
+          <Route path="/recruiter/manage-jobs" element={<ManageJobs />} />
+          <Route path="/recruiter/applicants/:jobId" element={<Applicants />} />
         </Route>
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />

@@ -28,10 +28,10 @@ export const useResumeManagement = () => {
                     const normalized = (f.path || f.name || "").replace(/\\/g, "/");
 
                     return {
-                        id: f.filename || `r-${idx}`,
+                        id: f.filename || f.id || `r-${idx}`,
                         name: f.name || normalized.split("/").pop(),
                         path: normalized,
-                        uploadedAt: null,
+                        uploadedAt: f.uploadedAt || null,
                         // Mark as main if path matches saved mainResumePath, or first if none saved
                         isMain: mainResumePath ? normalized === mainResumePath : idx === 0,
                         percent: 100,

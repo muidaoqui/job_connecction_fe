@@ -30,27 +30,27 @@ function ToolBar() {
           <img onClick={() => navigate("/")} src={logo} alt="Logo" className="h-16 w-auto px-4" />
         </div>
 
-{/* Thanh tìm kiếm + nút xem tất cả việc làm */}
-<div className="flex justify-center items-center mt-6 gap-4">
+        {/* Thanh tìm kiếm + nút xem tất cả việc làm */}
+        <div className="flex justify-center items-center gap-4">
 
-  {/* Thanh tìm kiếm */}
-  <div className="flex items-center rounded-full bg-white border border-blue-300 overflow-hidden w-[500px] shadow-md">
-    <input
-      type="text"
-      placeholder="Vị trí tuyển dụng, công ty,..."
-      className="w-full px-5 py-3 focus:outline-none text-gray-700 placeholder-gray-400"
-    />
-    <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 transition duration-300">
-      <SearchOutlined style={{ fontSize: '20px' }} />
-    </button>
-    <Link
-  to="/jobs"
-  className="px-5 py-2 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition duration-200 shadow-md ml-3"
->
-  Xem tất cả việc làm
-</Link>
-  </div>
-</div>
+          {/* Thanh tìm kiếm */}
+          <div className="flex items-center rounded-full bg-white border border-blue-300 overflow-hidden w-[500px] shadow-md">
+            <input
+              type="text"
+              placeholder="Vị trí tuyển dụng, công ty,..."
+              className="w-full px-5 py-3 focus:outline-none text-gray-700 placeholder-gray-400"
+            />
+            <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 transition duration-300">
+              <SearchOutlined style={{ fontSize: '20px' }} />
+            </button>
+            <Link
+              to="/jobs"
+              className="px-5 py-2 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition duration-200 shadow-md ml-3"
+            >
+              Xem tất cả việc làm
+            </Link>
+          </div>
+        </div>
 
         {/* Menu phải */}
 
@@ -58,16 +58,16 @@ function ToolBar() {
           <Link to="/contact" className="hover:text-yellow-300 transition">
             0123456789
           </Link>
-{/* Dropdown Nhà Tuyển Dụng (Fix 100%) */}
-<div className="relative group">
-  {/* Nút chính */}
-  <button className="cursor-pointer hover:text-yellow-300 transition font-semibold">
-    Nhà tuyển dụng ▼
-  </button>
+          {/* Dropdown Nhà Tuyển Dụng (Fix 100%) */}
+          <div className="relative group">
+            {/* Nút chính */}
+            <button className="cursor-pointer hover:text-yellow-300 transition font-semibold">
+              Nhà tuyển dụng ▼
+            </button>
 
-  {/* Dropdown */}
-  <div
-    className="
+            {/* Dropdown */}
+            <div
+              className="
       absolute left-0 top-full
       bg-white text-gray-700 shadow-xl rounded-lg w-56 p-2
       opacity-0 invisible 
@@ -75,29 +75,29 @@ function ToolBar() {
       transition-all duration-200 ease-out
       z-[9999]
     "
-  >
-    <Link
-      to='/recruiter/create-job'
-      className='block px-4 py-2 hover:bg-blue-100 rounded-md'
-    >
-      Đăng tin tuyển dụng
-    </Link>
+            >
+              <Link
+                to='/recruiter/create-job'
+                className='block px-4 py-2 hover:bg-blue-100 rounded-md'
+              >
+                Đăng tin tuyển dụng
+              </Link>
 
-    <Link
-      to='/recruiter/manage-jobs'
-      className='block px-4 py-2 hover:bg-blue-100 rounded-md'
-    >
-      Quản lý tin tuyển dụng
-    </Link>
+              <Link
+                to='/recruiter/manage-jobs'
+                className='block px-4 py-2 hover:bg-blue-100 rounded-md'
+              >
+                Quản lý tin tuyển dụng
+              </Link>
 
-    <Link
-      to='/recruiter/applicants'
-      className='block px-4 py-2 hover:bg-blue-100 rounded-md'
-    >
-      Danh sách ứng viên
-    </Link>
-  </div>
-</div>
+              <Link
+                to='/recruiter/applicants'
+                className='block px-4 py-2 hover:bg-blue-100 rounded-md'
+              >
+                Danh sách ứng viên
+              </Link>
+            </div>
+          </div>
 
           {/* Hiển thị nút đăng nhập hoặc đăng xuất */}
           {user ? (
@@ -117,7 +117,7 @@ function ToolBar() {
           )}
           {user && (
             <button
-              onClick={handleLogout}  
+              onClick={handleLogout}
               className="hover:text-yellow-300 transition"
             >
               Đăng xuất

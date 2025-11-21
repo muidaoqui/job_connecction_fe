@@ -22,6 +22,7 @@ import {
 } from "@ant-design/icons";
 import ProfileSidebar from "../../../components/customer/ProfileSidebar";
 import { useResumeManagement } from "../../../hooks/useResumeManagement";
+import { openProtectedFile } from "../../../utils/fileHelpers";
 import {
     getApplications,
     getSavedJobs,
@@ -91,18 +92,10 @@ const ContentLoiMoiUngTuyen = ({ selectedResume, setSelectedResume, resumes, pro
                                             {resume.path && (
                                                 <Space size="small" className="ml-2">
                                                     {(() => {
-                                                        const p = (resume.path || "").replace(/\\\\/g, "/");
-                                                        const url = p.startsWith("http")
-                                                            ? p
-                                                            : p.startsWith("/")
-                                                            ? `${SERVER_BASE}${p}`
-                                                            : `${SERVER_BASE}/${p}`;
                                                         return (
                                                             <>
-                                                                <Button type="link" onClick={() => window.open(url, "_blank")}>Xem</Button>
-                                                                <a href={url} target="_blank" rel="noreferrer" download>
-                                                                    <Button type="link">Tải xuống</Button>
-                                                                </a>
+                                                                <Button type="link" onClick={() => openProtectedFile(resume.path, false)}>Xem</Button>
+                                                                <Button type="link" onClick={() => openProtectedFile(resume.path, true)}>Tải xuống</Button>
                                                             </>
                                                         );
                                                     })()}

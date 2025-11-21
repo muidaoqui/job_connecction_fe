@@ -19,9 +19,13 @@ import ResetPassword from "./pages/ResetPassword";
 import JobDetail from "./pages/JobDetail";
 import JobSearch from "./pages/JobSearch";
 
-import AdminLayout from "./components/admin/AdminLayout";
-import AdminDashboard from "./pages/admin/Dashboard";
-import UsersPage from "./pages/admin/User";
+import CreateJob from "./pages/recruiter/CreateJob";
+import ManageJobs from "./pages/recruiter/ManageJobs";
+import Applicants from "./pages/recruiter/Applicants";
+import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
+import ReviewApplications from "./pages/recruiter/ReviewApplications";
+
+
 function App() {
   return (
     <Router>
@@ -46,7 +50,11 @@ function App() {
           <Route path="/job/:id" element={<JobDetail />} />
           <Route path="/recruiter/create-job" element={<CreateJob />} />
           <Route path="/recruiter/manage-jobs" element={<ManageJobs />} />
-          <Route path="/recruiter/applicants/:jobId" element={<Applicants />} />
+          <Route path="/recruiter/applicants" element={<Applicants />} />
+          <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
+          <Route path="/recruiter/applicants/manage" element={<ReviewApplications />} />
+
+
         </Route>
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />

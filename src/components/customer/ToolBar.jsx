@@ -58,46 +58,13 @@ function ToolBar() {
           <Link to="/contact" className="hover:text-yellow-300 transition">
             0123456789
           </Link>
-{/* Dropdown Nhà Tuyển Dụng (Fix 100%) */}
-<div className="relative group">
-  {/* Nút chính */}
-  <button className="cursor-pointer hover:text-yellow-300 transition font-semibold">
-    Nhà tuyển dụng ▼
-  </button>
+         <Link
+  to="/recruiter/dashboard"
+  className="cursor-pointer hover:text-yellow-300 transition font-semibold"
+>
+  Nhà tuyển dụng
+</Link> 
 
-  {/* Dropdown */}
-  <div
-    className="
-      absolute left-0 top-full
-      bg-white text-gray-700 shadow-xl rounded-lg w-56 p-2
-      opacity-0 invisible 
-      group-hover:opacity-100 group-hover:visible
-      transition-all duration-200 ease-out
-      z-[9999]
-    "
-  >
-    <Link
-      to='/recruiter/create-job'
-      className='block px-4 py-2 hover:bg-blue-100 rounded-md'
-    >
-      Đăng tin tuyển dụng
-    </Link>
-
-    <Link
-      to='/recruiter/manage-jobs'
-      className='block px-4 py-2 hover:bg-blue-100 rounded-md'
-    >
-      Quản lý tin tuyển dụng
-    </Link>
-
-    <Link
-      to='/recruiter/applicants'
-      className='block px-4 py-2 hover:bg-blue-100 rounded-md'
-    >
-      Danh sách ứng viên
-    </Link>
-  </div>
-</div>
 
           {/* Hiển thị nút đăng nhập hoặc đăng xuất */}
           {user ? (

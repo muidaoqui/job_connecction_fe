@@ -24,6 +24,8 @@ import ManageJobs from "./pages/recruiter/ManageJobs";
 import Applicants from "./pages/recruiter/Applicants";
 import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
 import ReviewApplications from "./pages/recruiter/ReviewApplications";
+import EditJob from "./pages/recruiter/EditJob";
+import ApplyJob from "./pages/customer/ApplyJob";
 
 
 function App() {
@@ -43,16 +45,23 @@ function App() {
             <Route path="emailmanagement" element={<EmailMana />} />
             <Route path="pertest" element={<PerTest />} />
           </Route>
+          <Route path="/recruiter/manage-job/edit/:id" element={<EditJob />} />
+
+          {/* Xem ứng viên theo từng job */}
+          <Route path="/recruiter/applicants" element={<Applicants />} />
           <Route path="profile" element={<Profile />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/jobs" element={<JobSearch />} />
-          <Route path="/job/:id" element={<JobDetail />} />
+          <Route path="/jobs/:id" element={<JobDetail />} />
           <Route path="/recruiter/create-job" element={<CreateJob />} />
           <Route path="/recruiter/manage-jobs" element={<ManageJobs />} />
-          <Route path="/recruiter/applicants" element={<Applicants />} />
           <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
+          <Route path="/recruiter/edit-job/:id" element={<EditJob />} />
+          <Route path="/jobs/:id/apply" element={<ApplyJob />} />
           <Route path="/recruiter/applicants/manage" element={<ReviewApplications />} />
+
+
 
 
         </Route>

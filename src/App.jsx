@@ -27,6 +27,12 @@ import ReviewApplications from "./pages/recruiter/ReviewApplications";
 import EditJob from "./pages/recruiter/EditJob";
 import ApplyJob from "./pages/customer/ApplyJob";
 
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/Dashboard";
+import UsersPage from "./pages/admin/User";
+
+
+
 
 function App() {
   return (

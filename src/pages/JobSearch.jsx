@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import JobCard from "./JobCard";
+import { useLocation } from "react-router-dom";
 
 export default function JobSearch() {
-  const [keyword, setKeyword] = useState("");
+
+  const locationHook = useLocation();
+  const urlKeyword = new URLSearchParams(locationHook.search).get("keyword") || "";
+
+  const [keyword, setKeyword] = useState(urlKeyword);
   const [location, setLocation] = useState("");
   const [jobType, setJobType] = useState("");
   const [jobs, setJobs] = useState([]);
@@ -16,6 +21,12 @@ export default function JobSearch() {
       .then((res) => setJobs(res.data))
       .catch((err) => console.log(err));
   };
+
+  // 🔥 Khi keyword từ URL thay đổi → tự động lọc
+  useEffect(() => {
+    setKeyword(urlKeyword);
+    handleSearch();
+  }, [urlKeyword]);
 
   return (
     <div className="container mx-auto p-6">
@@ -43,6 +54,7 @@ export default function JobSearch() {
         </button>
       </div>
 
+      {/* SEARCH FILTER */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 
         <input

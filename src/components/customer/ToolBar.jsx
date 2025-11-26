@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { SearchOutlined } from "@ant-design/icons";
 import logo from "../../assets/logo.png";
+import SearchInput from "../../components/SearchInput";
 
 function ToolBar() {
   const navigate = useNavigate();
@@ -21,6 +22,14 @@ function ToolBar() {
     setUser(null);
     navigate("/login");
   };
+  const requireLogin = (callback) => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    navigate("/login");
+  } else {
+    callback();
+  }
+};
 
   return (
     <div className="fixed top-0 left-0 w-full z-50 bg-white flex flex-col items-center">
@@ -30,103 +39,94 @@ function ToolBar() {
           <img onClick={() => navigate("/")} src={logo} alt="Logo" className="h-16 w-auto px-4" />
         </div>
 
-        {/* Thanh tìm kiếm + nút xem tất cả việc làm */}
         <div className="flex justify-center items-center gap-4">
+  <SearchInput width="w-[500px]" />
+  <Link
+    to="/jobs"
+    className="px-5 py-2 bg-blue-600 text-white font-semibold rounded-full 
+              hover:bg-blue-700 transition duration-200 shadow-md"
+  >
+    Xem tất cả việc làm
+  </Link>
+</div>
 
-          {/* Thanh tìm kiếm */}
-          <div className="flex items-center rounded-full bg-white border border-blue-300 overflow-hidden w-[500px] shadow-md">
-            <input
-              type="text"
-              placeholder="Vị trí tuyển dụng, công ty,..."
-              className="w-full px-5 py-3 focus:outline-none text-gray-700 placeholder-gray-400"
-            />
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 transition duration-300">
-              <SearchOutlined style={{ fontSize: '20px' }} />
-            </button>
-            <Link
-              to="/jobs"
-              className="px-5 py-2 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition duration-200 shadow-md ml-3"
-            >
-              Xem tất cả việc làm
-            </Link>
-          </div>
-        </div>
 
         {/* Menu phải */}
+<div className="hidden lg:flex items-center gap-6 text-white font-semibold ml-auto pr-6">
 
-        <div className="hidden lg:flex items-center gap-8 text-white font-semibold ml-20">
-          <Link to="/contact" className="hover:text-yellow-300 transition">
-            0123456789
-          </Link>
-          {/* Dropdown Nhà Tuyển Dụng (Fix 100%) */}
-          <div className="relative group">
-            {/* Nút chính */}
-            <button className="cursor-pointer hover:text-yellow-300 transition font-semibold">
-              Nhà tuyển dụng ▼
-            </button>
+  {/* Dropdown Nhà tuyển dụng */}
+  <div className="relative group">
+    <button className="cursor-pointer hover:text-yellow-300 transition font-semibold">
+      Employers ▼
+    </button>
 
-            {/* Dropdown */}
-            <div
-              className="absolute left-0 top-full
-      bg-white text-gray-700 shadow-xl rounded-lg w-56 p-2
+    {/* Dropdown */}
+    <div
+      className="absolute left-0 top-full bg-white text-gray-700 shadow-xl rounded-lg w-56 p-2
       opacity-0 invisible 
       group-hover:opacity-100 group-hover:visible
-      transition-all duration-200 ease-out
-      z-[9999]
-    "
-            >
-              <Link
-                to='/recruiter/create-job'
-                className='block px-4 py-2 hover:bg-blue-100 rounded-md'
-              >
-                Đăng tin tuyển dụng
-              </Link>
+      transition-all duration-200 ease-out z-[9999]"
+    >
+      <button
+        onClick={() => requireLogin(() => navigate('/recruiter/create-job'))}
+        className='block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md'
+      >
+        Đăng tin tuyển dụng
+      </button>
 
-              <Link
-                to='/recruiter/manage-jobs'
-                className='block px-4 py-2 hover:bg-blue-100 rounded-md'
-              >
-                Quản lý tin tuyển dụng
-              </Link>
+      <button
+        onClick={() => requireLogin(() => navigate('/recruiter/manage-jobs'))}
+        className='block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md'
+      >
+        Quản lý tin tuyển dụng
+      </button>
 
-              <Link
-                to='/recruiter/applicants'
-                className='block px-4 py-2 hover:bg-blue-100 rounded-md'
-              >
-                Danh sách ứng viên
-              </Link>
-            </div>
-          </div>
+      <button
+        onClick={() => requireLogin(() => navigate('/recruiter/applicants'))}
+        className='block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md'
+      >
+        Danh sách ứng viên
+      </button>
 
-          {/* Hiển thị nút đăng nhập hoặc đăng xuất */}
-          {user ? (
-            <button
-              onClick={() => navigate("/customer/mysaramin")}
-              className="hover:text-yellow-300 transition"
-            >
-              {user.email}
-            </button>
-          ) : (
-            <button
-              onClick={() => navigate("/login")}
-              className="hover:text-yellow-300 transition"
-            >
-              Đăng nhập
-            </button>
-          )}
-          {user && (
-            <button
-              onClick={handleLogout}
-              className="hover:text-yellow-300 transition"
-            >
-              Đăng xuất
-            </button>
-          )}
+      <button
+        onClick={() => requireLogin(() => navigate('/recruiter/dashboard'))}
+        className='block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md'
+      >
+        Trang tổng quan
+      </button>
+    </div>
+  </div>
 
-          <span className="cursor-pointer hover:text-yellow-300 transition">
-            VI | EN
-          </span>
-        </div>
+  {/* Email */}
+  {user && (
+    <span className="max-w-[180px] truncate hover:text-yellow-300 transition">
+      {user.email}
+    </span>
+  )}
+
+  {/* Nút đăng nhập / đăng xuất */}
+  {user ? (
+    <button
+      onClick={handleLogout}
+      className="hover:text-yellow-300 transition"
+    >
+      Đăng xuất
+    </button>
+  ) : (
+    <button
+      onClick={() => navigate("/login")}
+      className="hover:text-yellow-300 transition"
+    >
+      Đăng nhập
+    </button>
+  )}
+
+  {/* Ngôn ngữ */}
+  <span className="cursor-pointer hover:text-yellow-300 transition">
+    VI | EN
+  </span>
+</div>
+
       </div>
     </div>
   );

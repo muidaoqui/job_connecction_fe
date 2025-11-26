@@ -30,6 +30,9 @@ export default function RecruiterDashboard() {
           <Link to="/recruiter/dashboard" className="hover:text-blue-600 transition">
             🔹 Dashboard
           </Link>
+          <Link to="/recruiter/company-profile" className="hover:text-blue-600 transition">
+      🔹 Account Setting
+    </Link>
           <Link to="/recruiter/create-job" className="hover:text-blue-600 transition">
             🔹 Tạo tin tuyển dụng
           </Link>

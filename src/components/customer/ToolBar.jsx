@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { SearchOutlined } from "@ant-design/icons";
 import logo from "../../assets/logo.png";
+import SearchInput from "../../components/SearchInput";
 
 function ToolBar() {
   const navigate = useNavigate();
@@ -35,6 +36,14 @@ function ToolBar() {
     setUser(null);
     navigate("/login");
   };
+  const requireLogin = (callback) => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    navigate("/login");
+  } else {
+    callback();
+  }
+};
 
   return (
     <div className="fixed top-0 left-0 w-full z-50 bg-white flex flex-col items-center">
@@ -67,42 +76,81 @@ function ToolBar() {
         </div>
 
         {/* Menu phải */}
+<div className="hidden lg:flex items-center gap-6 text-white font-semibold ml-auto pr-6">
 
-        <div className="hidden lg:flex items-center gap-8 text-white font-semibold ml-20">
-          <Link to="/contact" className="hover:text-yellow-300 transition">
-            0123456789
-          </Link>
-          {/* 'Nhà tuyển dụng' dropdown removed per UI update */}
+  {/* Dropdown Nhà tuyển dụng */}
+  <div className="relative group">
+    <button className="cursor-pointer hover:text-yellow-300 transition font-semibold">
+      Employers ▼
+    </button>
 
-          {/* Hiển thị nút đăng nhập hoặc đăng xuất */}
-          {user ? (
-            <button
-              onClick={() => navigate("/customer/mysaramin")}
-              className="hover:text-yellow-300 transition"
-            >
-              {user.email}
-            </button>
-          ) : (
-            <button
-              onClick={() => navigate("/login")}
-              className="hover:text-yellow-300 transition"
-            >
-              Đăng nhập
-            </button>
-          )}
-          {user && (
-            <button
-              onClick={handleLogout}
-              className="hover:text-yellow-300 transition"
-            >
-              Đăng xuất
-            </button>
-          )}
+    {/* Dropdown */}
+    <div
+      className="absolute left-0 top-full bg-white text-gray-700 shadow-xl rounded-lg w-56 p-2
+      opacity-0 invisible 
+      group-hover:opacity-100 group-hover:visible
+      transition-all duration-200 ease-out z-[9999]"
+    >
+      <button
+        onClick={() => requireLogin(() => navigate('/recruiter/create-job'))}
+        className='block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md'
+      >
+        Đăng tin tuyển dụng
+      </button>
 
-          <span className="cursor-pointer hover:text-yellow-300 transition">
-            VI | EN
-          </span>
-        </div>
+      <button
+        onClick={() => requireLogin(() => navigate('/recruiter/manage-jobs'))}
+        className='block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md'
+      >
+        Quản lý tin tuyển dụng
+      </button>
+
+      <button
+        onClick={() => requireLogin(() => navigate('/recruiter/applicants'))}
+        className='block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md'
+      >
+        Danh sách ứng viên
+      </button>
+
+      <button
+        onClick={() => requireLogin(() => navigate('/recruiter/dashboard'))}
+        className='block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md'
+      >
+        Trang tổng quan
+      </button>
+    </div>
+  </div>
+
+  {/* Email */}
+  {user && (
+    <span className="max-w-[180px] truncate hover:text-yellow-300 transition">
+      {user.email}
+    </span>
+  )}
+
+  {/* Nút đăng nhập / đăng xuất */}
+  {user ? (
+    <button
+      onClick={handleLogout}
+      className="hover:text-yellow-300 transition"
+    >
+      Đăng xuất
+    </button>
+  ) : (
+    <button
+      onClick={() => navigate("/login")}
+      className="hover:text-yellow-300 transition"
+    >
+      Đăng nhập
+    </button>
+  )}
+
+  {/* Ngôn ngữ */}
+  <span className="cursor-pointer hover:text-yellow-300 transition">
+    VI | EN
+  </span>
+</div>
+
       </div>
     </div>
   );

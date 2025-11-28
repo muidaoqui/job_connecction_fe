@@ -3,7 +3,6 @@ import axios from "axios";
 
 export default function ReviewApplications() {
   const [applications, setApplications] = useState([]);
-  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     fetchApplications();
@@ -11,24 +10,28 @@ export default function ReviewApplications() {
 
   const fetchApplications = async () => {
     try {
-      const res = await axios.get(
-        `http://localhost:8080/api/recruiter-applications/all/${user._id}`
-      );
+      const res = await axios.get("http://localhost:8080/api/jobs/applications/all");
       setApplications(res.data.apps || []);
     } catch (err) {
-      console.error(err);
+      console.error("Lỗi lấy ứng viên:", err);
     }
   };
 
   const updateStatus = async (appId, status) => {
     try {
       await axios.put(
-        `http://localhost:8080/api/recruiter-applications/${appId}/status`,
+        `http://localhost:8080/api/jobs/applications/${appId}/status`,
         { status }
       );
-      fetchApplications();
+
+      // cập nhật UI
+      setApplications((prev) =>
+        prev.map((app) =>
+          app._id === appId ? { ...app, status } : app
+        )
+      );
     } catch (err) {
-      console.error(err);
+      console.error("Lỗi cập nhật trạng thái:", err);
     }
   };
 
@@ -52,8 +55,11 @@ export default function ReviewApplications() {
             <tbody>
               {applications.map((app) => (
                 <tr key={app._id} className="border-b hover:bg-gray-50">
-                  <td className="p-3">{app.userId?.name}</td>
+                  {/* HIỆN TÊN ỨNG VIÊN */}
+                  <td className="p-3">{app.name}</td>
+
                   <td className="p-3">{app.jobId?.title}</td>
+
                   <td className="p-3">
                     <span
                       className={`px-3 py-1 rounded-full text-white text-sm ${
@@ -67,6 +73,7 @@ export default function ReviewApplications() {
                       {app.status}
                     </span>
                   </td>
+
                   <td className="p-3 flex gap-3">
                     <button
                       onClick={() => updateStatus(app._id, "accepted")}
@@ -74,6 +81,7 @@ export default function ReviewApplications() {
                     >
                       Duyệt
                     </button>
+
                     <button
                       onClick={() => updateStatus(app._id, "rejected")}
                       className="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"

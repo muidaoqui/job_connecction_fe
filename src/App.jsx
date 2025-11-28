@@ -32,13 +32,20 @@ import ManageJobs from "./pages/recruiter/ManageJobs";
 import Applicants from "./pages/recruiter/Applicants";
 import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
 import ReviewApplications from "./pages/recruiter/ReviewApplications";
+import EditJob from "./pages/recruiter/EditJob";
+import ApplyJob from "./pages/customer/ApplyJob";
+import CompanyProfile from "./pages/recruiter/CompanyProfile";
+
 
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import UsersPage from "./pages/admin/User";
 
 
-
+const RequireAuth = ({ children }) => {
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/login" replace />;
+};
 
 function App() {
   return (
@@ -63,16 +70,42 @@ function App() {
             <Route path="job/:id" element={<CusJobDetail />} />
             <Route path="job-search" element={<CusJobSearch />} />
           </Route>
+          <Route path="/recruiter/manage-job/edit/:id" element={<EditJob />} />
+
+          {/* Xem ứng viên theo từng job */}
+          <Route path="/recruiter/applicants" element={<Applicants />} />
           <Route path="profile" element={<Profile />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/jobs" element={<JobSearch />} />
-          <Route path="/job/:id" element={<JobDetail />} />
-          <Route path="/recruiter/create-job" element={<CreateJob />} />
-          <Route path="/recruiter/manage-jobs" element={<ManageJobs />} />
-          <Route path="/recruiter/applicants" element={<Applicants />} />
-          <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
-          <Route path="/recruiter/applicants/manage" element={<ReviewApplications />} />
+          <Route path="/jobs/:id" element={<JobDetail />} />
+          <Route path="/recruiter/create-job" element={
+  <RequireAuth><CreateJob /></RequireAuth>
+} />
+<Route path="/recruiter/manage-jobs" element={
+  <RequireAuth><ManageJobs /></RequireAuth>
+} />
+<Route path="/recruiter/applicants" element={
+  <RequireAuth><Applicants /></RequireAuth>
+} />
+<Route path="/recruiter/dashboard" element={
+  <RequireAuth><RecruiterDashboard /></RequireAuth>
+} />
+<Route path="/recruiter/edit-job/:id" element={
+  <RequireAuth><EditJob /></RequireAuth>
+} />
+<Route path="/recruiter/applicants/manage" element={
+  <RequireAuth><ReviewApplications /></RequireAuth>
+} />
+<Route
+  path="/recruiter/company-profile"
+  element={
+    <RequireAuth>
+      <CompanyProfile />
+    </RequireAuth>
+  }
+/>
+
 
 
         </Route>

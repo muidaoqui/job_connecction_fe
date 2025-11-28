@@ -22,6 +22,7 @@ import {
 import ProfileSidebar from "../../../components/customer/ProfileSidebar";
 import { useResumeManagement } from "../../../hooks/useResumeManagement";
 import { getProfile } from "../../../api/profileAPI";
+import { openProtectedFile } from "../../../utils/fileHelpers";
 
 const CVManaSidebar = ({ userName }) => (
   <ProfileSidebar userName={userName || "Người dùng"} />
@@ -107,22 +108,12 @@ const MainContent = () => {
 
   const onView = (rec) => {
     if (!rec?.path) return;
-    const p = (rec.path || "").replace(/\\\\/g, "/");
-    const url = p.startsWith("http") ? p : p.startsWith("/") ? `${SERVER_BASE}${p}` : `${SERVER_BASE}/${p}`;
-    window.open(url, "_blank");
+    openProtectedFile(rec.path, false).catch(() => {});
   };
 
   const onDownload = (rec) => {
     if (!rec?.path) return;
-    const p = (rec.path || "").replace(/\\\\/g, "/");
-    const url = p.startsWith("http") ? p : p.startsWith("/") ? `${SERVER_BASE}${p}` : `${SERVER_BASE}/${p}`;
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = rec.name || '';
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    openProtectedFile(rec.path, true).catch(() => {});
   };
 
   const onSetMain = async (rec) => {

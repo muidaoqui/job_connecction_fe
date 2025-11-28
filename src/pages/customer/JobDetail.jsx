@@ -27,7 +27,7 @@ const JobDetail = () => {
         if (res.data.job.recruiterId?._id) {
           try {
             const recruiterRes = await axios.get(
-              `http://localhost:8080/api/recruiter/${res.data.job.recruiterId._id}`
+              `http://localhost:8080/api/company/${res.data.job.recruiterId._id}`
             );
             setRecruiter(recruiterRes.data?.recruiter);
           } catch (err) {
@@ -96,7 +96,7 @@ const JobDetail = () => {
                   )}
                 </div>
                 <p className="text-lg text-gray-600 mt-2">
-                  {job.companyId?.name || job.recruiterId?.name || "Nhà tuyển dụng"}
+                  {job.companyId?.name || job.recruiterId?.companyId?.name || "Nhà tuyển dụng"}
                 </p>
               </div>
               <div className="text-right">

@@ -19,18 +19,23 @@ const CompanyDetail = () => {
     setLoading(true);
     try {
       const res = await axios.get(`http://localhost:8080/api/company/${companyId}`);
-      setCompany(res.data);
+      // Backend returns { success: true, company: {...} }
+      const companyData = res.data.company || res.data;
+      setCompany(companyData);
 
       // Fetch jobs posted by this company
       const jobsRes = await axios.get(`http://localhost:8080/api/jobs`);
-      const companyJobs = jobsRes.data?.filter(job => job.companyId === companyId) || [];
+      const companyJobs = (jobsRes.data || []).filter(job => {
+        // Compare company ID - handle both string and ObjectId
+        return job.companyId?._id === companyId || job.companyId === companyId;
+      });
       setJobs(companyJobs.slice(0, 6)); // Show top 6 jobs
 
       // Fetch recruiters from this company
       const recruitersRes = await axios.get(`http://localhost:8080/api/recruiter`);
-      const companyRecruiters = recruitersRes.data?.recruiters?.filter(
-        recruiter => recruiter.companyId === companyId
-      ) || [];
+      const companyRecruiters = (recruitersRes.data?.recruiters || []).filter(
+        recruiter => recruiter.companyId?._id === companyId || recruiter.companyId === companyId
+      );
       setRecruiters(companyRecruiters);
     } catch (err) {
       console.error("Lỗi khi lấy chi tiết công ty:", err);
@@ -67,13 +72,23 @@ const CompanyDetail = () => {
       </Button>
 
       {/* Company Header */}
-      <Card className="mb-6 shadow-lg">
+      <Card className="mb-6 shadow-lg overflow-hidden">
+        {/* Hero Banner */}
+        {company.backgroundImage ? (
+          <div
+            className="w-full h-64 bg-cover bg-center rounded-lg mb-4"
+            style={{ backgroundImage: `url(${company.backgroundImage})` }}
+          />
+        ) : (
+          <div className="w-full h-64 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg mb-4" />
+        )}
+
         <div className="flex gap-8 items-start">
           {company.logo && (
             <img 
               src={company.logo} 
               alt={company.name}
-              className="h-32 object-contain"
+              className="h-24 w-24 object-contain border border-gray-200 rounded-lg p-2"
             />
           )}
           <div className="flex-1">
@@ -85,44 +100,50 @@ const CompanyDetail = () => {
               </Tag>
             )}
 
-            <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
+            <div className="grid grid-cols-3 gap-4 mb-4 text-sm bg-gray-50 p-4 rounded">
               {company.country && (
                 <div>
-                  <span className="font-semibold">📍 Quốc gia:</span>
-                  <p>{company.country}</p>
+                  <span className="font-semibold text-gray-600">📍 Quốc gia</span>
+                  <p className="text-gray-800">{company.country}</p>
                 </div>
               )}
               {company.size && (
                 <div>
-                  <span className="font-semibold">👥 Quy mô:</span>
-                  <p>{company.size}</p>
+                  <span className="font-semibold text-gray-600">👥 Quy mô</span>
+                  <p className="text-gray-800">{company.size}</p>
                 </div>
               )}
               {company.address && (
                 <div>
-                  <span className="font-semibold">📮 Địa chỉ:</span>
-                  <p>{company.address}</p>
+                  <span className="font-semibold text-gray-600">📮 Địa chỉ</span>
+                  <p className="text-gray-800">{company.address}</p>
                 </div>
               )}
             </div>
-
-            {company.website && (
-              <a 
-                href={company.website}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-              >
-                🌐 Truy Cập Website
-              </a>
-            )}
           </div>
         </div>
 
         {company.description && (
           <div className="mt-6 pt-6 border-t border-gray-200">
-            <h2 className="text-xl font-bold mb-3">Giới Thiệu</h2>
-            <p className="text-gray-700 leading-relaxed">{company.description}</p>
+            <h2 className="text-xl font-bold mb-3 text-gray-800">Giới Thiệu Công Ty</h2>
+            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{company.description}</p>
+          </div>
+        )}
+
+        {/* Gallery */}
+        {company.images && company.images.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-xl font-bold mb-4 text-gray-800">Hình Ảnh</h2>
+            <div className="grid grid-cols-3 gap-4">
+              {company.images.map((img, idx) => (
+                <img 
+                  key={idx} 
+                  src={img} 
+                  alt={`${company.name}-${idx}`} 
+                  className="w-full h-48 object-cover rounded-lg border border-gray-200 hover:shadow-lg transition" 
+                />
+              ))}
+            </div>
           </div>
         )}
       </Card>

@@ -6,6 +6,7 @@ import logo from "../../assets/logo.png";
 function ToolBar() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Kiểm tra trạng thái đăng nhập khi component mount
   useEffect(() => {
@@ -14,6 +15,19 @@ function ToolBar() {
       setUser(JSON.parse(storedUser));
     }
   }, []);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/customer/job-search?q=${encodeURIComponent(searchTerm)}`);
+    }
+  };
+
+  const handleSearchKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSearch(e);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -38,9 +52,15 @@ function ToolBar() {
             <input
               type="text"
               placeholder="Vị trí tuyển dụng, công ty,..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={handleSearchKeyPress}
               className="w-full px-5 py-3 focus:outline-none text-gray-700 placeholder-gray-400"
             />
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 transition duration-300">
+            <button 
+              onClick={handleSearch}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 transition duration-300"
+            >
               <SearchOutlined style={{ fontSize: '20px' }} />
             </button>
           </div>

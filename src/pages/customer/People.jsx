@@ -52,12 +52,14 @@ const People = () => {
     setLoading(true);
     try {
       const res = await axios.get(`http://localhost:8080/api/company?page=${page}&limit=9`);
-      if (res.data?.companies) {
-        setCompanies(res.data.companies);
-        setFilteredCompanies(res.data.companies);
+      // Backend returns { success: true, data: [...], pagination: {...} }
+      const companiesData = res.data?.data || res.data?.companies || [];
+      if (companiesData.length > 0) {
+        setCompanies(companiesData);
+        setFilteredCompanies(companiesData);
 
         // Extract unique industries
-        const uniqueIndustries = [...new Set(res.data.companies.map(c => c.industry).filter(Boolean))];
+        const uniqueIndustries = [...new Set(companiesData.map(c => c.industry).filter(Boolean))];
         setIndustries(uniqueIndustries);
 
         setCompaniesPagination({
@@ -339,17 +341,7 @@ const People = () => {
                           Xem Chi Tiết
                         </Button>
 
-                        {company.website && (
-                          <Button
-                            type="link"
-                            block
-                            size="small"
-                            className="text-blue-500 hover:text-blue-700"
-                            onClick={() => window.open(company.website, "_blank")}
-                          >
-                            🌐 Website
-                          </Button>
-                        )}
+                        {/* website removed - use company detail page instead */}
                       </div>
                     </div>
                   </Card>

@@ -20,12 +20,14 @@ const Companies = () => {
     setLoading(true);
     try {
       const res = await axios.get(`http://localhost:8080/api/company?page=${page}&limit=9`);
-      if (res.data?.companies) {
-        setCompanies(res.data.companies);
-        setFilteredCompanies(res.data.companies);
+      // Backend returns { success: true, data: [...], pagination: {...} }
+      const companiesData = res.data?.data || res.data?.companies || [];
+      if (companiesData.length > 0) {
+        setCompanies(companiesData);
+        setFilteredCompanies(companiesData);
 
         // Extract unique industries
-        const uniqueIndustries = [...new Set(res.data.companies.map(c => c.industry).filter(Boolean))];
+        const uniqueIndustries = [...new Set(companiesData.map(c => c.industry).filter(Boolean))];
         setIndustries(uniqueIndustries);
 
         setPagination({
@@ -109,7 +111,7 @@ const Companies = () => {
         <Empty description="Không tìm thấy công ty phù hợp" />
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-3 gap-6 my-6">
             {filteredCompanies.map((company) => (
               <Card key={company._id} className="hover:shadow-lg transition cursor-pointer">
                 <div className="flex flex-col items-center text-center h-full">
@@ -142,22 +144,10 @@ const Companies = () => {
                       block
                       size="small"
                       className="bg-blue-600 hover:bg-blue-700"
-                      onClick={() => window.location.href = `/company/${company._id}`}
+                      onClick={() => window.location.href = `/customer/company/${company._id}`}
                     >
                       Xem Chi Tiết
                     </Button>
-
-                    {company.website && (
-                      <Button
-                        type="link"
-                        block
-                        size="small"
-                        className="text-blue-500 hover:text-blue-700"
-                        onClick={() => window.open(company.website, "_blank")}
-                      >
-                        🌐 Website
-                      </Button>
-                    )}
                   </div>
                 </div>
               </Card>

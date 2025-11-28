@@ -7,6 +7,7 @@ import SearchInput from "../../components/SearchInput";
 function ToolBar() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Kiểm tra trạng thái đăng nhập khi component mount
   useEffect(() => {
@@ -15,6 +16,19 @@ function ToolBar() {
       setUser(JSON.parse(storedUser));
     }
   }, []);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/customer/job-search?q=${encodeURIComponent(searchTerm)}`);
+    }
+  };
+
+  const handleSearchKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSearch(e);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -39,17 +53,27 @@ function ToolBar() {
           <img onClick={() => navigate("/")} src={logo} alt="Logo" className="h-16 w-auto px-4" />
         </div>
 
-        <div className="flex justify-center items-center gap-4">
-  <SearchInput width="w-[500px]" />
-  <Link
-    to="/jobs"
-    className="px-5 py-2 bg-blue-600 text-white font-semibold rounded-full 
-              hover:bg-blue-700 transition duration-200 shadow-md"
-  >
-    Xem tất cả việc làm
-  </Link>
-</div>
+          {/* Thanh tìm kiếm */}
+          <div className="flex justify-center items-center gap-4">
 
+          {/* Thanh tìm kiếm */}
+          <div className="flex items-center rounded-full bg-white border border-blue-300 overflow-hidden w-[500px] shadow-md">
+            <input
+              type="text"
+              placeholder="Vị trí tuyển dụng, công ty,..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={handleSearchKeyPress}
+              className="w-full px-5 py-3 focus:outline-none text-gray-700 placeholder-gray-400"
+            />
+            <button 
+              onClick={handleSearch}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 transition duration-300"
+            >
+              <SearchOutlined style={{ fontSize: '20px' }} />
+            </button>
+          </div>
+        </div>
 
         {/* Menu phải */}
 <div className="hidden lg:flex items-center gap-6 text-white font-semibold ml-auto pr-6">

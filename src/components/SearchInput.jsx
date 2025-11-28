@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "../services/axiosInstance";
 import { useNavigate } from "react-router-dom";
-
+import JobSearch from "../pages/customer/JobSearch";
 export default function SearchInput({ placeholder = "Vị trí tuyển dụng, công ty..." }) {
   const [query, setQuery] = useState("");
   const [suggests, setSuggests] = useState([]);
@@ -22,7 +22,7 @@ export default function SearchInput({ placeholder = "Vị trí tuyển dụng, c
 
   const fetchSuggest = async () => {
     try {
-      const res = await axios.get(`/jobs/search?q=${query}`);
+      const res = await axios.get(`/customer/job-search?q=${query}`);
       if (res.data.success) {
         setSuggests(res.data.data);
       }

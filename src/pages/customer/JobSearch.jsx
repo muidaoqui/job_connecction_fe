@@ -161,7 +161,7 @@ const JobSearch = () => {
                   <Button
                     type="primary"
                     className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => window.location.href = `/job/${job._id}`}
+                    onClick={() => window.location.href = `/customer/job/${job._id}`}
                   >
                     Xem Chi Tiết
                   </Button>

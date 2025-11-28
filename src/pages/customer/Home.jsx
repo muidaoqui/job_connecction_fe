@@ -81,7 +81,9 @@ function Home() {
       setCompaniesLoading(true);
       try {
         const res = await axios.get("http://localhost:8080/api/company?limit=6");
-        setCompanies(res.data?.companies || []);
+        // Backend returns { success: true, data: [...] } or { success: true, companies: [...] }
+        const companiesData = res.data?.data || res.data?.companies || [];
+        setCompanies(companiesData);
       } catch (err) {
         console.error("Lỗi khi lấy companies:", err);
       } finally {
@@ -96,7 +98,9 @@ function Home() {
       setTopCompaniesLoading(true);
       try {
         const res = await axios.get("http://localhost:8080/api/company?limit=6");
-        setTopCompanies(res.data?.companies || []);
+        // Backend returns { success: true, data: [...] } or { success: true, companies: [...] }
+        const companiesData = res.data?.data || res.data?.companies || [];
+        setTopCompanies(companiesData);
       } catch (err) {
         console.error("Lỗi khi lấy top companies:", err);
       } finally {
@@ -258,7 +262,7 @@ function Home() {
           ))}
         </div>
         <div className="text-center mt-10 mb-10">
-          <button onClick={() => window.location.href = '/jobs'} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition shadow-md">
+          <button onClick={() => window.location.href = '/customer/job-search'} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition shadow-md">
             Xem Tất Cả Công Việc →
           </button>
         </div>
@@ -320,12 +324,6 @@ function Home() {
                       Xem Chi Tiết
                     </button>
                   )}
-                  <button
-                    onClick={() => window.location.href = `/customer/company/${company._id}`}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-1 rounded-lg transition"
-                  >
-                    Xem Chi Tiết
-                  </button>
                 </div>
 
               </div>

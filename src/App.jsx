@@ -12,6 +12,12 @@ import CVMana from "./pages/customer/profile/CVMana";
 import EmailMana from "./pages/customer/profile/EmailMana";
 import PerTest from "./pages/customer/profile/PerTest";
 import Navbar from "./pages/customer/profile/Navbar";
+import Companies from "./pages/customer/Companies";
+import CusJobDetail from "./pages/customer/JobDetail";
+import CusJobSearch from "./pages/customer/JobSearch";
+import Recruiters from "./pages/customer/Recruiters";
+import People from "./pages/customer/People";
+import CompanyDetail from "./pages/customer/CompanyDetail";
 
 import "react-toastify/dist/ReactToastify.css";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -22,6 +28,22 @@ import JobSearch from "./pages/JobSearch";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import UsersPage from "./pages/admin/User";
+import AdminPendingJobs from "./pages/admin/Job";
+import CreateJob from "./pages/recruiter/CreateJob";
+import ManageJobs from "./pages/recruiter/ManageJobs";
+import Applicants from "./pages/recruiter/Applicants";
+// import CreateJob from "./pages/recruiter/CreateJob";
+// import ManageJobs from "./pages/recruiter/ManageJobs";
+// import Applicants from "./pages/recruiter/Applicants";
+import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
+import ReviewApplications from "./pages/recruiter/ReviewApplications";
+import EditJob from "./pages/recruiter/EditJob";
+import ApplyJob from "./pages/customer/ApplyJob";
+
+// import AdminLayout from "./components/admin/AdminLayout";
+// import AdminDashboard from "./pages/admin/Dashboard";
+// import UsersPage from "./pages/admin/User";
+
 function App() {
   return (
     <Router>
@@ -38,19 +60,36 @@ function App() {
             <Route path="cvmanagement" element={<CVMana />} />
             <Route path="emailmanagement" element={<EmailMana />} />
             <Route path="pertest" element={<PerTest />} />
+            <Route path="companies" element={<Companies />} />
+            <Route path="recruiters" element={<Recruiters />} />
+            <Route path="people" element={<People />} />
+            <Route path="company/:companyId" element={<CompanyDetail />} />
+            <Route path="job/:id" element={<CusJobDetail />} />
+            <Route path="job-search" element={<CusJobSearch />} />
           </Route>
+          <Route path="/recruiter/manage-job/edit/:id" element={<EditJob />} />
+
+          {/* Xem ứng viên theo từng job */}
+          <Route path="/recruiter/applicants" element={<Applicants />} />
           <Route path="profile" element={<Profile />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/jobs" element={<JobSearch />} />
-          <Route path="/job/:id" element={<JobDetail />} />
+          <Route path="/jobs/:id" element={<JobDetail />} />
           <Route path="/recruiter/create-job" element={<CreateJob />} />
           <Route path="/recruiter/manage-jobs" element={<ManageJobs />} />
-          <Route path="/recruiter/applicants/:jobId" element={<Applicants />} />
+          <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
+          <Route path="/recruiter/edit-job/:id" element={<EditJob />} />
+          <Route path="/jobs/:id/apply" element={<ApplyJob />} />
+          <Route
+            path="/recruiter/applicants/manage"
+            element={<ReviewApplications />}
+          />
         </Route>
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<UsersPage />} />
+          <Route path="jobs" element={<AdminPendingJobs />} />
         </Route>
       </Routes>
     </Router>

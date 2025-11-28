@@ -12,6 +12,14 @@ import CVMana from "./pages/customer/profile/CVMana";
 import EmailMana from "./pages/customer/profile/EmailMana";
 import PerTest from "./pages/customer/profile/PerTest";
 import Navbar from "./pages/customer/profile/Navbar";
+import Companies from "./pages/customer/Companies";
+import CusJobDetail from "./pages/customer/JobDetail";
+import CusJobSearch from "./pages/customer/JobSearch";
+import Recruiters from "./pages/customer/Recruiters";
+import People from "./pages/customer/People";
+import CompanyDetail from "./pages/customer/CompanyDetail";
+
+
 
 import "react-toastify/dist/ReactToastify.css";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -55,6 +63,12 @@ function App() {
             <Route path="cvmanagement" element={<CVMana />} />
             <Route path="emailmanagement" element={<EmailMana />} />
             <Route path="pertest" element={<PerTest />} />
+            <Route path="companies" element={<Companies />} />
+            <Route path="recruiters" element={<Recruiters />} />
+            <Route path="people" element={<People />} />
+            <Route path="company/:companyId" element={<CompanyDetail />} />
+            <Route path="job/:id" element={<CusJobDetail />} />
+            <Route path="job-search" element={<CusJobSearch />} />
           </Route>
           <Route path="/recruiter/manage-job/edit/:id" element={<EditJob />} />
 

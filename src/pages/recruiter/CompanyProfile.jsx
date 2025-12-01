@@ -3,6 +3,36 @@ import axios from "../../services/axiosInstance";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 
+const fetchCompany = async () => {
+  try {
+    const res = await axios.get("/company/profile", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+
+    if (res.data.success && res.data.data) {
+      const c = res.data.data;
+
+      setCompany({
+        name: c.name,
+        tagline: c.tagline,
+        country: c.country,
+        industry: c.industry,
+        techStack: c.techs.join(", "),
+        size: c.size,
+        website: c.website,
+        socialLinks: c.socialLinks.length
+          ? c.socialLinks
+          : [""],
+      });
+
+      setDescription(c.description);
+
+      if (c.logo) setLogoPreview(c.logo);
+    }
+  } catch (err) {
+    console.log("Không tìm thấy company, user chưa tạo company.");
+  }
+};
 export default function CompanyProfile() {
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
@@ -23,6 +53,10 @@ export default function CompanyProfile() {
   const [businessLicense, setBusinessLicense] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
   const [galleryImages, setGalleryImages] = useState([]);
+  React.useEffect(() => {
+  fetchCompany();
+}, []);
+
 
   // ===============================
   // HANDLE CHANGE
@@ -74,58 +108,66 @@ export default function CompanyProfile() {
   // ===============================
   // SUBMIT
   // ===============================
-  const handleSubmit = async () => {
-    try {
-      const formData = new FormData();
+ const handleSubmit = async () => {
+  try {
+    const formData = new FormData();
 
-      formData.append("name", company.name);
-      formData.append("tagline", company.tagline);
-      formData.append("country", company.country);
-      formData.append("industry", company.industry);
-      formData.append("size", company.size);
-      formData.append("website", company.website);
+    // TEXT FIELDS
+    formData.append("name", company.name);
+    formData.append("tagline", company.tagline);
+    formData.append("country", company.country);
+    formData.append("industry", company.industry);
+    formData.append("size", company.size);
+    formData.append("website", company.website);
+    formData.append("description", description);
 
-      formData.append("description", description);
+    // techStack → techs[]
+    const techArray = company.techStack
+      .split(",")
+      .map((item) => item.trim());
+    formData.append("techs", JSON.stringify(techArray));
 
-      // techStack → techs[]
-      const techArray = company.techStack
-        .split(",")
-        .map((item) => item.trim());
-      formData.append("techs", JSON.stringify(techArray));
+    // socialLinks[]
+    formData.append("socialLinks", JSON.stringify(company.socialLinks));
 
-      formData.append("socialLinks", JSON.stringify(company.socialLinks));
+    // FILES
+    if (logoFile) formData.append("logo", logoFile);
+    if (coverImage) formData.append("coverImage", coverImage);
+    if (businessLicense) formData.append("businessLicense", businessLicense);
 
-      // files
-      if (logoFile) formData.append("logo", logoFile);
-      if (coverImage) formData.append("coverImage", coverImage);
-      if (businessLicense) formData.append("businessLicense", businessLicense);
+    galleryImages.forEach((img) => {
+      formData.append("galleryImages", img);
+    });
 
-      galleryImages.forEach((img) => {
-        formData.append("galleryImages", img);
-      });
-
-      const res = await axios.post(
-        "/company/profile",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (res.data.success) {
-        alert("Lưu thành công!");
-      } else {
-        alert("Lưu thất bại: " + res.data.message);
+    // CALL API
+    const res = await axios.post(
+      "/company/profile",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       }
+    );
 
-    } catch (error) {
-      console.error(error);
-      alert("Lỗi khi lưu: " + (error.response?.data?.message || "Unknown error"));
+    if (res.data.success) {
+      alert("Lưu thành công!");
+
+      // QUAN TRỌNG: Lưu company để CreateJob dùng companyId
+      localStorage.setItem("company", JSON.stringify(res.data.data));
+    } else {
+      alert("Lưu thất bại: " + res.data.message);
     }
-  };
+
+  } catch (error) {
+    console.error(error);
+    alert(
+      "Lỗi khi lưu: " + (error.response?.data?.message || "Unknown error")
+    );
+  }
+};
+
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

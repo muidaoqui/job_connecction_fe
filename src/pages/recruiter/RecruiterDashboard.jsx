@@ -42,6 +42,9 @@ export default function RecruiterDashboard() {
           <Link to="/recruiter/applicants" className="hover:text-blue-600 transition">
             🔹 Danh sách ứng viên
           </Link>
+          <Link to="/recruiter/profile" className="hover:text-blue-600 transition">
+ 🔹 Hồ sơ nhà tuyển dụng
+</Link>
         </nav>
       </aside>
 

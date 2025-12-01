@@ -19,6 +19,7 @@ import Recruiters from "./pages/customer/Recruiters";
 import People from "./pages/customer/People";
 import CompanyDetail from "./pages/customer/CompanyDetail";
 import ApplyJob from "./pages/customer/ApplyJob";
+import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
 
 
 import "react-toastify/dist/ReactToastify.css";
@@ -71,6 +72,8 @@ function App() {
             <Route path="apply-job/:id" element={<ApplyJob />} />
           </Route>
           <Route path="/recruiter/manage-job/edit/:id" element={<EditJob />} />
+          <Route path="/recruiter/profile" element={<RecruiterProfile />} />
+
 
           {/* Xem ứng viên theo từng job */}
           <Route path="/recruiter/applicants" element={<Applicants />} />

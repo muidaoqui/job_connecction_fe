@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import Slider from "react-slick";
 import axios from "axios";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import { SaveOutlined, HeartFilled } from "@ant-design/icons";
+import { message } from "antd";
 import { j1, j2, j3, j4, j5 } from "../../assets/jobs";
 import { l1, l2, l3, l4, l5, l6 } from "../../assets/jobslogo";
 
@@ -58,6 +60,7 @@ function Home() {
   const [topCompaniesLoading, setTopCompaniesLoading] = useState(false);
   const [recruitersLoading, setRecruitersLoading] = useState(false);
   const [followingMap, setFollowingMap] = useState({});
+  const [savedJobsMap, setSavedJobsMap] = useState({});
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -74,6 +77,31 @@ function Home() {
       }
     };
     fetchJobs();
+  }, []);
+
+  // Load saved jobs from backend when component mounts and user is logged in
+  useEffect(() => {
+    const loadSavedJobs = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          const res = await axios.get("http://localhost:8080/api/candidate/saved-jobs", {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const savedJobs = res.data?.data || [];
+          const savedJobsMap = {};
+          savedJobs.forEach((item) => {
+            if (item.jobId?._id) {
+              savedJobsMap[item.jobId._id] = true;
+            }
+          });
+          setSavedJobsMap(savedJobsMap);
+        }
+      } catch (err) {
+        console.error("Lỗi khi tải saved jobs:", err);
+      }
+    };
+    loadSavedJobs();
   }, []);
 
   useEffect(() => {
@@ -124,6 +152,37 @@ function Home() {
     };
     fetchTopRecruiters();
   }, []);
+
+  const handleSaveJob = async (jobId, e) => {
+    e.stopPropagation();
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        message.warning("Vui lòng đăng nhập để lưu công việc");
+        return;
+      }
+
+      const isSaved = savedJobsMap[jobId];
+      if (isSaved) {
+        // Unsave
+        await axios.post(`http://localhost:8080/api/jobs/${jobId}/unsave`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setSavedJobsMap((prev) => ({ ...prev, [jobId]: false }));
+        message.success("Đã bỏ lưu công việc");
+      } else {
+        // Save
+        await axios.post(`http://localhost:8080/api/jobs/${jobId}/save`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setSavedJobsMap((prev) => ({ ...prev, [jobId]: true }));
+        message.success("Đã lưu công việc");
+      }
+    } catch (err) {
+      console.error("Save job error:", err);
+      message.error("Lỗi khi lưu công việc");
+    }
+  };
 
   return (
     <div className="w-full">
@@ -181,7 +240,7 @@ function Home() {
           {!companiesLoading && companies.map((company) => (
             <button
               key={company._id}
-              onClick={() => window.location.href = '/customer/people'}
+              onClick={() => window.location.href = `/customer/company/${company._id}`}
               className="hover:scale-110 transition-transform duration-300 flex items-center justify-center p-2 rounded-lg hover:bg-white hover:shadow-md"
               title={company.name}
             >
@@ -254,9 +313,22 @@ function Home() {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+              <div className="flex justify-between items-center pt-3 border-t border-gray-200 gap-2">
                 <span className="text-xs text-gray-500">{new Date(job.createdAt).toLocaleDateString('vi-VN')}</span>
-                <button onClick={(e) => { e.stopPropagation(); window.location.href = `/customer/job/${job._id}`; }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-lg text-sm font-semibold transition">Xem Chi Tiết</button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => handleSaveJob(job._id, e)}
+                    className={`px-3 py-1 rounded-lg text-sm font-semibold transition ${
+                      savedJobsMap[job._id]
+                        ? "bg-red-100 text-red-600 hover:bg-red-200"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                    title={savedJobsMap[job._id] ? "Bỏ lưu" : "Lưu"}
+                  >
+                    {savedJobsMap[job._id] ? "❤️ Đã Lưu" : "🤍 Lưu"}
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); window.location.href = `/customer/job/${job._id}`; }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-lg text-sm font-semibold transition">Xem Chi Tiết</button>
+                </div>
               </div>
             </div>
           ))}
@@ -278,7 +350,7 @@ function Home() {
           {companiesLoading && <p className="text-gray-500">Đang tải công ty...</p>}
           {!companiesLoading && companies.length === 0 && <p className="text-gray-500">Hiện chưa có công ty.</p>}
           {!companiesLoading && companies.map((company) => (
-            <div key={company._id} className="rounded-xl border border-gray-200 p-6 bg-white shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group" onClick={() => window.location.href = `/customer/companies`}>
+            <div key={company._id} className="rounded-xl border border-gray-200 p-6 bg-white shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group" onClick={() => window.location.href = `/customer/company/${company._id}`}>
               <div className="flex flex-col items-center text-center gap-4">
                 {company.logo && (
                   <img
@@ -331,7 +403,7 @@ function Home() {
           ))}
         </div>
         <div className="text-center mt-10">
-          <button onClick={() => window.location.href = '/customer/people'} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition shadow-md">
+          <button onClick={() => window.location.href = '/customer/companies'} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition shadow-md">
             Xem Tất Cả Công Ty →
           </button>
         </div>

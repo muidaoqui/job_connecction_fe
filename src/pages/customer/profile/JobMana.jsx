@@ -21,15 +21,16 @@ import {
     DeleteOutlined,
 } from "@ant-design/icons";
 import ProfileSidebar from "../../../components/customer/ProfileSidebar";
+import { useNavigate } from "react-router-dom";
 import { useResumeManagement } from "../../../hooks/useResumeManagement";
 import { openProtectedFile } from "../../../utils/fileHelpers";
 import {
     getApplications,
     getSavedJobs,
     getViewedJobs,
-    getInvitations,
     withdrawApplication,
     unsaveJob,
+    removeViewedJob,
     getProfile,
 } from "../../../api/profileAPI";
 
@@ -161,27 +162,45 @@ const ContentLoiMoiUngTuyen = ({ selectedResume, setSelectedResume, resumes, pro
 };
 
 const JobListTab = ({ loading, jobs, onDelete, deleteLabel }) => {
+    // Ensure jobs is always an array
+    const jobsArray = Array.isArray(jobs) ? jobs : [];
+    const navigate = useNavigate();
+    
     if (loading) return <Spin />;
-    if (jobs.length === 0) return <Empty description={`Chưa có ${deleteLabel}`} />;
+    if (jobsArray.length === 0) return <Empty description={`Chưa có ${deleteLabel}`} />;
 
     return (
         <div className="space-y-3">
-            {jobs.map((job, idx) => (
-                <Card key={idx} className="shadow-sm">
+            {jobsArray.map((job, idx) => (
+                <Card key={job._id || idx} className="shadow-sm hover:shadow-md transition">
                     <Row justify="space-between" align="middle">
                         <Col span={20}>
-                            <h4 className="font-semibold">{job?.jobId?.title || "Vị trí tuyển dụng"}</h4>
-                            <p className="text-gray-600 text-sm">{job?.jobId?.company || "Công ty"}</p>
-                            <p className="text-gray-500 text-xs">
-                                {new Date(job?.appliedDate || job?.savedDate || job?.viewedDate).toLocaleDateString()}
-                            </p>
+                            <h4
+                                className="font-semibold text-blue-600 hover:text-blue-700 cursor-pointer"
+                                onClick={() => {
+                                    // job.jobId may be populated object or an id string
+                                    const jobId = job?.jobId?._id || job?.jobId || job?._id;
+                                    if (jobId) navigate(`/customer/job/${jobId}`);
+                                }}
+                            >
+                                {job?.jobId?.title || "Vị trí tuyên dụng"}
+                            </h4>
+                            <p className="text-gray-600 text-sm">{job?.jobId?.companyId?.name || "Công ty"}</p>
+                            <div className="flex gap-4 text-xs text-gray-500 mt-2">
+                                <span>📍 {job?.jobId?.location || "Chưa rõ"}</span>
+                                <span>💰 {job?.jobId?.salary || "Thương lượng"}</span>
+                                <span>{new Date(job?.appliedDate || job?.savedDate || job?.viewedDate).toLocaleDateString('vi-VN')}</span>
+                            </div>
                         </Col>
-                        <Col span={4}>
+                        <Col span={4} className="flex justify-end">
                             <Button
                                 danger
                                 size="small"
                                 icon={<DeleteOutlined />}
-                                onClick={() => onDelete(job._id)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDelete(job._id);
+                                }}
                             >
                                 Xóa
                             </Button>
@@ -211,17 +230,16 @@ const MainContent = ({ profileData }) => {
     const fetchAllData = async () => {
         try {
             setLoading(true);
-            const [appRes, savedRes, viewedRes, invitRes] = await Promise.all([
+            const [appRes, savedRes, viewedRes] = await Promise.all([
                 getApplications(),
                 getSavedJobs(),
                 getViewedJobs(),
-                getInvitations(),
             ]);
 
-            setApplications(appRes.data || []);
-            setSavedJobs(savedRes.data || []);
-            setViewedJobs(viewedRes.data || []);
-            setInvitations(invitRes.data || []);
+            // API responses are { data: [...] } so use .data.data
+            setApplications((appRes && appRes.data && appRes.data.data) || []);
+            setSavedJobs((savedRes && savedRes.data && savedRes.data.data) || []);
+            setViewedJobs((viewedRes && viewedRes.data && viewedRes.data.data) || []);
         } catch (error) {
             console.error("Lỗi khi tải dữ liệu:", error);
             message.error("Lỗi khi tải dữ liệu");
@@ -252,6 +270,16 @@ const MainContent = ({ profileData }) => {
             await unsaveJob(jobId);
             setSavedJobs(savedJobs.filter((job) => job._id !== jobId));
             message.success("Xóa công việc khỏi danh sách lưu");
+        } catch (error) {
+            message.error("Lỗi khi xóa: " + error.message);
+        }
+    };
+
+    const handleDeleteViewedJob = async (jobViewId) => {
+        try {
+            await removeViewedJob(jobViewId);
+            setViewedJobs(viewedJobs.filter((job) => job._id !== jobViewId));
+            message.success("Xóa công việc khỏi danh sách xem");
         } catch (error) {
             message.error("Lỗi khi xóa: " + error.message);
         }
@@ -304,7 +332,7 @@ const MainContent = ({ profileData }) => {
                 <JobListTab
                     loading={loading}
                     jobs={viewedJobs}
-                    onDelete={() => {}}
+                    onDelete={handleDeleteViewedJob}
                     deleteLabel="công việc xem"
                 />
             ),

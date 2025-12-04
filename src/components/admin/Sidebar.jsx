@@ -29,6 +29,11 @@ export default function Sidebar({ collapsed }) {
             icon: <UserOutlined />,
             label: <Link to="/admin/users">Users</Link>,
           },
+          {
+            key: "3",
+            icon: <UserOutlined />,
+            label: <Link to="/admin/jobs">Jobs</Link>,
+          },
         ]}
       />
     </Sider>

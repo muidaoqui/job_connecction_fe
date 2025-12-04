@@ -2,7 +2,9 @@ import { useState } from "react";
 import axios from "axios";
 
 export default function CreateJob() {
-  const user = JSON.parse(localStorage.getItem("user")); // Lấy recruiter ID
+  const user = JSON.parse(localStorage.getItem("user"));
+  const company = JSON.parse(localStorage.getItem("company")); 
+  const token = localStorage.getItem("token");
 
   const [form, setForm] = useState({
     title: "",
@@ -10,6 +12,7 @@ export default function CreateJob() {
     requirements: "",
     salary: "",
     location: "",
+    jobType: "Full-time",
   });
 
   const handleChange = (e) => {
@@ -17,24 +20,50 @@ export default function CreateJob() {
   };
 
   const handleSubmit = async () => {
-    if (!user?._id) {
-      alert("Không tìm thấy recruiterId!");
+  try {
+    if (!token) {
+      alert("Bạn chưa đăng nhập!");
+      return;
+    }
+
+    if (!company?._id) {
+      alert("Bạn chưa tạo hồ sơ công ty!");
       return;
     }
 
     const jobData = {
       ...form,
-      recruiterId: user._id,   // 💥 FIX QUAN TRỌNG
+      companyId: company._id,     // 🔥 BẮT BUỘC, BE yêu cầu
+      // recruiterId KHÔNG gửi, BE tự gán
+      jobType: form.jobType || "Full-time",
     };
 
-    try {
-      await axios.post("http://localhost:8080/api/jobs", jobData);
-      alert("Tạo tin tuyển dụng thành công!");
-    } catch (err) {
-      console.log(err);
-      alert("Không thể kết nối BE!");
+    const res = await axios.post(
+      "http://localhost:8080/api/jobs",
+      jobData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    alert("Đăng tin tuyển dụng thành công!");
+    console.log("JOB CREATED:", res.data);
+
+  } catch (err) {
+    console.log(err);
+
+    if (err.response?.status === 403) {
+      alert("Bạn cần có hồ sơ Nhà tuyển dụng trước khi đăng tin.");
+    } else if (err.response?.status === 401) {
+      alert("Token hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.");
+    } else {
+      alert("Lỗi khi tạo job!");
     }
-  };
+  }
+};
 
   return (
     <div className="min-h-screen bg-slate-50 py-10">
@@ -48,7 +77,8 @@ export default function CreateJob() {
             <label className="font-semibold">Tiêu đề</label>
             <input
               name="title"
-              placeholder="VD: Frontend Developer"
+              value={form.title}
+              placeholder="VD: Backend Developer"
               onChange={handleChange}
               className="w-full border border-slate-300 p-3 rounded-lg mt-1"
             />
@@ -58,6 +88,7 @@ export default function CreateJob() {
             <label className="font-semibold">Mô tả</label>
             <textarea
               name="description"
+              value={form.description}
               placeholder="Mô tả chi tiết công việc..."
               className="w-full border border-slate-300 p-3 rounded-lg mt-1 h-28"
               onChange={handleChange}
@@ -68,7 +99,8 @@ export default function CreateJob() {
             <label className="font-semibold">Yêu cầu</label>
             <textarea
               name="requirements"
-              placeholder="Yêu cầu về kỹ năng, kinh nghiệm..."
+              value={form.requirements}
+              placeholder="Kinh nghiệm, kỹ năng..."
               className="w-full border border-slate-300 p-3 rounded-lg mt-1 h-28"
               onChange={handleChange}
             />
@@ -79,6 +111,7 @@ export default function CreateJob() {
               <label className="font-semibold">Lương</label>
               <input
                 name="salary"
+                value={form.salary}
                 placeholder="VD: 15 - 25 triệu"
                 className="w-full border border-slate-300 p-3 rounded-lg mt-1"
                 onChange={handleChange}
@@ -89,11 +122,26 @@ export default function CreateJob() {
               <label className="font-semibold">Địa điểm</label>
               <input
                 name="location"
+                value={form.location}
                 placeholder="VD: Hồ Chí Minh"
                 className="w-full border border-slate-300 p-3 rounded-lg mt-1"
                 onChange={handleChange}
               />
             </div>
+          </div>
+
+          <div>
+            <label className="font-semibold">Hình thức làm việc</label>
+            <select
+              name="jobType"
+              value={form.jobType}
+              onChange={handleChange}
+              className="w-full border border-slate-300 p-3 rounded-lg mt-1"
+            >
+              <option value="Full-time">Toàn thời gian</option>
+              <option value="Part-time">Bán thời gian</option>
+              <option value="Remote">Remote</option>
+            </select>
           </div>
 
           <button

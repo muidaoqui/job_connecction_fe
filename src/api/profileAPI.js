@@ -117,22 +117,12 @@ export const withdrawApplication = (applicationId) =>
 export const getSavedJobs = () =>
   axios.get(`${BASE_URL}/saved-jobs`, getAuthHeaders());
 
-export const saveJob = (data) =>
-  axios.post(`${BASE_URL}/saved-jobs`, data, getAuthHeaders());
-
-export const unsaveJob = (jobId) =>
-  axios.delete(`${BASE_URL}/saved-jobs/${jobId}`, getAuthHeaders());
-
-export const checkJobSaved = (jobId) =>
-  axios.get(`${BASE_URL}/saved-jobs/check/${jobId}`, getAuthHeaders());
+export const unsaveJob = (savedJobId) =>
+  axios.delete(`${BASE_URL}/saved-jobs/${savedJobId}`, getAuthHeaders());
 
 // Viewed Jobs
 export const getViewedJobs = () =>
   axios.get(`${BASE_URL}/viewed-jobs`, getAuthHeaders());
 
-export const recordJobView = (data) =>
-  axios.post(`${BASE_URL}/viewed-jobs`, data, getAuthHeaders());
-
-// Invitations
-export const getInvitations = () =>
-  axios.get(`${BASE_URL}/invitations`, getAuthHeaders());
+export const removeViewedJob = (jobViewId) =>
+  axios.delete(`${BASE_URL}/viewed-jobs/${jobViewId}`, getAuthHeaders());

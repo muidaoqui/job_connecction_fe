@@ -18,6 +18,9 @@ import CusJobSearch from "./pages/customer/JobSearch";
 import Recruiters from "./pages/customer/Recruiters";
 import People from "./pages/customer/People";
 import CompanyDetail from "./pages/customer/CompanyDetail";
+import ApplyJob from "./pages/customer/ApplyJob";
+import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
+
 
 import "react-toastify/dist/ReactToastify.css";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -31,7 +34,6 @@ import Applicants from "./pages/recruiter/Applicants";
 import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
 import ReviewApplications from "./pages/recruiter/ReviewApplications";
 import EditJob from "./pages/recruiter/EditJob";
-import ApplyJob from "./pages/customer/ApplyJob";
 import CompanyProfile from "./pages/recruiter/CompanyProfile";
 
 import AdminLayout from "./components/admin/AdminLayout";
@@ -81,8 +83,11 @@ function App() {
             <Route path="company/:companyId" element={<CompanyDetail />} />
             <Route path="job/:id" element={<CusJobDetail />} />
             <Route path="job-search" element={<CusJobSearch />} />
+            <Route path="apply-job/:id" element={<ApplyJob />} />
           </Route>
           <Route path="/recruiter/manage-job/edit/:id" element={<EditJob />} />
+          <Route path="/recruiter/profile" element={<RecruiterProfile />} />
+
 
           {/* Xem ứng viên theo từng job */}
           <Route path="/recruiter/applicants" element={<Applicants />} />

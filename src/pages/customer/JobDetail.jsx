@@ -131,53 +131,49 @@ const JobDetail = () => {
   };
 
   const handleApplySubmit = async () => {
-    setApplyLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("name", applicantName);
-      formData.append("email", applicantEmail);
-      formData.append("message", coverMessage || "");
+  const formData = new FormData();
 
-      if (newCvFile) {
-        formData.append("cvFile", newCvFile);
-      } else if (selectedResumeId) {
-        const selected = resumes.find((r) => r.id === selectedResumeId);
-        if (selected && selected.path) {
-          const url = selected.path.startsWith("/") ? selected.path : selected.path;
-          const absolute = url.startsWith("http") ? url : `http://localhost:8080/${url.replace(/^\//,"")}`;
-          const resp = await fetch(absolute);
-          const blob = await resp.blob();
-          const filename = selected.name || `resume-${Date.now()}.pdf`;
-          formData.append("cvFile", new File([blob], filename, { type: blob.type || "application/pdf" }));
-        }
-      }
+  formData.append("name", applicantName);
+  formData.append("email", applicantEmail);
+  formData.append("message", coverMessage);
 
-      if (!formData.get("cvFile")) {
-        message.error("Vui lòng chọn hoặc tải lên CV (PDF)");
-        setApplyLoading(false);
-        return;
-      }
+  // CV mới
+  if (newCvFile) {
+    formData.append("resume", newCvFile);  // 🔥 ĐÚNG TÊN FIELD
+  }
 
-      await axios.post(`http://localhost:8080/api/jobs/${jobId}/apply`, formData, {
+  // CV cũ
+  else if (selectedResumeId) {
+    const selected = resumes.find(r => r.id === selectedResumeId);
+    if (selected?.path) {
+      const res = await fetch(selected.path);
+      const blob = await res.blob();
+      const file = new File([blob], selected.name, { type: blob.type });
+
+      formData.append("resume", file); // 🔥 PHẢI LÀ resume
+    }
+  }
+
+  try {
+    await axios.post(
+      `http://localhost:8080/api/jobs/${jobId}/apply`,
+      formData,
+      {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: token ? `Bearer ${token}` : "",
+          Authorization: `Bearer ${localStorage.getItem("token")}`
         },
-      });
+      }
+    );
 
-      message.success("Ứng tuyển thành công!");
-      setShowApplyModal(false);
-    } catch (err) {
-      console.error(err);
-      message.error("Lỗi khi nộp đơn!");
-    } finally {
-      setApplyLoading(false);
-    }
-  };
+    message.success("Ứng tuyển thành công!");
+    setShowApplyModal(false);
 
-  if (loading) return <Spin />;
-  if (!job) return <Empty description="Không tìm thấy công việc" />;
+  } catch (error) {
+    console.log(error);
+    message.error("Ứng tuyển thất bại");
+  }
+};
 
   const company = job.companyId || job.recruiterId?.companyId;
   const companyName = company?.name || "Công ty";

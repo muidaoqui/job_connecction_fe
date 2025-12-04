@@ -22,27 +22,35 @@ export default function JobDetail() {
   }, [id]);
 
   const handleApply = async () => {
-    if (!form.name || !form.email || !cvFile) {
-      return alert("Hãy nhập đầy đủ thông tin và upload CV (PDF)");
-    }
+  if (!form.name || !form.email || !cvFile) {
+    return alert("Hãy nhập đầy đủ thông tin và upload CV (PDF)");
+  }
 
-    const formData = new FormData();
-    formData.append("name", form.name);
-    formData.append("email", form.email);
-    formData.append("message", form.message);
-    formData.append("cvFile", cvFile);
+  const formData = new FormData();
+  formData.append("name", form.name);
+  formData.append("email", form.email);
+  formData.append("message", form.message);
+  formData.append("resume", cvFile); // QUAN TRỌNG
 
-    try {
-      await axios.post(`http://localhost:8080/api/jobs/${id}/apply`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+  try {
+    await axios.post(
+      `http://localhost:8080/api/jobs/${id}/apply`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // QUAN TRỌNG
+        },
+      }
+    );
 
-      alert("Ứng tuyển thành công!");
-      setShowApply(false);
-    } catch (err) {
-      alert("Ứng tuyển thất bại!");
-    }
-  };
+    alert("Ứng tuyển thành công!");
+    setShowApply(false);
+  } catch (err) {
+    console.log(err);
+    alert("Ứng tuyển thất bại!");
+  }
+};
 
   if (!job)
     return <p className="text-center mt-10 text-gray-500">Đang tải...</p>;
@@ -137,11 +145,11 @@ export default function JobDetail() {
 
             <label className="font-semibold mb-1 block">Đính kèm CV (PDF)</label>
             <input
-              type="file"
-              accept=".pdf"
-              className="w-full p-3 border rounded mb-3"
-              onChange={(e) => setCvFile(e.target.files[0])}
-            />
+  type="file"
+  name="resume"
+  accept=".pdf,.doc,.docx"
+  onChange={(e) => setCvFile(e.target.files[0])}
+/>
 
             <div className="flex justify-end gap-3">
               <button

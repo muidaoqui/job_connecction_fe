@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { CheckCircle, XCircle, User, Briefcase } from "lucide-react";
+import { CheckCircle, XCircle, User, Briefcase, Mail } from "lucide-react";
 
 export default function Applicants() {
   const [apps, setApps] = useState([]);
@@ -9,21 +9,42 @@ export default function Applicants() {
   const fetchApps = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:8080/api/jobs/applications/all");
+
+      const token = localStorage.getItem("token");
+
+      const res = await axios.get(
+        "http://localhost:8080/api/jobs/applications/all",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("DATA APPS:", res.data);
       setApps(res.data.apps || []);
+
       setLoading(false);
     } catch (err) {
-      console.log(err);
+      console.log("Lỗi tải ứng viên:", err);
       setLoading(false);
     }
   };
 
   const updateStatus = async (appId, status) => {
     try {
+      const token = localStorage.getItem("token");
+
       await axios.put(
-        `http://localhost:8080/api/recruiter-applications/${appId}/status`,
-        { status }
+        `http://localhost:8080/api/jobs/applications/${appId}/status`,
+        { status },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+
       fetchApps();
     } catch (err) {
       console.log("Lỗi cập nhật trạng thái:", err);
@@ -39,7 +60,7 @@ export default function Applicants() {
       accepted: "bg-green-100 text-green-700 border-green-300",
       rejected: "bg-red-100 text-red-700 border-red-300",
       applied: "bg-gray-100 text-gray-700 border-gray-300",
-      pending: "bg-yellow-100 text-yellow-700 border-yellow-300"
+      pending: "bg-yellow-100 text-yellow-700 border-yellow-300",
     };
 
     return (
@@ -54,7 +75,6 @@ export default function Applicants() {
   return (
     <div className="min-h-screen bg-slate-50 py-10">
       <div className="max-w-4xl mx-auto px-4">
-        
         <h1 className="text-3xl font-bold text-blue-700 mb-6">
           Ứng viên đã ứng tuyển
         </h1>
@@ -74,17 +94,27 @@ export default function Applicants() {
               {/* Thông tin ứng viên */}
               <div className="flex items-start justify-between">
                 <div>
+                  {/* Tên ứng viên */}
                   <div className="flex items-center gap-2 mb-1">
                     <User className="text-blue-600" size={20} />
-                    <p className="text-lg font-semibold">{app.name}</p>
+                    <p className="text-lg font-semibold">
+                      {app.userId?.name || app.name || "Không có tên"}
+                    </p>
                   </div>
-                  
-                  <p className="text-gray-600 mb-2">{app.email}</p>
 
+                  {/* Email */}
+                  <div className="flex items-center gap-2 mb-2 text-gray-700">
+                    <Mail size={18} className="text-red-600" />
+                    <span>
+                      {app.userId?.email || app.email || "Không có email"}
+                    </span>
+                  </div>
+
+                  {/* Job Title */}
                   <div className="flex items-center gap-2 text-gray-700">
                     <Briefcase size={18} className="text-orange-600" />
                     <span className="font-medium">
-                      {app.jobId?.title || "Không có dữ liệu"}
+                      {app.jobId?.title || "Không có dữ liệu công việc"}
                     </span>
                   </div>
                 </div>
@@ -135,7 +165,6 @@ export default function Applicants() {
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );

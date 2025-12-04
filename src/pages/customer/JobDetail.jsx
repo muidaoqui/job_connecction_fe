@@ -10,7 +10,7 @@ import { getProfile } from "../../api/profileAPI";
 const JobDetail = () => {
   const params = useParams();
   const navigate = useNavigate();
-  const jobId = params.jobId || params.id;
+const { id: jobId } = useParams();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(false);
   const [recruiter, setRecruiter] = useState(null);
@@ -131,26 +131,27 @@ const JobDetail = () => {
   };
 
   const handleApplySubmit = async () => {
-  const formData = new FormData();
+  const token = localStorage.getItem("token");
 
+  if (!token) {
+    message.error("Bạn cần đăng nhập để ứng tuyển");
+    return;
+  }
+
+  const formData = new FormData();
   formData.append("name", applicantName);
   formData.append("email", applicantEmail);
   formData.append("message", coverMessage);
 
-  // CV mới
   if (newCvFile) {
-    formData.append("resume", newCvFile);  // 🔥 ĐÚNG TÊN FIELD
-  }
-
-  // CV cũ
-  else if (selectedResumeId) {
+    formData.append("resume", newCvFile);
+  } else if (selectedResumeId) {
     const selected = resumes.find(r => r.id === selectedResumeId);
     if (selected?.path) {
       const res = await fetch(selected.path);
       const blob = await res.blob();
       const file = new File([blob], selected.name, { type: blob.type });
-
-      formData.append("resume", file); // 🔥 PHẢI LÀ resume
+      formData.append("resume", file);
     }
   }
 
@@ -160,22 +161,28 @@ const JobDetail = () => {
       formData,
       {
         headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
+          Authorization: `Bearer ${token}`,
         },
       }
     );
 
     message.success("Ứng tuyển thành công!");
     setShowApplyModal(false);
-
-  } catch (error) {
-    console.log(error);
+  } catch (err) {
+    console.log(err);
     message.error("Ứng tuyển thất bại");
   }
 };
 
-  const company = job.companyId || job.recruiterId?.companyId;
+
+  const company = job?.companyId || job?.recruiterId?.companyId || {};
+  if (loading || !job) {
+  return (
+    <div className="flex justify-center items-center h-64">
+      <Spin size="large" />
+    </div>
+  );
+}
   const companyName = company?.name || "Công ty";
   const companyLogo = company?.logo || "";
 

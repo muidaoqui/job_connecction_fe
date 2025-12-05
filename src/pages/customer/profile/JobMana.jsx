@@ -38,7 +38,7 @@ const JobManagementSidebar = ({ profileData }) => (
     <ProfileSidebar userName={profileData?.name} />
 );
 
-const SERVER_BASE = "http://localhost:8080";
+const SERVER_BASE = `${import.meta.env.VITE_API_URL}`;
 
 const ContentLoiMoiUngTuyen = ({ selectedResume, setSelectedResume, resumes, profileData, onUpload, uploading, onSelectMain }) => {
     return (
@@ -180,7 +180,7 @@ const JobListTab = ({ loading, jobs, onDelete, deleteLabel }) => {
                                 onClick={() => {
                                     // job.jobId may be populated object or an id string
                                     const jobId = job?.jobId?._id || job?.jobId || job?._id;
-                                    if (jobId) navigate(`/customer/job/${jobId}`);
+                                    if (jobId) navigate(`/job/${jobId}`);
                                 }}
                             >
                                 {job?.jobId?.title || "Vị trí tuyên dụng"}

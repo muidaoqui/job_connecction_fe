@@ -25,7 +25,7 @@ export default function ApplyJob() {
     formData.append("cvFile", cvFile);
 
     try {
-      await axios.post(`http://localhost:8080/api/jobs/${id}/apply`, formData, {
+      await axios.post(`${VITE_API_URL}/api/jobs/${id}/apply`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

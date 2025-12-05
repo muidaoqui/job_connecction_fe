@@ -10,6 +10,7 @@ const Recruiters = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [pagination, setPagination] = useState({ page: 1, limit: 9, total: 0 });
   const [followingMap, setFollowingMap] = useState({});
+  const VITE_API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     fetchRecruiters(1);
@@ -18,7 +19,7 @@ const Recruiters = () => {
   const fetchRecruiters = async (page = 1) => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:8080/api/recruiter?page=${page}&limit=9`);
+      const res = await axios.get(`${VITE_API_URL}/api/recruiter?page=${page}&limit=9`);
       if (res.data?.recruiters) {
         setRecruiters(res.data.recruiters);
         setFilteredRecruiters(res.data.recruiters);
@@ -60,7 +61,7 @@ const Recruiters = () => {
       if (followingMap[recruiterId]) {
         // Unfollow
         await axios.post(
-          `http://localhost:8080/api/recruiter/${recruiterId}/unfollow`,
+          `${VITE_API_URL}/api/recruiter/${recruiterId}/unfollow`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -68,7 +69,7 @@ const Recruiters = () => {
       } else {
         // Follow
         await axios.post(
-          `http://localhost:8080/api/recruiter/${recruiterId}/follow`,
+          `${VITE_API_URL}/api/recruiter/${recruiterId}/follow`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Input, Select, Button, Card, Empty, Spin, Tag } from "antd";
-import { SearchOutlined, SaveOutlined, HeartOutlined } from "@ant-design/icons";
+import { Input, Select, Button, Card, Empty, Spin, Tag, message } from "antd";
+import { SearchOutlined, SaveOutlined } from "@ant-design/icons";
 
 const JobSearch = () => {
   const [jobs, setJobs] = useState([]);
@@ -12,38 +12,52 @@ const JobSearch = () => {
   const [selectedJobType, setSelectedJobType] = useState("");
   const [locations, setLocations] = useState([]);
   const [jobTypes, setJobTypes] = useState([]);
+  const VITE_API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     fetchJobs();
   }, []);
 
+  // ================================================
+  // Lấy tất cả job
+  // ================================================
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:8080/api/jobs");
-      setJobs(res.data || []);
-      setFilteredJobs(res.data || []);
+      const res = await axios.get(`${VITE_API_URL}/api/jobs`);
 
-      // Extract unique locations and job types
-      const uniqueLocations = [...new Set((res.data || []).map(j => j.location).filter(Boolean))];
-      const uniqueJobTypes = [...new Set((res.data || []).map(j => j.jobType).filter(Boolean))];
+      const jobList = res.data || [];
+
+      setJobs(jobList);
+      setFilteredJobs(jobList);
+
+      // Tạo danh sách lọc location + jobType
+      const uniqueLocations = [...new Set(jobList.map(j => j.location).filter(Boolean))];
+      const uniqueJobTypes = [...new Set(jobList.map(j => j.jobType).filter(Boolean))];
+
       setLocations(uniqueLocations);
       setJobTypes(uniqueJobTypes);
+
     } catch (err) {
       console.error("Lỗi khi lấy jobs:", err);
+      message.error("Không lấy được danh sách công việc!");
     } finally {
       setLoading(false);
     }
   };
 
+  // ================================================
+  // Search + Filter
+  // ================================================
   const handleSearch = () => {
     let filtered = jobs;
 
-    if (searchTerm) {
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
       filtered = filtered.filter(job =>
-        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.companyId?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+        job.title?.toLowerCase().includes(term) ||
+        job.description?.toLowerCase().includes(term) ||
+        job.companyId?.name?.toLowerCase().includes(term)
       );
     }
 
@@ -55,14 +69,40 @@ const JobSearch = () => {
       filtered = filtered.filter(job => job.jobType === selectedJobType);
     }
 
-    setFilteredJobs(filtered.sort((a, b) => (b.saveCount || 0) - (a.saveCount || 0)));
+    // Sort theo số lượt save
+    filtered = filtered.sort((a, b) => (b.saveCount || 0) - (a.saveCount || 0));
+
+    setFilteredJobs(filtered);
+  };
+
+  // ================================================
+  // Save Job
+  // ================================================
+  const handleSave = async (jobId) => {
+    const token = localStorage.getItem("token");
+    if (!token) return message.warning("Bạn cần đăng nhập trước!");
+
+    try {
+      await axios.post(
+        `${VITE_API_URL}/api/jobs/${jobId}/save`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      message.success("Đã lưu công việc!");
+      fetchJobs(); // reload danh sách để cập nhật saveCount
+
+    } catch (err) {
+      console.error(err);
+      message.error(err.response?.data?.message || "Lỗi khi lưu công việc");
+    }
   };
 
   return (
     <div className="container mx-auto px-6 py-6 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold text-blue-600 mb-6">Tìm Kiếm Công Việc</h1>
 
-      {/* Search Filters */}
+      {/* Bộ lọc */}
       <Card className="mb-6 shadow-md">
         <div className="grid grid-cols-4 gap-4">
           <div>
@@ -103,7 +143,7 @@ const JobSearch = () => {
               type="primary"
               size="large"
               onClick={handleSearch}
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-blue-600"
             >
               Tìm Kiếm
             </Button>
@@ -111,9 +151,11 @@ const JobSearch = () => {
         </div>
       </Card>
 
-      {/* Results */}
+      {/* Kết quả */}
       {loading ? (
-        <Spin />
+        <div className="flex justify-center py-10">
+          <Spin size="large" />
+        </div>
       ) : filteredJobs.length === 0 ? (
         <Empty description="Không tìm thấy công việc phù hợp" />
       ) : (
@@ -122,37 +164,35 @@ const JobSearch = () => {
             <Card key={job._id} className="hover:shadow-lg transition cursor-pointer">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
+
+                  {/* Title */}
                   <div className="flex items-center gap-2">
                     <h3 className="text-xl font-semibold text-blue-600">{job.title}</h3>
-                    {job.saveCount > 50 && (
-                      <Tag color="red">🔥 HOT</Tag>
-                    )}
+                    {job.saveCount > 50 && <Tag color="red">🔥 HOT</Tag>}
                   </div>
 
+                  {/* Company */}
                   <p className="text-lg text-gray-700 font-semibold mt-2">
-                    {job.companyId?.name || job.recruiterId?.name || "Nhà tuyển dụng"}
+                    {job.companyId?.name || "Nhà tuyển dụng"}
                   </p>
 
+                  {/* Info */}
                   <div className="flex gap-4 mt-2 text-sm text-gray-600">
                     <span>📍 {job.location || "Chưa rõ"}</span>
                     <span>💰 {job.salary || "Thương lượng"}</span>
-                    {job.jobType && <span>📋 {job.jobType}</span>}
+                    <span>📋 {job.jobType || "Không rõ"}</span>
                   </div>
 
-                  {job.companyId && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      {job.companyId.industry && `${job.companyId.industry} • `}
-                      {job.companyId.country && `${job.companyId.country}`}
-                      {job.companyId.size && ` • ${job.companyId.size}`}
-                    </p>
-                  )}
-
+                  {/* Description */}
                   <p className="text-gray-700 mt-3 line-clamp-2">{job.description}</p>
                 </div>
 
+                {/* Actions */}
                 <div className="flex flex-col gap-2 ml-4">
                   <div className="text-right">
-                    <p className="text-sm text-blue-600 font-semibold">💾 {job.saveCount || 0} lượt lưu</p>
+                    <p className="text-sm text-blue-600 font-semibold">
+                      💾 {job.saveCount || 0} lượt lưu
+                    </p>
                     <p className="text-xs text-gray-500 mt-1">
                       {new Date(job.createdAt).toLocaleDateString()}
                     </p>
@@ -161,14 +201,15 @@ const JobSearch = () => {
                   <Button
                     type="primary"
                     className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => window.location.href = `/customer/job/${job._id}`}
+                    onClick={() => (window.location.href = `/job/${job._id}`)}
                   >
                     Xem Chi Tiết
                   </Button>
 
                   <Button
                     icon={<SaveOutlined />}
-                    className="border-blue-500 text-blue-500 hover:text-blue-700 hover:border-blue-700"
+                    className="border-blue-500 text-blue-500 hover:text-blue-700"
+                    onClick={() => handleSave(job._id)}
                   >
                     Lưu
                   </Button>

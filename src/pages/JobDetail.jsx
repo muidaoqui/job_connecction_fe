@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
+
 
 export default function JobDetail() {
   const { id } = useParams();
@@ -23,7 +25,7 @@ export default function JobDetail() {
 
   const handleApply = async () => {
     if (!form.name || !form.email || !cvFile) {
-      return alert("Hãy nhập đầy đủ thông tin và upload CV (PDF)");
+      return toast.error("Hãy nhập đầy đủ thông tin và upload CV (PDF)");
     }
 
     const formData = new FormData();
@@ -37,12 +39,18 @@ export default function JobDetail() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      alert("Ứng tuyển thành công!");
+      toast.success("Ứng tuyển thành công!");
       setShowApply(false);
+
+      // Reset form
+      setForm({ name: "", email: "", message: "" });
+      setCvFile(null);
     } catch (err) {
-      alert("Ứng tuyển thất bại!");
+      console.error("Lỗi apply:", err);
+      toast.error("Ứng tuyển thất bại. Vui lòng thử lại!");
     }
   };
+
 
   if (!job)
     return <p className="text-center mt-10 text-gray-500">Đang tải...</p>;

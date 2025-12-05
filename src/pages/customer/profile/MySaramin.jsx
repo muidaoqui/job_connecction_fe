@@ -64,7 +64,7 @@ const GeneralInformationForm = ({ form, candidate, loading, onFinish, avatarUrl,
             formData.append("avatar", file);
             
             const token = localStorage.getItem("token");
-            const res = await axios.post("http://localhost:8080/api/candidate/upload-avatar", formData, {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/candidate/upload-avatar`, formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

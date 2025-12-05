@@ -10,6 +10,7 @@ const CompanyDetail = () => {
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [recruiters, setRecruiters] = useState([]);
+  const VITE_API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     fetchCompanyDetail();
@@ -18,13 +19,13 @@ const CompanyDetail = () => {
   const fetchCompanyDetail = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:8080/api/company/${companyId}`);
+      const res = await axios.get(`${VITE_API_URL}/api/company/${companyId}`);
       // Backend returns { success: true, company: {...} }
       const companyData = res.data.company || res.data;
       setCompany(companyData);
 
       // Fetch jobs posted by this company
-      const jobsRes = await axios.get(`http://localhost:8080/api/jobs`);
+      const jobsRes = await axios.get(`${VITE_API_URL}/api/jobs`);
       const companyJobs = (jobsRes.data || []).filter(job => {
         // Compare company ID - handle both string and ObjectId
         return job.companyId?._id === companyId || job.companyId === companyId;
@@ -32,7 +33,7 @@ const CompanyDetail = () => {
       setJobs(companyJobs.slice(0, 6)); // Show top 6 jobs
 
       // Fetch recruiters from this company
-      const recruitersRes = await axios.get(`http://localhost:8080/api/recruiter`);
+      const recruitersRes = await axios.get(`${VITE_API_URL}/api/recruiter`);
       const companyRecruiters = (recruitersRes.data?.recruiters || []).filter(
         recruiter => recruiter.companyId?._id === companyId || recruiter.companyId === companyId
       );

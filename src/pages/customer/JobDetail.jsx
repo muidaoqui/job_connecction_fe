@@ -10,7 +10,7 @@ import { getProfile } from "../../api/profileAPI";
 const JobDetail = () => {
   const params = useParams();
   const navigate = useNavigate();
-  const jobId = params.jobId || params.id;
+const { id: jobId } = useParams();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(false);
   const [recruiter, setRecruiter] = useState(null);
@@ -131,55 +131,58 @@ const JobDetail = () => {
   };
 
   const handleApplySubmit = async () => {
-    setApplyLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("name", applicantName);
-      formData.append("email", applicantEmail);
-      formData.append("message", coverMessage || "");
+  const token = localStorage.getItem("token");
 
-      if (newCvFile) {
-        formData.append("cvFile", newCvFile);
-      } else if (selectedResumeId) {
-        const selected = resumes.find((r) => r.id === selectedResumeId);
-        if (selected && selected.path) {
-          const url = selected.path.startsWith("/") ? selected.path : selected.path;
-          const absolute = url.startsWith("http") ? url : `http://localhost:8080/${url.replace(/^\//,"")}`;
-          const resp = await fetch(absolute);
-          const blob = await resp.blob();
-          const filename = selected.name || `resume-${Date.now()}.pdf`;
-          formData.append("cvFile", new File([blob], filename, { type: blob.type || "application/pdf" }));
-        }
-      }
+  if (!token) {
+    message.error("Bạn cần đăng nhập để ứng tuyển");
+    return;
+  }
 
-      if (!formData.get("cvFile")) {
-        message.error("Vui lòng chọn hoặc tải lên CV (PDF)");
-        setApplyLoading(false);
-        return;
-      }
+  const formData = new FormData();
+  formData.append("name", applicantName);
+  formData.append("email", applicantEmail);
+  formData.append("message", coverMessage);
 
-      await axios.post(`http://localhost:8080/api/jobs/${jobId}/apply`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
-
-      message.success("Ứng tuyển thành công!");
-      setShowApplyModal(false);
-    } catch (err) {
-      console.error(err);
-      message.error("Lỗi khi nộp đơn!");
-    } finally {
-      setApplyLoading(false);
+  if (newCvFile) {
+    formData.append("resume", newCvFile);
+  } else if (selectedResumeId) {
+    const selected = resumes.find(r => r.id === selectedResumeId);
+    if (selected?.path) {
+      const res = await fetch(selected.path);
+      const blob = await res.blob();
+      const file = new File([blob], selected.name, { type: blob.type });
+      formData.append("resume", file);
     }
-  };
+  }
 
-  if (loading) return <Spin />;
-  if (!job) return <Empty description="Không tìm thấy công việc" />;
+  try {
+    await axios.post(
+      `http://localhost:8080/api/jobs/${jobId}/apply`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-  const company = job.companyId || job.recruiterId?.companyId;
+    message.success("Ứng tuyển thành công!");
+    setShowApplyModal(false);
+  } catch (err) {
+    console.log(err);
+    message.error("Ứng tuyển thất bại");
+  }
+};
+
+
+  const company = job?.companyId || job?.recruiterId?.companyId || {};
+  if (loading || !job) {
+  return (
+    <div className="flex justify-center items-center h-64">
+      <Spin size="large" />
+    </div>
+  );
+}
   const companyName = company?.name || "Công ty";
   const companyLogo = company?.logo || "";
 

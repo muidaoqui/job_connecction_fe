@@ -25,7 +25,7 @@ import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
 import "react-toastify/dist/ReactToastify.css";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import JobDetail from "./pages/JobDetail";
+import JobDetail from "./pages/customer/JobDetail";
 import JobSearch from "./pages/JobSearch";
 
 import CreateJob from "./pages/recruiter/CreateJob";

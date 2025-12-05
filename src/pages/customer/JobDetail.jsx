@@ -24,6 +24,7 @@ const { id: jobId } = useParams();
   const [applicantName, setApplicantName] = useState("");
   const [applicantEmail, setApplicantEmail] = useState("");
   const [coverMessage, setCoverMessage] = useState("");
+  const VITE_API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     fetchJobDetail();
@@ -32,14 +33,14 @@ const { id: jobId } = useParams();
   const fetchJobDetail = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:8080/api/jobs/${jobId}`);
+      const res = await axios.get(`${VITE_API_URL}/api/jobs/${jobId}`);
       if (res.data?.job) {
         setJob(res.data.job);
         // Fetch recruiter info if available
         if (res.data.job.recruiterId?._id) {
           try {
             const recruiterRes = await axios.get(
-              `http://localhost:8080/api/company/${res.data.job.recruiterId._id}`
+              `${VITE_API_URL}/api/company/${res.data.job.recruiterId._id}`
             );
             setRecruiter(recruiterRes.data?.recruiter);
           } catch (err) {
@@ -51,7 +52,7 @@ const { id: jobId } = useParams();
         if (token) {
           try {
             const checkRes = await axios.get(
-              `http://localhost:8080/api/candidate/saved-jobs/check/${jobId}`,
+              `${VITE_API_URL}/api/candidate/saved-jobs/check/${jobId}`,
               { headers: { Authorization: `Bearer ${token}` } }
             );
             if (checkRes.data?.saved) setIsSaved(true);
@@ -63,7 +64,7 @@ const { id: jobId } = useParams();
         // Fetch other jobs from same company
         if (res.data.job.companyId?._id) {
           try {
-            const jobsRes = await axios.get(`http://localhost:8080/api/jobs`);
+            const jobsRes = await axios.get(`${VITE_API_URL}/api/jobs`);
             const allJobs = jobsRes.data || [];
             const others = allJobs
               .filter((j) => j.companyId?._id === res.data.job.companyId._id && j._id !== jobId)
@@ -93,14 +94,14 @@ const { id: jobId } = useParams();
 
       if (isSaved) {
         // Unsave
-        await axios.post(`http://localhost:8080/api/jobs/${jobId}/unsave`, {}, {
+        await axios.post(`${VITE_API_URL}/api/jobs/${jobId}/unsave`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setIsSaved(false);
         message.success("Đã bỏ lưu công việc");
       } else {
         // Save
-        await axios.post(`http://localhost:8080/api/jobs/${jobId}/save`, {}, {
+        await axios.post(`${VITE_API_URL}/api/jobs/${jobId}/save`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setIsSaved(true);
@@ -133,6 +134,19 @@ const { id: jobId } = useParams();
   const handleApplySubmit = async () => {
   const token = localStorage.getItem("token");
 
+      if (newCvFile) {
+        formData.append("cvFile", newCvFile);
+      } else if (selectedResumeId) {
+        const selected = resumes.find((r) => r.id === selectedResumeId);
+        if (selected && selected.path) {
+          const url = selected.path.startsWith("/") ? selected.path : selected.path;
+          const absolute = url.startsWith("http") ? url : `${VITE_API_URL}/${url.replace(/^\//,"")}`;
+          const resp = await fetch(absolute);
+          const blob = await resp.blob();
+          const filename = selected.name || `resume-${Date.now()}.pdf`;
+          formData.append("cvFile", new File([blob], filename, { type: blob.type || "application/pdf" }));
+        }
+      }
   if (!token) {
     message.error("Bạn cần đăng nhập để ứng tuyển");
     return;
@@ -299,7 +313,7 @@ const { id: jobId } = useParams();
                     block
                     type="primary"
                     className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => navigate(`/customer/company/${company._id}`)}
+                    onClick={() => navigate(`/company/${company._id}`)}
                   >
                     Xem chi tiết công ty
                   </Button>
@@ -318,7 +332,7 @@ const { id: jobId } = useParams();
                     <div
                       key={j._id}
                       className="p-3 border rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition"
-                      onClick={() => navigate(`/customer/job/${j._id}`)}
+                      onClick={() => navigate(`/job/${j._id}`)}
                     >
                       <p className="font-semibold text-blue-600 text-sm line-clamp-2 hover:underline">
                         {j.title}
@@ -332,7 +346,7 @@ const { id: jobId } = useParams();
                         className="bg-blue-600 hover:bg-blue-700 mt-2"
                         onClick={(e) => {
                           e.stopPropagation();
-                          window.location.href = `/customer/job/${j._id}`;
+                          window.location.href = `/job/${j._id}`;
                         }}
                       >
                         Xem chi tiết
@@ -345,7 +359,7 @@ const { id: jobId } = useParams();
                     block
                     type="link"
                     className="text-blue-600 mt-3"
-                    onClick={() => navigate(`/customer/company/${company._id}`)}
+                    onClick={() => navigate(`/company/${company._id}`)}
                   >
                     Xem thêm việc làm →
                   </Button>

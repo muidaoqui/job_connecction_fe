@@ -40,9 +40,6 @@ import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import UsersPage from "./pages/admin/User";
 
-<<<<<<< HEAD
-import "react-toastify/dist/ReactToastify.css";
-=======
 import AdminJob from "./pages/admin/Jobs";
 // import CreateJob from "./pages/recruiter/CreateJob";
 // import ManageJobs from "./pages/recruiter/ManageJobs";
@@ -58,7 +55,6 @@ import AdminJob from "./pages/admin/Jobs";
 // import AdminLayout from "./components/admin/AdminLayout";
 // import AdminDashboard from "./pages/admin/Dashboard";
 // import UsersPage from "./pages/admin/User";
->>>>>>> master
 
 
 // ========================
@@ -94,23 +90,6 @@ function App() {
             <Route path="emailmanagement" element={<EmailMana />} />
             <Route path="pertest" element={<PerTest />} />
           </Route>
-<<<<<<< HEAD
-
-          {/* Public customer pages */}
-          <Route path="companies" element={<Companies />} />
-          <Route path="recruiters" element={<Recruiters />} />
-          <Route path="people" element={<People />} />
-          <Route path="company/:companyId" element={<CompanyDetail />} />
-          <Route path="job/:id" element={<CusJobDetail />} />
-          <Route path="job-search" element={<CusJobSearch />} />
-          <Route path="apply-job/:id" element={<ApplyJob />} />
-
-          {/* Others */}
-          <Route path="forgot-password" element={<ForgotPassword />} />
-          <Route path="reset-password" element={<ResetPassword />} />
-          <Route path="jobs" element={<JobSearch />} />
-          <Route path="jobs/:id" element={<JobDetail />} />
-=======
           <Route path="/recruiter/manage-job/edit/:id" element={<EditJob />} />
           <Route path="/recruiter/profile" element={<RecruiterProfile />} />
 
@@ -188,7 +167,6 @@ function App() {
               </RequireAuth>
             }
           />
->>>>>>> master
         </Route>
 
 

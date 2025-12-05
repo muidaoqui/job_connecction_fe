@@ -21,10 +21,11 @@ import Recruiters from "./pages/customer/Recruiters";
 import People from "./pages/customer/People";
 import CompanyDetail from "./pages/customer/CompanyDetail";
 import ApplyJob from "./pages/customer/ApplyJob";
+import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
 
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import JobDetail from "./pages/JobDetail";
+import JobDetail from "./pages/customer/JobDetail";
 import JobSearch from "./pages/JobSearch";
 
 import CreateJob from "./pages/recruiter/CreateJob";
@@ -39,7 +40,25 @@ import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import UsersPage from "./pages/admin/User";
 
+<<<<<<< HEAD
 import "react-toastify/dist/ReactToastify.css";
+=======
+import AdminJob from "./pages/admin/Jobs";
+// import CreateJob from "./pages/recruiter/CreateJob";
+// import ManageJobs from "./pages/recruiter/ManageJobs";
+// import Applicants from "./pages/recruiter/Applicants";
+// import CreateJob from "./pages/recruiter/CreateJob";
+// import ManageJobs from "./pages/recruiter/ManageJobs";
+// import Applicants from "./pages/recruiter/Applicants";
+// import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
+// import ReviewApplications from "./pages/recruiter/ReviewApplications";
+// import EditJob from "./pages/recruiter/EditJob";
+// import ApplyJob from "./pages/customer/ApplyJob";
+
+// import AdminLayout from "./components/admin/AdminLayout";
+// import AdminDashboard from "./pages/admin/Dashboard";
+// import UsersPage from "./pages/admin/User";
+>>>>>>> master
 
 
 // ========================
@@ -75,6 +94,7 @@ function App() {
             <Route path="emailmanagement" element={<EmailMana />} />
             <Route path="pertest" element={<PerTest />} />
           </Route>
+<<<<<<< HEAD
 
           {/* Public customer pages */}
           <Route path="companies" element={<Companies />} />
@@ -90,6 +110,85 @@ function App() {
           <Route path="reset-password" element={<ResetPassword />} />
           <Route path="jobs" element={<JobSearch />} />
           <Route path="jobs/:id" element={<JobDetail />} />
+=======
+          <Route path="/recruiter/manage-job/edit/:id" element={<EditJob />} />
+          <Route path="/recruiter/profile" element={<RecruiterProfile />} />
+
+
+          {/* Xem ứng viên theo từng job */}
+          <Route path="/recruiter/applicants" element={<Applicants />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/jobs" element={<JobSearch />} />
+          <Route path="/jobs/:id" element={<JobDetail />} />
+
+          <Route path="/recruiter/create-job" element={<CreateJob />} />
+          <Route path="/recruiter/manage-jobs" element={<ManageJobs />} />
+          <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
+          <Route path="/recruiter/edit-job/:id" element={<EditJob />} />
+          <Route path="/jobs/:id/apply" element={<ApplyJob />} />
+          <Route
+            path="/recruiter/applicants/manage"
+            element={<ReviewApplications />}
+          />
+          <Route
+            path="/recruiter/create-job"
+            element={
+              <RequireAuth>
+                <CreateJob />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/recruiter/manage-jobs"
+            element={
+              <RequireAuth>
+                <ManageJobs />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/recruiter/applicants"
+            element={
+              <RequireAuth>
+                <Applicants />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/recruiter/dashboard"
+            element={
+              <RequireAuth>
+                <RecruiterDashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/recruiter/edit-job/:id"
+            element={
+              <RequireAuth>
+                <EditJob />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/recruiter/applicants/manage"
+            element={
+              <RequireAuth>
+                <ReviewApplications />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/recruiter/company-profile"
+            element={
+              <RequireAuth>
+                <CompanyProfile />
+              </RequireAuth>
+            }
+          />
+>>>>>>> master
         </Route>
 
 
@@ -169,6 +268,7 @@ function App() {
         >
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<UsersPage />} />
+          <Route path="jobs" element={<AdminJob />} />
         </Route>
 
       </Routes>

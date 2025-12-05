@@ -10,8 +10,8 @@ export default function ReviewApplications() {
 
   const fetchApplications = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/jobs/applications/all");
-      setApplications(res.data.apps || []);
+      const res = await axios.get("http://localhost:8080/api/recruiter/applicants/me");
+      setApplications(res.data.applications || []);
     } catch (err) {
       console.error("Lỗi lấy ứng viên:", err);
     }
@@ -20,9 +20,10 @@ export default function ReviewApplications() {
   const updateStatus = async (appId, status) => {
     try {
       await axios.put(
-        `http://localhost:8080/api/jobs/applications/${appId}/status`,
-        { status }
-      );
+  `http://localhost:8080/api/recruiter/applicants/${appId}/status`,
+  { status: newStatus },
+  { headers: { Authorization: `Bearer ${token}` } }
+);
 
       // cập nhật UI
       setApplications((prev) =>

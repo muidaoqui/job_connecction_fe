@@ -10,7 +10,7 @@ import { getProfile } from "../../api/profileAPI";
 const JobDetail = () => {
   const params = useParams();
   const navigate = useNavigate();
-const { id: jobId } = useParams();
+  const { id: jobId } = useParams();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(false);
   const [recruiter, setRecruiter] = useState(null);
@@ -132,71 +132,74 @@ const { id: jobId } = useParams();
   };
 
   const handleApplySubmit = async () => {
-  const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-      if (newCvFile) {
-        formData.append("cvFile", newCvFile);
-      } else if (selectedResumeId) {
-        const selected = resumes.find((r) => r.id === selectedResumeId);
-        if (selected && selected.path) {
-          const url = selected.path.startsWith("/") ? selected.path : selected.path;
-          const absolute = url.startsWith("http") ? url : `${VITE_API_URL}/${url.replace(/^\//,"")}`;
-          const resp = await fetch(absolute);
-          const blob = await resp.blob();
-          const filename = selected.name || `resume-${Date.now()}.pdf`;
-          formData.append("cvFile", new File([blob], filename, { type: blob.type || "application/pdf" }));
-        }
-      }
-  if (!token) {
-    message.error("Bạn cần đăng nhập để ứng tuyển");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("name", applicantName);
-  formData.append("email", applicantEmail);
-  formData.append("message", coverMessage);
-
-  if (newCvFile) {
-    formData.append("resume", newCvFile);
-  } else if (selectedResumeId) {
-    const selected = resumes.find(r => r.id === selectedResumeId);
-    if (selected?.path) {
-      const res = await fetch(selected.path);
-      const blob = await res.blob();
-      const file = new File([blob], selected.name, { type: blob.type });
-      formData.append("resume", file);
+    if (!token) {
+      message.error("Bạn cần đăng nhập để ứng tuyển");
+      return;
     }
-  }
 
-  try {
-    await axios.post(
-      `http://localhost:8080/api/jobs/${jobId}/apply`,
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    const formData = new FormData();   // 🔥 KHÔNG để bên ngoài hàm
+
+    formData.append("name", applicantName);
+    formData.append("email", applicantEmail);
+    formData.append("message", coverMessage);
+
+    // ---- Xử lý CV ----
+    if (newCvFile) {
+      formData.append("cvFile", newCvFile);      // ✔ đúng field backend
+    } else if (selectedResumeId) {
+      const selected = resumes.find((r) => r.id === selectedResumeId);
+
+      if (selected?.path) {
+        const resp = await fetch(selected.path);
+        const blob = await resp.blob();
+
+        const file = new File([blob], selected.name || "resume.pdf", {
+          type: "application/pdf"
+        });
+
+
+        formData.append("cvFile", file); // ✔ đúng field
       }
-    );
+    }
 
-    message.success("Ứng tuyển thành công!");
-    setShowApplyModal(false);
-  } catch (err) {
-    console.log(err);
-    message.error("Ứng tuyển thất bại");
-  }
-};
+    // ---------------------
+
+    try {
+      await axios.post(
+        `http://localhost:8080/api/jobs/${jobId}/apply`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      message.success("Ứng tuyển thành công!");
+      alert("Ứng tuyển thành công!");
+      setShowApplyModal(false);
+
+    } catch (err) {
+      console.error("ERR APPLY:", err.response?.data);
+      alert("Ứng tuyển thất bại");
+      message.error("Ứng tuyển thất bại");
+    }
+  };
+
+
 
 
   const company = job?.companyId || job?.recruiterId?.companyId || {};
   if (loading || !job) {
-  return (
-    <div className="flex justify-center items-center h-64">
-      <Spin size="large" />
-    </div>
-  );
-}
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Spin size="large" />
+      </div>
+    );
+  }
   const companyName = company?.name || "Công ty";
   const companyLogo = company?.logo || "";
 
@@ -432,32 +435,32 @@ const { id: jobId } = useParams();
         <div className="space-y-4">
           <div>
             <label className="block mb-2 font-semibold text-sm">Họ và tên</label>
-            <Input 
-              placeholder="Nhập họ và tên" 
-              value={applicantName} 
-              onChange={(e) => setApplicantName(e.target.value)} 
+            <Input
+              placeholder="Nhập họ và tên"
+              value={applicantName}
+              onChange={(e) => setApplicantName(e.target.value)}
             />
           </div>
 
           <div>
             <label className="block mb-2 font-semibold text-sm">Email</label>
-            <Input 
+            <Input
               type="email"
-              placeholder="Nhập email" 
-              value={applicantEmail} 
-              onChange={(e) => setApplicantEmail(e.target.value)} 
+              placeholder="Nhập email"
+              value={applicantEmail}
+              onChange={(e) => setApplicantEmail(e.target.value)}
             />
           </div>
 
           <div>
             <label className="block mb-2 font-semibold text-sm">Chọn hoặc tải lên CV</label>
             {resumes && resumes.length > 0 ? (
-              <Radio.Group 
-                value={selectedResumeId} 
-                onChange={(e) => { 
-                  setSelectedResumeId(e.target.value); 
-                  setNewCvFile(null); 
-                }} 
+              <Radio.Group
+                value={selectedResumeId}
+                onChange={(e) => {
+                  setSelectedResumeId(e.target.value);
+                  setNewCvFile(null);
+                }}
                 className="w-full mb-3"
               >
                 <Space direction="vertical" style={{ width: "100%" }}>
@@ -468,8 +471,8 @@ const { id: jobId } = useParams();
                       </Radio>
                       <div>
                         {r.path && (
-                          <Button 
-                            type="link" 
+                          <Button
+                            type="link"
                             size="small"
                             onClick={() => openProtectedFile(r.path, false)}
                           >
@@ -485,12 +488,12 @@ const { id: jobId } = useParams();
               <p className="text-sm text-gray-500 mb-3">Chưa có CV nào</p>
             )}
 
-            <Upload 
-              beforeUpload={() => false} 
-              onChange={(info) => { 
-                setNewCvFile(info.file); 
-                setSelectedResumeId(null); 
-              }} 
+            <Upload
+              beforeUpload={() => false}
+              onChange={(info) => {
+                setNewCvFile(info.file);
+                setSelectedResumeId(null);
+              }}
               accept=".pdf,.doc,.docx"
               maxCount={1}
             >
@@ -501,11 +504,11 @@ const { id: jobId } = useParams();
 
           <div>
             <label className="block mb-2 font-semibold text-sm">Cover Letter / Lời nhắn (tùy chọn)</label>
-            <Input.TextArea 
-              rows={5} 
+            <Input.TextArea
+              rows={5}
               placeholder="Giới thiệu về bản thân hoặc lý do ứng tuyển..."
-              value={coverMessage} 
-              onChange={(e) => setCoverMessage(e.target.value)} 
+              value={coverMessage}
+              onChange={(e) => setCoverMessage(e.target.value)}
             />
           </div>
         </div>

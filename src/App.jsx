@@ -42,7 +42,6 @@ import UsersPage from "./pages/admin/User";
 import AdminPendingJobs from "./pages/admin/Job";
 
 import "react-toastify/dist/ReactToastify.css";
-=======
 import AdminJob from "./pages/admin/Jobs";
 // import CreateJob from "./pages/recruiter/CreateJob";
 // import ManageJobs from "./pages/recruiter/ManageJobs";
@@ -58,7 +57,6 @@ import AdminJob from "./pages/admin/Jobs";
 // import AdminLayout from "./components/admin/AdminLayout";
 // import AdminDashboard from "./pages/admin/Dashboard";
 // import UsersPage from "./pages/admin/User";
->>>>>>> master
 
 
 // ========================
@@ -187,7 +185,6 @@ function App() {
               </RequireAuth>
             }
           />
->>>>>>> master
         </Route>
 
 

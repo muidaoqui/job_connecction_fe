@@ -21,9 +21,7 @@ export default function Applicants() {
         }
       );
 
-      console.log("DATA APPS:", res.data);
       setApps(res.data.apps || []);
-
       setLoading(false);
     } catch (err) {
       console.log("Lỗi tải ứng viên:", err);
@@ -39,9 +37,7 @@ export default function Applicants() {
         `http://localhost:8080/api/jobs/applications/${appId}/status`,
         { status },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -55,26 +51,16 @@ export default function Applicants() {
     fetchApps();
   }, []);
 
-  const renderStatusBadge = (status) => {
-    const style = {
-      accepted: "bg-green-100 text-green-700 border-green-300",
-      rejected: "bg-red-100 text-red-700 border-red-300",
-      applied: "bg-gray-100 text-gray-700 border-gray-300",
-      pending: "bg-yellow-100 text-yellow-700 border-yellow-300",
-    };
-
-    return (
-      <span
-        className={`px-3 py-1 rounded-full border text-sm font-medium ${style[status]}`}
-      >
-        {status.toUpperCase()}
-      </span>
-    );
+  const statusBadge = {
+    accepted: "bg-green-100 text-green-700 border border-green-300",
+    rejected: "bg-red-100 text-red-700 border border-red-300",
+    pending: "bg-yellow-100 text-yellow-700 border border-yellow-300",
+    applied: "bg-gray-100 text-gray-700 border border-gray-300",
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-slate-50 py-10 px-4">
+      <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-blue-700 mb-6">
           Ứng viên đã ứng tuyển
         </h1>
@@ -85,86 +71,78 @@ export default function Applicants() {
           <p className="text-gray-600">Chưa có ứng viên nào.</p>
         )}
 
-        <div className="space-y-4">
-          {apps.map((app) => (
-            <div
-              key={app._id}
-              className="bg-white p-6 rounded-xl shadow border hover:shadow-lg transition"
-            >
-              {/* Thông tin ứng viên */}
-              <div className="flex items-start justify-between">
-                <div>
-                  {/* Tên ứng viên */}
-                  <div className="flex items-center gap-2 mb-1">
-                    <User className="text-blue-600" size={20} />
-                    <p className="text-lg font-semibold">
-                      {app.userId?.name || app.name || "Không có tên"}
-                    </p>
-                  </div>
+        {!loading && apps.length > 0 && (
+          <div className="overflow-x-auto shadow-xl rounded-xl bg-white p-5 border border-gray-200">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-100 text-gray-700 uppercase text-sm">
+                  <th className="p-4">Ứng viên</th>
+                  <th className="p-4">Email</th>
+                  <th className="p-4">Công việc</th>
+                  <th className="p-4">Trạng thái</th>
+                  <th className="p-4">Hành động</th>
+                </tr>
+              </thead>
 
-                  {/* Email */}
-                  <div className="flex items-center gap-2 mb-2 text-gray-700">
-                    <Mail size={18} className="text-red-600" />
-                    <span>
-                      {app.userId?.email || app.email || "Không có email"}
-                    </span>
-                  </div>
-
-                  {/* Job Title */}
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <Briefcase size={18} className="text-orange-600" />
-                    <span className="font-medium">
-                      {app.jobId?.title || "Không có dữ liệu công việc"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Trạng thái */}
-                <div>{renderStatusBadge(app.status)}</div>
-              </div>
-
-              {/* Lời nhắn */}
-              {app.message && (
-                <p className="mt-4 text-gray-700 italic">{app.message}</p>
-              )}
-
-              {/* CV */}
-              {app.cvFile && (
-                <p className="mt-3">
-                  <strong>CV:</strong>{" "}
-                  <a
-                    href={`http://localhost:8080/${app.cvFile}`}
-                    target="_blank"
-                    className="text-blue-600 underline"
+              <tbody>
+                {apps.map((app) => (
+                  <tr
+                    key={app._id}
+                    className="border-b hover:bg-gray-50 transition"
                   >
-                    Xem CV
-                  </a>
-                </p>
-              )}
+                    <td className="p-4 font-medium">
+                      {app.userId?.name || app.name || "Không tên"}
+                    </td>
 
-              {/* Nút hành động */}
-              {app.status === "applied" || app.status === "pending" ? (
-                <div className="flex gap-3 mt-5">
-                  <button
-                    onClick={() => updateStatus(app._id, "accepted")}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
-                  >
-                    <CheckCircle size={18} /> Duyệt hồ sơ
-                  </button>
+                    <td className="p-4 text-gray-700">
+                      {app.userId?.email || app.email}
+                    </td>
 
-                  <button
-                    onClick={() => updateStatus(app._id, "rejected")}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
-                  >
-                    <XCircle size={18} /> Từ chối
-                  </button>
-                </div>
-              ) : (
-                <p className="mt-4 text-gray-700 italic">Đã xử lý</p>
-              )}
-            </div>
-          ))}
-        </div>
+                    <td className="p-4 text-gray-700">
+                      {app.jobId?.title || "Không có dữ liệu"}
+                    </td>
+
+                    {/* Badge trạng thái */}
+                    <td className="p-4">
+                      <span
+                        className={`text-sm px-3 py-1 rounded-full ${statusBadge[app.status]}`}
+                      >
+                        {app.status.toUpperCase()}
+                      </span>
+                    </td>
+
+                    <td className="p-4">
+                      {app.status === "accepted" ||
+                      app.status === "rejected" ? (
+                        <span className="italic text-gray-500">Đã xử lý</span>
+                      ) : (
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() =>
+                              updateStatus(app._id, "accepted")
+                            }
+                            className="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-1"
+                          >
+                            <CheckCircle size={16} /> Duyệt
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              updateStatus(app._id, "rejected")
+                            }
+                            className="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-1"
+                          >
+                            <XCircle size={16} /> Từ chối
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

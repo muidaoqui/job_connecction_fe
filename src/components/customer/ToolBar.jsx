@@ -8,6 +8,7 @@ function ToolBar() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const VITE_API_URL = import.meta.env.VITE_API_URL;
 
   // Kiểm tra trạng thái đăng nhập khi component mount
   useEffect(() => {
@@ -20,7 +21,7 @@ function ToolBar() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      navigate(`/customer/job-search?q=${encodeURIComponent(searchTerm)}`);
+      navigate(`/job-search?q=${encodeURIComponent(searchTerm)}`);
     }
   };
 

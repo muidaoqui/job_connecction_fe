@@ -11,7 +11,7 @@ const Companies = () => {
   const [selectedIndustry, setSelectedIndustry] = useState("");
   const [industries, setIndustries] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 9, total: 0 });
-
+  const VITE_API_URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
     fetchCompanies(1);
   }, []);
@@ -19,7 +19,7 @@ const Companies = () => {
   const fetchCompanies = async (page = 1) => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:8080/api/company?page=${page}&limit=9`);
+      const res = await axios.get(`${VITE_API_URL}/api/company?page=${page}&limit=9`);
       // Backend returns { success: true, data: [...], pagination: {...} }
       const companiesData = res.data?.data || res.data?.companies || [];
       if (companiesData.length > 0) {

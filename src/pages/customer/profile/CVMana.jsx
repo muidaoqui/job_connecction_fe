@@ -28,7 +28,7 @@ const CVManaSidebar = ({ userName }) => (
   <ProfileSidebar userName={userName || "Người dùng"} />
 );
 
-const SERVER_BASE = "http://localhost:8080";
+const SERVER_BASE = `${import.meta.env.VITE_API_URL}`;
 
 const columns = (onView, onDownload, onSetMain) => [
   {

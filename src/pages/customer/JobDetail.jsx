@@ -10,7 +10,7 @@ import { getProfile } from "../../api/profileAPI";
 const JobDetail = () => {
   const params = useParams();
   const navigate = useNavigate();
-  const jobId = params.jobId || params.id;
+  const { id: jobId } = useParams();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(false);
   const [recruiter, setRecruiter] = useState(null);
@@ -24,6 +24,7 @@ const JobDetail = () => {
   const [applicantName, setApplicantName] = useState("");
   const [applicantEmail, setApplicantEmail] = useState("");
   const [coverMessage, setCoverMessage] = useState("");
+  const VITE_API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     fetchJobDetail();
@@ -32,14 +33,14 @@ const JobDetail = () => {
   const fetchJobDetail = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:8080/api/jobs/${jobId}`);
+      const res = await axios.get(`${VITE_API_URL}/api/jobs/${jobId}`);
       if (res.data?.job) {
         setJob(res.data.job);
         // Fetch recruiter info if available
         if (res.data.job.recruiterId?._id) {
           try {
             const recruiterRes = await axios.get(
-              `http://localhost:8080/api/company/${res.data.job.recruiterId._id}`
+              `${VITE_API_URL}/api/company/${res.data.job.recruiterId._id}`
             );
             setRecruiter(recruiterRes.data?.recruiter);
           } catch (err) {
@@ -51,7 +52,7 @@ const JobDetail = () => {
         if (token) {
           try {
             const checkRes = await axios.get(
-              `http://localhost:8080/api/candidate/saved-jobs/check/${jobId}`,
+              `${VITE_API_URL}/api/candidate/saved-jobs/check/${jobId}`,
               { headers: { Authorization: `Bearer ${token}` } }
             );
             if (checkRes.data?.saved) setIsSaved(true);
@@ -63,7 +64,7 @@ const JobDetail = () => {
         // Fetch other jobs from same company
         if (res.data.job.companyId?._id) {
           try {
-            const jobsRes = await axios.get(`http://localhost:8080/api/jobs`);
+            const jobsRes = await axios.get(`${VITE_API_URL}/api/jobs`);
             const allJobs = jobsRes.data || [];
             const others = allJobs
               .filter((j) => j.companyId?._id === res.data.job.companyId._id && j._id !== jobId)
@@ -93,14 +94,14 @@ const JobDetail = () => {
 
       if (isSaved) {
         // Unsave
-        await axios.post(`http://localhost:8080/api/jobs/${jobId}/unsave`, {}, {
+        await axios.post(`${VITE_API_URL}/api/jobs/${jobId}/unsave`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setIsSaved(false);
         message.success("Đã bỏ lưu công việc");
       } else {
         // Save
-        await axios.post(`http://localhost:8080/api/jobs/${jobId}/save`, {}, {
+        await axios.post(`${VITE_API_URL}/api/jobs/${jobId}/save`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setIsSaved(true);
@@ -131,55 +132,74 @@ const JobDetail = () => {
   };
 
   const handleApplySubmit = async () => {
-    setApplyLoading(true);
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      message.error("Bạn cần đăng nhập để ứng tuyển");
+      return;
+    }
+
+    const formData = new FormData();   // 🔥 KHÔNG để bên ngoài hàm
+
+    formData.append("name", applicantName);
+    formData.append("email", applicantEmail);
+    formData.append("message", coverMessage);
+
+    // ---- Xử lý CV ----
+    if (newCvFile) {
+      formData.append("cvFile", newCvFile);      // ✔ đúng field backend
+    } else if (selectedResumeId) {
+      const selected = resumes.find((r) => r.id === selectedResumeId);
+
+      if (selected?.path) {
+        const resp = await fetch(selected.path);
+        const blob = await resp.blob();
+
+        const file = new File([blob], selected.name || "resume.pdf", {
+          type: "application/pdf"
+        });
+
+
+        formData.append("cvFile", file); // ✔ đúng field
+      }
+    }
+
+    // ---------------------
+
     try {
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("name", applicantName);
-      formData.append("email", applicantEmail);
-      formData.append("message", coverMessage || "");
-
-      if (newCvFile) {
-        formData.append("cvFile", newCvFile);
-      } else if (selectedResumeId) {
-        const selected = resumes.find((r) => r.id === selectedResumeId);
-        if (selected && selected.path) {
-          const url = selected.path.startsWith("/") ? selected.path : selected.path;
-          const absolute = url.startsWith("http") ? url : `http://localhost:8080/${url.replace(/^\//,"")}`;
-          const resp = await fetch(absolute);
-          const blob = await resp.blob();
-          const filename = selected.name || `resume-${Date.now()}.pdf`;
-          formData.append("cvFile", new File([blob], filename, { type: blob.type || "application/pdf" }));
+      await axios.post(
+        `http://localhost:8080/api/jobs/${jobId}/apply`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         }
-      }
-
-      if (!formData.get("cvFile")) {
-        message.error("Vui lòng chọn hoặc tải lên CV (PDF)");
-        setApplyLoading(false);
-        return;
-      }
-
-      await axios.post(`http://localhost:8080/api/jobs/${jobId}/apply`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
+      );
 
       message.success("Ứng tuyển thành công!");
+      alert("Ứng tuyển thành công!");
       setShowApplyModal(false);
+
     } catch (err) {
-      console.error(err);
-      message.error("Lỗi khi nộp đơn!");
-    } finally {
-      setApplyLoading(false);
+      console.error("ERR APPLY:", err.response?.data);
+      alert("Ứng tuyển thất bại");
+      message.error("Ứng tuyển thất bại");
     }
   };
 
-  if (loading) return <Spin />;
-  if (!job) return <Empty description="Không tìm thấy công việc" />;
 
-  const company = job.companyId || job.recruiterId?.companyId;
+
+
+  const company = job?.companyId || job?.recruiterId?.companyId || {};
+  if (loading || !job) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Spin size="large" />
+      </div>
+    );
+  }
   const companyName = company?.name || "Công ty";
   const companyLogo = company?.logo || "";
 
@@ -296,7 +316,7 @@ const JobDetail = () => {
                     block
                     type="primary"
                     className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => navigate(`/customer/company/${company._id}`)}
+                    onClick={() => navigate(`/company/${company._id}`)}
                   >
                     Xem chi tiết công ty
                   </Button>
@@ -315,7 +335,7 @@ const JobDetail = () => {
                     <div
                       key={j._id}
                       className="p-3 border rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition"
-                      onClick={() => navigate(`/customer/job/${j._id}`)}
+                      onClick={() => navigate(`/job/${j._id}`)}
                     >
                       <p className="font-semibold text-blue-600 text-sm line-clamp-2 hover:underline">
                         {j.title}
@@ -329,7 +349,7 @@ const JobDetail = () => {
                         className="bg-blue-600 hover:bg-blue-700 mt-2"
                         onClick={(e) => {
                           e.stopPropagation();
-                          window.location.href = `/customer/job/${j._id}`;
+                          window.location.href = `/job/${j._id}`;
                         }}
                       >
                         Xem chi tiết
@@ -342,7 +362,7 @@ const JobDetail = () => {
                     block
                     type="link"
                     className="text-blue-600 mt-3"
-                    onClick={() => navigate(`/customer/company/${company._id}`)}
+                    onClick={() => navigate(`/company/${company._id}`)}
                   >
                     Xem thêm việc làm →
                   </Button>
@@ -415,32 +435,32 @@ const JobDetail = () => {
         <div className="space-y-4">
           <div>
             <label className="block mb-2 font-semibold text-sm">Họ và tên</label>
-            <Input 
-              placeholder="Nhập họ và tên" 
-              value={applicantName} 
-              onChange={(e) => setApplicantName(e.target.value)} 
+            <Input
+              placeholder="Nhập họ và tên"
+              value={applicantName}
+              onChange={(e) => setApplicantName(e.target.value)}
             />
           </div>
 
           <div>
             <label className="block mb-2 font-semibold text-sm">Email</label>
-            <Input 
+            <Input
               type="email"
-              placeholder="Nhập email" 
-              value={applicantEmail} 
-              onChange={(e) => setApplicantEmail(e.target.value)} 
+              placeholder="Nhập email"
+              value={applicantEmail}
+              onChange={(e) => setApplicantEmail(e.target.value)}
             />
           </div>
 
           <div>
             <label className="block mb-2 font-semibold text-sm">Chọn hoặc tải lên CV</label>
             {resumes && resumes.length > 0 ? (
-              <Radio.Group 
-                value={selectedResumeId} 
-                onChange={(e) => { 
-                  setSelectedResumeId(e.target.value); 
-                  setNewCvFile(null); 
-                }} 
+              <Radio.Group
+                value={selectedResumeId}
+                onChange={(e) => {
+                  setSelectedResumeId(e.target.value);
+                  setNewCvFile(null);
+                }}
                 className="w-full mb-3"
               >
                 <Space direction="vertical" style={{ width: "100%" }}>
@@ -451,8 +471,8 @@ const JobDetail = () => {
                       </Radio>
                       <div>
                         {r.path && (
-                          <Button 
-                            type="link" 
+                          <Button
+                            type="link"
                             size="small"
                             onClick={() => openProtectedFile(r.path, false)}
                           >
@@ -468,12 +488,12 @@ const JobDetail = () => {
               <p className="text-sm text-gray-500 mb-3">Chưa có CV nào</p>
             )}
 
-            <Upload 
-              beforeUpload={() => false} 
-              onChange={(info) => { 
-                setNewCvFile(info.file); 
-                setSelectedResumeId(null); 
-              }} 
+            <Upload
+              beforeUpload={() => false}
+              onChange={(info) => {
+                setNewCvFile(info.file);
+                setSelectedResumeId(null);
+              }}
               accept=".pdf,.doc,.docx"
               maxCount={1}
             >
@@ -484,11 +504,11 @@ const JobDetail = () => {
 
           <div>
             <label className="block mb-2 font-semibold text-sm">Cover Letter / Lời nhắn (tùy chọn)</label>
-            <Input.TextArea 
-              rows={5} 
+            <Input.TextArea
+              rows={5}
               placeholder="Giới thiệu về bản thân hoặc lý do ứng tuyển..."
-              value={coverMessage} 
-              onChange={(e) => setCoverMessage(e.target.value)} 
+              value={coverMessage}
+              onChange={(e) => setCoverMessage(e.target.value)}
             />
           </div>
         </div>

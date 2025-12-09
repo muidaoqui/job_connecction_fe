@@ -121,11 +121,14 @@ function ToolBar() {
     </div>
   </div>
 
-  {/* Email */}
+  {/* Email - Click to go to profile */}
   {user && (
-    <span className="max-w-[180px] truncate hover:text-yellow-300 transition">
+    <button
+      onClick={() => navigate("/customer/mysaramin")}
+      className="max-w-[180px] truncate hover:text-yellow-300 transition bg-none border-none cursor-pointer text-white font-semibold"
+    >
       {user.email}
-    </span>
+    </button>
   )}
 
   {/* Nút đăng nhập / đăng xuất */}

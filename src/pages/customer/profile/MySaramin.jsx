@@ -25,11 +25,12 @@ import {
     EditOutlined,
     DeleteOutlined,
     PlusOutlined,
-
+    CameraOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import ProfileSidebar from "../../../components/customer/ProfileSidebar";
 import { useResumeManagement } from "../../../hooks/useResumeManagement";
+import axios from "axios";
 import {
     getProfile,
     createProfile,
@@ -53,7 +54,34 @@ import {
     deleteProject,
 } from "../../../api/profileAPI";
 
-const GeneralInformationForm = ({ form, candidate, loading, onFinish }) => (
+const GeneralInformationForm = ({ form, candidate, loading, onFinish, avatarUrl, onAvatarUpload }) => {
+    const [avatarLoading, setAvatarLoading] = useState(false);
+
+    const handleAvatarUpload = async (file) => {
+        setAvatarLoading(true);
+        try {
+            const formData = new FormData();
+            formData.append("avatar", file);
+            
+            const token = localStorage.getItem("token");
+            const res = await axios.post("http://localhost:8080/api/candidate/upload-avatar", formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            
+            onAvatarUpload(res.data?.avatarUrl);
+            message.success("Tải ảnh đại diện thành công");
+        } catch (err) {
+            console.error("Avatar upload error:", err);
+            message.error("Lỗi khi tải ảnh đại diện");
+        } finally {
+            setAvatarLoading(false);
+        }
+        return false; // Prevent default upload
+    };
+
+    return (
     <Card
         title={
             <div className="flex justify-between items-center">
@@ -72,8 +100,27 @@ const GeneralInformationForm = ({ form, candidate, loading, onFinish }) => (
             onFinish={onFinish}
         >
             <div className="flex items-center mb-5">
-                <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mr-5">
-                </div>
+                <Upload
+                    beforeUpload={handleAvatarUpload}
+                    maxCount={1}
+                    accept="image/*"
+                    showUploadList={false}
+                >
+                    <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mr-5 cursor-pointer hover:bg-blue-100 transition relative group">
+                        {avatarUrl ? (
+                            <img
+                                src={avatarUrl}
+                                alt="Avatar"
+                                className="w-full h-full rounded-full object-cover"
+                            />
+                        ) : (
+                            <span className="text-2xl">👤</span>
+                        )}
+                        <div className="absolute inset-0 rounded-full bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                            <CameraOutlined className="text-white text-lg" />
+                        </div>
+                    </div>
+                </Upload>
                 <div className="flex-1">
                     <Form.Item label="Họ và tên" name="name" className="mb-3">
                         <Input placeholder="Nhập họ và tên" />
@@ -105,7 +152,8 @@ const GeneralInformationForm = ({ form, candidate, loading, onFinish }) => (
             </Button>
         </Form>
     </Card>
-);
+    );
+};
 
 const MySaramin = () => {
     const navigate = useNavigate();
@@ -113,6 +161,7 @@ const MySaramin = () => {
     const [profileData, setProfileData] = useState(null);
     const [candidate, setCandidate] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState(null);
     
     // Experience states
     const [experiences, setExperiences] = useState([]);
@@ -166,6 +215,7 @@ const MySaramin = () => {
 
                 if (profileRes.data) {
                     setProfileData(profileRes.data);
+                    setAvatarUrl(profileRes.data.candidate?.avatarUrl || profileRes.data.avatarUrl || null);
                     form.setFieldsValue({
                         name: profileRes.data.name,
                         address: profileRes.data.candidate?.address,
@@ -400,6 +450,8 @@ const MySaramin = () => {
                         candidate={candidate}
                         loading={loading}
                         onFinish={onFinish}
+                        avatarUrl={avatarUrl}
+                        onAvatarUpload={setAvatarUrl}
                     />
 
                     {/* Kinh nghiệm Section */}

@@ -247,10 +247,30 @@ const MySaramin = () => {
             if (candidate) {
                 await updateProfile(data);
                 message.success("Cập nhật profile thành công");
+                
+                // Tự động generate embedding sau khi cập nhật profile
+                try {
+                    const token = localStorage.getItem("token");
+                    await axios.post(
+                        `${import.meta.env.VITE_API_URL}/api/embeddings/candidate/generate/${candidate._id}`,
+                        {},
+                        {
+                            headers: { Authorization: `Bearer ${token}` }
+                        }
+                    );
+                    message.success("Đã cập nhật embedding thành công");
+                } catch (embeddingError) {
+                    console.error("Embedding generation error:", embeddingError);
+                    // Không hiển thị lỗi cho user, chỉ log
+                }
             } else {
                 await createProfile(data);
                 message.success("Tạo profile thành công");
             }
+            
+            // Reload data để cập nhật UI
+            const profileRes = await getProfile();
+            setCandidate(profileRes.data.candidate);
         } catch (error) {
             message.error("Lưu profile thất bại");
         } finally {

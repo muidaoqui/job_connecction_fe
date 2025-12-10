@@ -52,24 +52,45 @@ export default function CreateJob() {
   const prevStep = () => setStep((s) => s - 1);
 
   const submitJob = async () => {
-    const form = {
-      title,
-      description,
-      location,
-      requirements,
-      salary,
-      type,
-    };
+  const token = localStorage.getItem("token");
 
-    try {
-      await axios.post("http://localhost:8080/api/jobs", form);
-      alert("Đăng tin thành công!");
-    } catch (err) {
-      console.log(err);
-      alert("Có lỗi xảy ra!");
-    }
+  if (!token) {
+    alert("Bạn chưa đăng nhập!");
+    return;
+  }
+
+  const form = {
+    title,
+    description,
+    location,
+    requirements,
+    salary,
+    type,
   };
 
+  try {
+    const res = await axios.post(
+      "http://localhost:8080/api/jobs",
+      form,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    alert("Đăng tin thành công!");
+    console.log(res.data);
+
+  } catch (err) {
+    console.error(err);
+    alert(
+      err.response?.data?.message ||
+        "Lỗi đăng tin! Có thể bạn chưa tạo hồ sơ nhà tuyển dụng hoặc hồ sơ công ty."
+    );
+  }
+};
   // ===================== USEMEMO FOR STEP COMPONENTS =====================
   const Step1 = useMemo(
     () => (

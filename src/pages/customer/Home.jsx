@@ -120,9 +120,10 @@ function Home() {
       setLoading(true);
       try {
         const res = await axios.get(`${API}/api/jobs`);
-        const data = res.data || [];
-        setJobs(data);
-        setHotJobs(data.slice(0, 6));
+const data = res.data?.data || [];
+
+setJobs(data);
+setHotJobs(data.slice(0, 6)); 
       } catch (err) {
         console.error("Lỗi khi lấy jobs:", err);
       } finally {

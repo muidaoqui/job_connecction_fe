@@ -1,0 +1,256 @@
+[33mcommit 3d7bbdd5061ec40758c734e6caee52a8d44b0d36[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mtien-sprint3[m[33m)[m
+Author: Vuongmtien <vuongminhtien2000@gmail.com>
+Date:   Sun Dec 7 14:52:14 2025 +0700
+
+    Save my current changes before pulling from master
+
+[33mcommit 58ac42549ad0daef39ce341159467726ec3a4fba[m[33m ([m[1;31morigin/tien-sprint3[m[33m)[m
+Author: muidaoqui <muidao156@gmail.com>
+Date:   Fri Dec 5 18:54:01 2025 +0700
+
+    upApp
+
+[33mcommit db82d6fcfebfa337c5171d2956bd4d71589859d2[m
+Merge: b5da29a bdb37f5
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Fri Dec 5 18:48:33 2025 +0700
+
+    Merge pull request #16 from muidaoqui/custom
+    
+    cus applied
+
+[33mcommit bdb37f5e4127b6e794aba09bf42e6fb8bbed5310[m
+Merge: 3e8a5c1 b5da29a
+Author: muidaoqui <muidao156@gmail.com>
+Date:   Fri Dec 5 18:44:43 2025 +0700
+
+    Merge branch 'master' into custom
+
+[33mcommit 3e8a5c15a852e94c33594def6f53fb28685d382a[m
+Author: muidaoqui <muidao156@gmail.com>
+Date:   Fri Dec 5 18:31:23 2025 +0700
+
+    cus applied
+
+[33mcommit b5da29ade221154ae23e86f5839729a4e32cada2[m
+Merge: 202f6f1 f8907dc
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Fri Dec 5 14:44:15 2025 +0700
+
+    Merge pull request #15 from muidaoqui/tien-sprint3
+    
+    Tien sprint3
+
+[33mcommit f8907dc1d76bc7f319c1a6000e588ccedf34af1a[m
+Author: Vuongmtien <vuongminhtien2000@gmail.com>
+Date:   Thu Dec 4 18:26:55 2025 +0700
+
+    Update apply job flow, recruiter applicants, fix auth, update FE
+
+[33mcommit 98d50f56c3b9e2399dde689ad912cfb66cab380e[m
+Author: Vuongmtien <vuongminhtien2000@gmail.com>
+Date:   Thu Dec 4 15:41:38 2025 +0700
+
+    save code before merge 04/12
+
+[33mcommit 202f6f1a13ccd3eaee77eab1c963573f27e08215[m
+Merge: 47cf53b 1422947
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Thu Dec 4 14:22:35 2025 +0700
+
+    Merge pull request #14 from muidaoqui/minh/feature/admin-user-dashboard
+    
+    Minh/feature/admin user dashboard
+
+[33mcommit 14229470f853aa3f8873c8e3794486a693ea73fe[m[33m ([m[1;31morigin/minh/feature/admin-user-dashboard[m[33m)[m
+Merge: 79e3e43 47cf53b
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Thu Dec 4 14:22:16 2025 +0700
+
+    Merge branch 'master' into minh/feature/admin-user-dashboard
+
+[33mcommit 47cf53b68a60da96dbf84b9f4b13c3cfd9fc8deb[m
+Merge: e238284 6547899
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Mon Dec 1 20:05:38 2025 +0700
+
+    Merge pull request #13 from muidaoqui/tien-sprint3
+    
+    update recruiter profile + company flow
+
+[33mcommit 6547899b9254ab2ce81bb072a724dcf5efdfb9ad[m
+Author: Vuongmtien <vuongminhtien2000@gmail.com>
+Date:   Mon Dec 1 20:01:51 2025 +0700
+
+    update recruiter profile + company flow
+
+[33mcommit e238284fc6d1bfd7bf671a7d796606ac815d4e42[m
+Merge: 55b0dee 846d4c8
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Mon Dec 1 19:05:50 2025 +0700
+
+    Merge pull request #12 from muidaoqui/custom
+    
+    candidateuploads avatar
+
+[33mcommit 846d4c8cc6c3a23e6ee78dc945f3af225fc20856[m[33m ([m[1;31morigin/custom[m[33m)[m
+Author: muidaoqui <muidao156@gmail.com>
+Date:   Mon Dec 1 19:05:07 2025 +0700
+
+    candidateuploads avatar
+
+[33mcommit 55b0dee52b8a5c8c9e991e0f0655c2e7aa656dda[m[33m ([m[1;32mmaster[m[33m)[m
+Author: muidaoqui <muidao156@gmail.com>
+Date:   Mon Dec 1 12:09:10 2025 +0700
+
+    FE, BE savedjobs, FE appliedjobs
+
+[33mcommit 14db7c7adfadf7bca65a5e01e3c635ae445d11bc[m
+Author: muidaoqui <muidao156@gmail.com>
+Date:   Mon Dec 1 10:37:57 2025 +0700
+
+    up tolbar
+
+[33mcommit 79e3e434731e881ad0799519554f87ef36d13e1e[m
+Author: Quang Minh <quangminhswe@gmail.com>
+Date:   Fri Nov 28 21:50:58 2025 +0700
+
+    feat(admin): admin can filter user status and lock or unlock user
+
+[33mcommit 75d3d63eba9e21278bb06cc0fd4922b26fdf94cd[m
+Merge: f97368a cc2cf40
+Author: Quang Minh <quangminhswe@gmail.com>
+Date:   Fri Nov 28 21:30:59 2025 +0700
+
+    feat(admin): admin can consider pending jobs and give action such as approve or reject
+
+[33mcommit f97368a7a52cb2ef0be6df0f95463f06a26678f1[m
+Author: Quang Minh <quangminhswe@gmail.com>
+Date:   Fri Nov 28 20:03:53 2025 +0700
+
+    save to pull
+
+[33mcommit cc2cf405ab265a027769313bacd6812435051204[m
+Merge: 33424c3 5f675bc
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Fri Nov 28 16:08:07 2025 +0700
+
+    Merge pull request #11 from muidaoqui/custom
+    
+    cus get job and companyId
+
+[33mcommit 5f675bc06eba05ce056a4a7e9ebfebc7f6f85e80[m
+Merge: 632934c 33424c3
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Fri Nov 28 16:07:58 2025 +0700
+
+    Merge branch 'master' into custom
+
+[33mcommit 632934cf5df03d4a831b8a73dc2f108fd3c28ef2[m
+Author: muidaoqui <muidao156@gmail.com>
+Date:   Fri Nov 28 16:05:02 2025 +0700
+
+    cus get job and companyId
+
+[33mcommit 33424c3aa96e303069d707db4b47e6d332cbff6f[m
+Merge: 1e227f6 172a764
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Fri Nov 28 14:12:58 2025 +0700
+
+    Merge pull request #10 from muidaoqui/anh-sprint3
+    
+    Update search feature + fix job filter + toolbar search
+
+[33mcommit 172a7644089f7b41fbda97b50c3f0ffe18693269[m[33m ([m[1;31morigin/anh-sprint3[m[33m)[m
+Merge: b9cb2b3 1e227f6
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Fri Nov 28 14:12:48 2025 +0700
+
+    Merge branch 'master' into anh-sprint3
+
+[33mcommit b9cb2b32df4d0c5c043754ea63dc1a58a17f1916[m
+Author: Vuongmtien <vuongminhtien2000@gmail.com>
+Date:   Wed Nov 26 17:11:40 2025 +0700
+
+    Update search feature + fix job filter + toolbar search
+
+[33mcommit 1e227f6c23be74b712a7f171dfd032b967ceb31e[m
+Merge: bff8fa8 90006fe
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Wed Nov 26 15:06:34 2025 +0700
+
+    Merge pull request #9 from muidaoqui/custom
+    
+    fe, be get all jobs and companies
+
+[33mcommit 90006fee8fd48ee242fd80a981c083ff10fab060[m
+Author: muidaoqui <muidao156@gmail.com>
+Date:   Wed Nov 26 15:05:56 2025 +0700
+
+    fe, be get all jobs and companies
+
+[33mcommit bff8fa881da87fbd1b3b3687189e966144ebfd69[m
+Merge: ea2a97d 3a2e5e4
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Sun Nov 23 19:29:34 2025 +0700
+
+    Merge pull request #8 from muidaoqui/custom
+    
+    update app.jsx
+
+[33mcommit 3a2e5e47ed80ae87b2121c3feaa04db10434f63e[m
+Author: muidaoqui <muidao156@gmail.com>
+Date:   Sun Nov 23 19:28:33 2025 +0700
+
+    update app.jsx
+
+[33mcommit ea2a97dda1cbb7c1218521832b70520e873ab9f0[m
+Merge: 2d1b0cc 3642fcb
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Sun Nov 23 19:25:58 2025 +0700
+
+    Merge pull request #7 from muidaoqui/anh-sprint3
+    
+    Anh sprint3
+
+[33mcommit 3642fcb66cb237d4aee39002d7a97f5804f324b9[m
+Merge: 3badb41 2d1b0cc
+Author: Vuongmtien <vuongminhtien2000@gmail.com>
+Date:   Sat Nov 22 16:43:40 2025 +0700
+
+    Merge branch 'master' of https://github.com/muidaoqui/job_connecction_fe into anh-sprint3
+
+[33mcommit 3badb41b37080f8f7794f10e3cb05ac4a5f4b136[m
+Author: Vuongmtien <vuongminhtien2000@gmail.com>
+Date:   Sat Nov 22 16:43:24 2025 +0700
+
+    update
+
+[33mcommit 2d1b0cce4abdaff78ce999052491f184cea6707d[m
+Merge: 4fe970b 3681292
+Author: muidaoqui <muidao156@gmail.com>
+Date:   Fri Nov 21 18:17:42 2025 +0700
+
+    Add admin dashboard and user management features; include recruiter dashboard, review applications, and update job application statuses
+
+[33mcommit 4fe970bc681a8726870b12bcc43f8392fc22e22b[m
+Author: muidaoqui <muidao156@gmail.com>
+Date:   Fri Nov 21 18:13:04 2025 +0700
+
+    fix bug read pdf
+
+[33mcommit 3681292d077e2f47780219bdc53e1725f7ed4550[m
+Merge: 87533fe 388a297
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Fri Nov 21 18:07:06 2025 +0700
+
+    Merge pull request #5 from muidaoqui/anh-sprint3
+    
+    backup code local
+
+[33mcommit 388a29765f5bde71ade40c6e3816305cb327c6f9[m
+Merge: 7269f7b 87533fe
+Author: muidaoqui <150640074+muidaoqui@users.noreply.github.com>
+Date:   Fri Nov 21 18:06:56 2025 +0700
+
+    Merge branch 'master' int

@@ -64,57 +64,6 @@ function Home() {
 
   const [savedJobsMap, setSavedJobsMap] = useState({});
 
-  // Check if user is logged in
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, []);
-
-  // Fetch recommended jobs for candidate
-  useEffect(() => {
-    const fetchRecommendedJobs = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.log("No token, skipping recommendations");
-        return;
-      }
-
-      setRecommendedLoading(true);
-      try {
-        console.log("Fetching recommendations with token:", token.substring(0, 20) + "...");
-        
-        const res = await axios.get(
-          `${API}/api/embeddings/recommendation/jobs?limit=6`,
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-
-        console.log("Recommendations response:", res.data);
-
-        if (res.data.needsProfile) {
-          setNeedsProfile(true);
-          setRecommendedJobs([]);
-        } else {
-          setNeedsProfile(false);
-          setRecommendedJobs(res.data.data?.jobs || []);
-        }
-      } catch (err) {
-        console.error("Lỗi khi lấy recommended jobs:", err);
-        console.error("Error response:", err.response?.data);
-        
-
-        if (err.response?.status === 404 || err.response?.status === 401) {
-          setNeedsProfile(true);
-        }
-      } finally {
-        setRecommendedLoading(false);
-      }
-    };
-
-    fetchRecommendedJobs();
-  }, [isLoggedIn]);
-
   // Fetch jobs
   useEffect(() => {
     const fetchJobs = async () => {
@@ -205,7 +154,56 @@ setHotJobs(data.slice(0, 6));
     };
     fetchTopRecruiters();
   }, []);
+    // Check if user is logged in
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
 
+  // Fetch recommended jobs for candidate
+  useEffect(() => {
+    const fetchRecommendedJobs = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.log("No token, skipping recommendations");
+        return;
+      }
+
+      setRecommendedLoading(true);
+      try {
+        console.log("Fetching recommendations with token:", token.substring(0, 20) + "...");
+        
+        const res = await axios.get(
+          `${API}/api/embeddings/recommendations/jobs?limit=6`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+
+        console.log("Recommendations response:", res.data);
+
+        if (res.data.needsProfile) {
+          setNeedsProfile(true);
+          setRecommendedJobs([]);
+        } else {
+          setNeedsProfile(false);
+          setRecommendedJobs(res.data.data?.jobs || []);
+        }
+      } catch (err) {
+        console.error("Lỗi khi lấy recommended jobs:", err);
+        console.error("Error response:", err.response?.data);
+        
+
+        if (err.response?.status === 404 || err.response?.status === 401) {
+          setNeedsProfile(true);
+        }
+      } finally {
+        setRecommendedLoading(false);
+      }
+    };
+
+    fetchRecommendedJobs();
+  }, [isLoggedIn]);
   const handleSaveJob = async (jobId, e) => {
     e.stopPropagation();
     try {
@@ -426,10 +424,10 @@ setHotJobs(data.slice(0, 6));
                       ⭐ {Math.round(job.score * 100)}% phù hợp
                     </div>
                   </p>
-                  <h3 className="text-lg font-bold text-green-700 mb-1">{job.title}</h3>
-                  <p className="text-sm font-semibold text-gray-700">
+                  {/* <h3 className="text-lg font-bold text-green-700 mb-1">{job.title}</h3> */}
+                  {/* <p className="text-sm font-semibold text-gray-700">
                     {job.companyId?.name || job.recruiterId?.name || "Nhà tuyển dụng"}
-                  </p>
+                  </p> */}
 
                   <div className="space-y-2 my-4">
                     <p className="text-sm text-gray-700">📍 {job.location || "Chưa rõ"}</p>

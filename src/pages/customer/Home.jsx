@@ -84,9 +84,6 @@ function Home() {
         console.log("Fetching recommendations with token:", token.substring(0, 20) + "...");
         
         const res = await axios.get(
-          `${API}/api/embeddings/recommendations/jobs?limit=6`, 
-
-        const res = await axios.get(
           `${API}/api/embeddings/recommendation/jobs?limit=6`,
           {
             headers: { Authorization: `Bearer ${token}` }
@@ -428,8 +425,7 @@ setHotJobs(data.slice(0, 6));
                     <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-3 py-1 rounded-full shadow">
                       ⭐ {Math.round(job.score * 100)}% phù hợp
                     </div>
-                  )}
-
+                  </p>
                   <h3 className="text-lg font-bold text-green-700 mb-1">{job.title}</h3>
                   <p className="text-sm font-semibold text-gray-700">
                     {job.companyId?.name || job.recruiterId?.name || "Nhà tuyển dụng"}
@@ -447,11 +443,6 @@ setHotJobs(data.slice(0, 6));
 
                     <button
                       onClick={(e) => handleSaveJob(job._id, e)}
-                      className={`px-3 py-1 rounded-lg text-sm transition ${
-                        savedJobsMap[job._id]
-                          ? "bg-red-100 text-red-600"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
                       className={`px-3 py-1 rounded-lg text-sm transition ${savedJobsMap[job._id]
                           ? "bg-red-100 text-red-600"
                           : "bg-gray-100 text-gray-600"

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   Row,
@@ -6,7 +6,6 @@ import {
   Tag,
   Button,
   Table,
-  Pagination,
   Upload,
 } from "antd";
 import {
@@ -23,6 +22,7 @@ import ProfileSidebar from "../../../components/customer/ProfileSidebar";
 import { useResumeManagement } from "../../../hooks/useResumeManagement";
 import { getProfile } from "../../../api/profileAPI";
 import { openProtectedFile } from "../../../utils/fileHelpers";
+import Modal from "../../../components/Modal"; // import Modal
 
 const CVManaSidebar = ({ userName }) => (
   <ProfileSidebar userName={userName || "Người dùng"} />
@@ -30,16 +30,17 @@ const CVManaSidebar = ({ userName }) => (
 
 const SERVER_BASE = `${import.meta.env.VITE_API_URL}`;
 
-const columns = (onView, onDownload, onSetMain) => [
+const columns = (onView, onDownload, onSetMain, onSpellCheck) => [
   {
     title: "Tên CV",
     dataIndex: 'name',
     key: 'name',
+    width: 200,
     render: (text, record) => (
       <div>
         <div className="flex items-center gap-2">
           <h4 className="font-medium text-base">{text}</h4>
-          {record.isMain && <Tag color="blue">CV chính</Tag>}
+          {/* {record.isMain && <Tag color="blue" >CV chính</Tag>} */}
         </div>
         <p className="text-xs text-blue-500 hover:text-blue-700 cursor-pointer">
           <LinkOutlined className="mr-1" /> Lưu vào hệ thống
@@ -48,10 +49,10 @@ const columns = (onView, onDownload, onSetMain) => [
     ),
   },
   {
-    title: "Trạng thái hoàn thành",
+    title: "Trạng thái",
     dataIndex: 'status',
     key: 'status',
-    width: 280,
+    width: 100,
     render: (_, record) => (
       <div className="flex items-center">
         {record.isCompleted ? (
@@ -67,7 +68,7 @@ const columns = (onView, onDownload, onSetMain) => [
     title: "Chỉnh sửa lần cuối",
     dataIndex: 'lastEdited',
     key: 'lastEdited',
-    width: 150,
+    width: 200,
     render: (text) => (
         <div className="flex items-center text-sm text-gray-600">
             <ClockCircleOutlined className="mr-1" /> {text || '—'}
@@ -79,12 +80,16 @@ const columns = (onView, onDownload, onSetMain) => [
     key: 'action',
     width: 200,
     render: (_, record) => (
-      <div className="space-x-2 flex flex-wrap">
+      <div className="space-x-4 flex flex-wrap">
         <Button type="link" onClick={() => onView(record)} icon={<LinkOutlined />}>Xem</Button>
         <Button type="link" onClick={() => onDownload(record)} icon={<DownloadOutlined />}>Tải</Button>
+        <Button type="link" danger icon={<DeleteOutlined />}>Xóa</Button>
         {!record.isMain && (
           <Button type="link" onClick={() => onSetMain(record)} className="text-blue-500">Chọn chính</Button>
         )}
+        <Button type="link" icon={<CheckCircleFilled />} onClick={() => onSpellCheck(record)}>
+          Kiểm tra chính tả
+        </Button>
       </div>
     ),
   },
@@ -93,6 +98,9 @@ const columns = (onView, onDownload, onSetMain) => [
 const MainContent = () => {
   const { resumes, mainResume, loading, uploadNewResume, setMainResume } = useResumeManagement();
   const [profileName, setProfileName] = React.useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalText, setModalText] = useState("");
+  const [selectedCV, setSelectedCV] = useState(null);
 
   React.useEffect(() => {
     const loadProfile = async () => {
@@ -126,6 +134,19 @@ const MainContent = () => {
     await uploadNewResume(file);
   };
 
+  // Hiển thị modal văn bản trước khi kiểm tra chính tả
+  const onSpellCheck = (rec) => {
+    setSelectedCV(rec);
+    setModalText(rec.name); // hoặc lấy nội dung CV nếu có
+    setModalOpen(true);
+  };
+
+  const handleSpellCheck = () => {
+    // Thực hiện kiểm tra chính tả ở đây (gọi API hoặc xử lý)
+    setModalOpen(false);
+    // ...thêm logic kiểm tra chính tả...
+  };
+
   const tableData = resumes.map((r, idx) => ({
     key: r.id || idx,
     name: r.name,
@@ -134,6 +155,7 @@ const MainContent = () => {
     isCompleted: r.percent >= 100,
     path: r.path,
     isMain: r.isMain,
+    content: r.content || "", // nếu có nội dung CV
   }));
 
   return (
@@ -147,7 +169,7 @@ const MainContent = () => {
 
       <Card bodyStyle={{ padding: 0 }} className="shadow-lg">
         <Table
-          columns={columns(onView, onDownload, onSetMain)}
+          columns={columns(onView, onDownload, onSetMain, onSpellCheck)}
           dataSource={tableData}
           pagination={{ pageSize: 5, total: tableData.length, showSizeChanger: false }}
           rowKey="key"
@@ -155,6 +177,25 @@ const MainContent = () => {
           loading={loading}
         />
       </Card>
+
+      {/* Modal hiển thị văn bản trước khi kiểm tra chính tả */}
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Xem trước văn bản CV"
+        width={600}
+      >
+        <div className="mb-4">
+          <div className="font-semibold mb-2">Tên CV: {selectedCV?.name}</div>
+          <div className="bg-gray-50 border rounded p-3 max-h-80 overflow-auto text-gray-800 whitespace-pre-line">
+            {selectedCV?.content || "Không có nội dung hiển thị."}
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button onClick={() => setModalOpen(false)}>Đóng</Button>
+          <Button type="primary" onClick={handleSpellCheck}>Kiểm tra chính tả</Button>
+        </div>
+      </Modal>
     </div>
   );
 };

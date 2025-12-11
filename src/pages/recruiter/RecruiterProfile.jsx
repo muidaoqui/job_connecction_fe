@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "../../services/axiosInstance";
+import axios from "axios";
 
 export default function RecruiterProfile() {
   const [loading, setLoading] = useState(true);
@@ -21,7 +21,7 @@ export default function RecruiterProfile() {
 
   const fetchRecruiterProfile = async () => {
     try {
-      const res = await axios.get("/recruiter/profile/me", {
+      const res = await axios.get("http://localhost:8080/api/recruiter/profile/me", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
 
@@ -52,17 +52,40 @@ export default function RecruiterProfile() {
   };
 
   const onSubmit = async () => {
-    try {
-      const res = await axios.post("/recruiter/profile/me", form, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+  try {
+    // 1. Tạo đối tượng FormData
+    const formData = new FormData();
 
-      alert(res.data.message);
-    } catch (err) {
-      alert("Lỗi khi lưu hồ sơ!");
-      console.log(err);
+    // 2. Thêm dữ liệu text
+    formData.append("fullName", form.fullName);
+    formData.append("position", form.position);
+    formData.append("phone", form.phone);
+    formData.append("workEmail", form.workEmail);
+    formData.append("bio", form.bio);
+
+    // 3. Thêm file ảnh (nếu có)
+    if (avatarFile) {
+      formData.append("avatar", avatarFile);
     }
-  };
+    
+    // 4. Gửi FormData
+    const res = await axios.post(
+      "http://localhost:8080/api/recruiter/profile/me",
+      formData, // Gửi FormData thay vì `form` object
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "multipart/form-data", // Quan trọng: Báo cho server biết đây là dữ liệu có file
+        },
+      }
+    );
+
+    alert(res.data.message);
+  } catch (err) {
+    alert("Lỗi khi lưu hồ sơ!");
+    console.log(err);
+  }
+};
 
   if (loading) {
     return (

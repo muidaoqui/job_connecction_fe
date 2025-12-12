@@ -2,7 +2,7 @@ import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Toolbar from "./ToolBar";
 import Footer from "./Footer";
-
+import ChatBox from "./ChatBox";
 export default function CustomerLayout() {
   const location = useLocation();
   const hideLayout =
@@ -18,6 +18,7 @@ export default function CustomerLayout() {
       <Toolbar />
       <main className="flex-grow mt-20">
         <Outlet />
+        <ChatBox />
       </main>
       <Footer />
     </div>

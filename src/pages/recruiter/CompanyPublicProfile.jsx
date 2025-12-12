@@ -28,7 +28,7 @@ const CompanyPublicProfile = () => {
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/jobs/company/${id}`
       );
-      setJobs(res.data);
+      setJobs(res.data.data || []);
     } catch (error) {
       console.log(error);
     }

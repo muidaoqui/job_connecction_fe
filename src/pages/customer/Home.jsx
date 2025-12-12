@@ -84,7 +84,7 @@ function Home() {
         console.log("Fetching recommendations with token:", token.substring(0, 20) + "...");
         
         const res = await axios.get(
-          `${API}/api/embeddings/recommendations/jobs?limit=6`, 
+          `${API}/api/embeddings/recommendation/jobs?limit=6`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -103,6 +103,7 @@ function Home() {
         console.error("Lỗi khi lấy recommended jobs:", err);
         console.error("Error response:", err.response?.data);
         
+
         if (err.response?.status === 404 || err.response?.status === 401) {
           setNeedsProfile(true);
         }
@@ -136,22 +137,20 @@ setHotJobs(data.slice(0, 6));
   // Load saved jobs when logged in
   useEffect(() => {
     const loadSavedJobs = async () => {
+      const token = localStorage.getItem("token");
+
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
-        const res = await axios.get(`${API}/api/candidate/saved-jobs`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        const saved = {};
-        (res.data?.data || []).forEach((item) => {
-          if (item.jobId?._id) saved[item.jobId._id] = true;
-        });
-
-        setSavedJobsMap(saved);
+        const res = await axios.get(
+          "http://localhost:8080/api/candidate/saved-jobs",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setSavedJobsMap(res.data.savedJobs || []);
       } catch (err) {
-        console.error("Lỗi khi tải saved jobs:", err);
+        console.error("Error loading saved jobs", err);
       }
     };
     loadSavedJobs();
@@ -311,6 +310,7 @@ setHotJobs(data.slice(0, 6));
       </div>
       {/* ========== Recommendations JOBS ========== */}
       
+
       {/* ========== HOT JOBS ========== */}
       <div className="flex flex-col gap-2 my-4 px-10 min-h-screen">
         <h1 className="text-3xl text-blue-600 font-bold ml-10">🔥 CÔNG VIỆC HOT HÔM NAY</h1>
@@ -352,11 +352,10 @@ setHotJobs(data.slice(0, 6));
 
                   <button
                     onClick={(e) => handleSaveJob(job._id, e)}
-                    className={`px-3 py-1 rounded-lg text-sm transition ${
-                      savedJobsMap[job._id]
-                        ? "bg-red-100 text-red-600"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
+                    className={`px-3 py-1 rounded-lg text-sm transition ${savedJobsMap[job._id]
+                      ? "bg-red-100 text-red-600"
+                      : "bg-gray-100 text-gray-600"
+                      }`}
                   >
                     {savedJobsMap[job._id] ? "❤️ Đã Lưu" : "🤍 Lưu"}
                   </button>
@@ -392,6 +391,7 @@ setHotJobs(data.slice(0, 6));
                 <h3 className="text-xl font-bold text-yellow-700 mb-2">Hoàn thiện hồ sơ để nhận gợi ý công việc</h3>
                 <p className="text-gray-600 text-center mb-6 max-w-lg">
                   Hãy cập nhật đầy đủ thông tin về học vấn, kinh nghiệm làm việc, dự án và kỹ năng của bạn. 
+                  Hãy cập nhật đầy đủ thông tin về học vấn, kinh nghiệm làm việc, dự án và kỹ năng của bạn.
                   Hệ thống sẽ tự động gợi ý những công việc phù hợp nhất với bạn!
                 </p>
                 <button
@@ -422,6 +422,13 @@ setHotJobs(data.slice(0, 6));
                   <h3 className="text-lg font-bold text-green-600 mb-1">{job.title}</h3>
                   <p className="text-sm font-semibold text-gray-700">
                     {job.companyId?.name || job.recruiterId?.companyId?.name || "Nhà tuyển dụng"}
+                    <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-3 py-1 rounded-full shadow">
+                      ⭐ {Math.round(job.score * 100)}% phù hợp
+                    </div>
+                  </p>
+                  <h3 className="text-lg font-bold text-green-700 mb-1">{job.title}</h3>
+                  <p className="text-sm font-semibold text-gray-700">
+                    {job.companyId?.name || job.recruiterId?.name || "Nhà tuyển dụng"}
                   </p>
 
                   <div className="space-y-2 my-4">
@@ -436,11 +443,10 @@ setHotJobs(data.slice(0, 6));
 
                     <button
                       onClick={(e) => handleSaveJob(job._id, e)}
-                      className={`px-3 py-1 rounded-lg text-sm transition ${
-                        savedJobsMap[job._id]
+                      className={`px-3 py-1 rounded-lg text-sm transition ${savedJobsMap[job._id]
                           ? "bg-red-100 text-red-600"
                           : "bg-gray-100 text-gray-600"
-                      }`}
+                        }`}
                     >
                       {savedJobsMap[job._id] ? "❤️ Đã Lưu" : "🤍 Lưu"}
                     </button>

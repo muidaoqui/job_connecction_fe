@@ -4,7 +4,9 @@ import axios from "axios";
 import { Briefcase, Users, FilePlus, ListChecks } from "lucide-react";
 
 export default function RecruiterDashboard() {
-  const user = JSON.parse(localStorage.getItem("user")); // recruiter
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const [company, setCompany] = useState(null);
   const [stats, setStats] = useState({
     postedJobs: 0,
     newApplicants: 0,
@@ -13,13 +15,35 @@ export default function RecruiterDashboard() {
   });
 
   useEffect(() => {
+    fetchCompany();
+  }, []);
+
+  const fetchCompany = async () => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/company/profile`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      setCompany(res.data.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
     if (user?._id) {
       axios
-        .get(`http://localhost:8080/api/jobs/stats/${user._id}`)
+        .get(`${import.meta.env.VITE_API_URL}/api/jobs/stats/${user._id}`)
         .then((res) => setStats(res.data))
         .catch((err) => console.log(err));
     }
   }, []);
+
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -33,6 +57,14 @@ export default function RecruiterDashboard() {
           <Link to="/recruiter/company-profile" className="hover:text-blue-600 transition">
       🔹 Account Setting
     </Link>
+          {company && (
+  <Link
+    to={`/recruiter/company/${company._id}`}
+    className="hover:text-blue-600 transition"
+  >
+    🔹 Xem trang công ty
+  </Link>
+)}
           <Link to="/recruiter/create-job" className="hover:text-blue-600 transition">
             🔹 Tạo tin tuyển dụng
           </Link>

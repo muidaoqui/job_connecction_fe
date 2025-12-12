@@ -8,7 +8,7 @@ const ChatBox = () => {
   ]);
 
   const summarizeText = async (text) => {
-    const res = await fetch("https://f366aa481e1d.ngrok-free.app/summarize", {
+    const res = await fetch(import.meta.env.VITE_API_URL + "/summarize", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text })

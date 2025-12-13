@@ -16,10 +16,16 @@ export default function RecruiterProfile() {
   });
 
   /* ================= LOAD PROFILE ================= */
-  useEffect(() => {
-    fetchRecruiterProfile();
-    fetchCompany();
-  }, []);
+  const token = localStorage.getItem("token");
+
+   useEffect(() => {
+  fetchRecruiterProfile();
+
+  if (!token) return;
+
+  fetchCompany();
+}, [token]);
+ 
 
   const fetchRecruiterProfile = async () => {
     try {
@@ -57,26 +63,28 @@ export default function RecruiterProfile() {
 
   /* ================= LOAD COMPANY ================= */
   const fetchCompany = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:8080/api/company/profile",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (res.data?.data?._id) {
-        setForm((prev) => ({
-          ...prev,
-          companyId: res.data.data._id, // 🔥 GÁN companyId
-        }));
+  try {
+    const res = await axios.get(
+      "http://localhost:8080/api/company/profile",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-    } catch (err) {
-      console.log("Chưa có company");
+    );
+
+    console.log("👉 COMPANY PROFILE:", res.data.data); // 👈 DEBUG
+
+    if (res.data?.data?._id) {
+      setForm((prev) => ({
+        ...prev,
+        companyId: res.data.data._id,
+      }));
     }
-  };
+  } catch (err) {
+    console.log("Chưa có company");
+  }
+};
 
   /* ================= HANDLERS ================= */
   const onChange = (e) => {

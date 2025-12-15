@@ -70,50 +70,50 @@ function Home() {
     setIsLoggedIn(!!token);
   }, []);
 
-  // Fetch recommended jobs for candidate
-  useEffect(() => {
-    const fetchRecommendedJobs = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.log("No token, skipping recommendations");
-        return;
-      }
+  // // Fetch recommended jobs for candidate
+  // useEffect(() => {
+  //   const fetchRecommendedJobs = async () => {
+  //     const token = localStorage.getItem("token");
+  //     if (!token) {
+  //       console.log("No token, skipping recommendations");
+  //       return;
+  //     }
 
-      setRecommendedLoading(true);
-      try {
-        console.log("Fetching recommendations with token:", token.substring(0, 20) + "...");
+  //     setRecommendedLoading(true);
+  //     try {
+  //       console.log("Fetching recommendations with token:", token.substring(0, 20) + "...");
 
-        const res = await axios.get(
-          `${API}/api/embeddings/recommendation/jobs?limit=6`,
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
+  //       const res = await axios.get(
+  //         `${API}/api/embeddings/recommendation/jobs?limit=6`,
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` }
+  //         }
+  //       );
 
-        console.log("Recommendations response:", res.data);
+  //       console.log("Recommendations response:", res.data);
 
-        if (res.data.needsProfile) {
-          setNeedsProfile(true);
-          setRecommendedJobs([]);
-        } else {
-          setNeedsProfile(false);
-          setRecommendedJobs(res.data.data?.jobs || []);
-        }
-      } catch (err) {
-        console.error("Lỗi khi lấy recommended jobs:", err);
-        console.error("Error response:", err.response?.data);
+  //       if (res.data.needsProfile) {
+  //         setNeedsProfile(true);
+  //         setRecommendedJobs([]);
+  //       } else {
+  //         setNeedsProfile(false);
+  //         setRecommendedJobs(res.data.data?.jobs || []);
+  //       }
+  //     } catch (err) {
+  //       console.error("Lỗi khi lấy recommended jobs:", err);
+  //       console.error("Error response:", err.response?.data);
 
 
-        if (err.response?.status === 404 || err.response?.status === 401) {
-          setNeedsProfile(true);
-        }
-      } finally {
-        setRecommendedLoading(false);
-      }
-    };
+  //       if (err.response?.status === 404 || err.response?.status === 401) {
+  //         setNeedsProfile(true);
+  //       }
+  //     } finally {
+  //       setRecommendedLoading(false);
+  //     }
+  //   };
 
-    fetchRecommendedJobs();
-  }, [isLoggedIn]);
+  //   fetchRecommendedJobs();
+  // }, [isLoggedIn]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");

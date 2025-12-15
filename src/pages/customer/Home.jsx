@@ -139,26 +139,6 @@ setHotJobs(data.slice(0, 6));
     fetchTopCompanies();
   }, []);
 
-  // Fetch recruiters
-  useEffect(() => {
-    const fetchTopRecruiters = async () => {
-      setRecruitersLoading(true);
-      try {
-        const res = await axios.get(`${API}/api/recruiter/top?limit=6`);
-        setTopRecruiters(res.data?.recruiters || []);
-      } catch (err) {
-        console.error("Lỗi khi lấy recruiters:", err);
-      } finally {
-        setRecruitersLoading(false);
-      }
-    };
-    fetchTopRecruiters();
-  }, []);
-    // Check if user is logged in
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, []);
 
   // Fetch recommended jobs for candidate
   useEffect(() => {

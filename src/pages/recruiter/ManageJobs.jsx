@@ -6,11 +6,15 @@ import { MapPin } from "lucide-react";
 export default function ManageJobs() {
   const [jobs, setJobs] = useState([]);
 
-  const fetchJobs = () => {
-    axios
-      .get("http://localhost:8080/api/jobs")
-      .then((res) => setJobs(res.data))
-      .catch(() => console.log("BE chưa chạy"));
+  const fetchJobs = async () => {
+    try {
+      const res = await axios.get("http://localhost:8080/api/jobs");
+      // 🔥 FIX CHỖ NÀY
+      setJobs(res.data.data || []);
+    } catch (err) {
+      console.log("Lỗi lấy danh sách job", err);
+      setJobs([]);
+    }
   };
 
   useEffect(() => {
@@ -37,35 +41,35 @@ export default function ManageJobs() {
           Quản lý tin tuyển dụng
         </h1>
 
-        {/* GRID VIEW */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {jobs.length === 0 && (
+            <p className="col-span-full text-center text-gray-500">
+              Chưa có tin tuyển dụng nào
+            </p>
+          )}
+
           {jobs.map((job) => (
             <div
               key={job._id}
-              className="bg-white p-6 rounded-2xl shadow-md border border-gray-200 hover:shadow-xl transition duration-200"
+              className="bg-white p-6 rounded-2xl shadow-md border border-gray-200 hover:shadow-xl transition"
             >
-              {/* TITLE */}
-              <h2 className="text-2xl font-bold text-gray-800 mb-1 line-clamp-1">
+              <h2 className="text-2xl font-bold text-gray-800 mb-1">
                 {job.title}
               </h2>
 
-              {/* LOCATION */}
               <div className="flex items-center text-gray-500 gap-1 mb-2">
                 <MapPin size={16} className="text-red-500" />
                 <span className="text-sm">{job.location}</span>
               </div>
 
-              {/* DESCRIPTION */}
               <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                 {job.description || "Không có mô tả"}
               </p>
 
-              {/* ACTION BUTTONS */}
               <div className="flex items-center justify-between mt-4">
-
                 <Link
                   to={`/recruiter/applicants/${job._id}`}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
                   Xem ứng viên
                 </Link>
@@ -73,19 +77,18 @@ export default function ManageJobs() {
                 <div className="flex gap-3">
                   <Link
                     to={`/recruiter/edit-job/${job._id}`}
-                    className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition"
+                    className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50"
                   >
                     Sửa
                   </Link>
 
                   <button
                     onClick={() => deleteJob(job._id)}
-                    className="px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition"
+                    className="px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50"
                   >
                     Xoá
                   </button>
                 </div>
-
               </div>
             </div>
           ))}

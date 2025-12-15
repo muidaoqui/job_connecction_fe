@@ -12,37 +12,83 @@ export default function RecruiterProfile() {
     phone: "",
     workEmail: "",
     bio: "",
+    companyId: "", // 🔥 QUAN TRỌNG
   });
 
-  // Load recruiter profile
-  useEffect(() => {
-    fetchRecruiterProfile();
-  }, []);
+  /* ================= LOAD PROFILE ================= */
+  const token = localStorage.getItem("token");
+
+   useEffect(() => {
+  fetchRecruiterProfile();
+
+  if (!token) return;
+
+  fetchCompany();
+}, [token]);
+ 
 
   const fetchRecruiterProfile = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/recruiter/profile/me", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      const res = await axios.get(
+        "http://localhost:8080/api/recruiter/profile/me",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
-      if (res.data.success && res.data.data) {
-        setForm(res.data.data);
+      if (res.data?.data) {
+        const data = res.data.data;
 
-        if (res.data.data.avatar) {
-          setAvatarPreview(res.data.data.avatar);
+        setForm({
+          fullName: data.name || "",
+          position: data.position || "",
+          phone: data.phone || "",
+          workEmail: data.workEmail || "",
+          bio: data.bio || "",
+          companyId: data.companyId || "",
+        });
+
+        if (data.avatar) {
+          setAvatarPreview(data.avatar);
         }
       }
-    } catch (error) {
-      console.log("Recruiter chưa có hồ sơ.");
+    } catch (err) {
+      console.log("Recruiter chưa có hồ sơ");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
+  /* ================= LOAD COMPANY ================= */
+  const fetchCompany = async () => {
+  try {
+    const res = await axios.get(
+      "http://localhost:8080/api/company/profile",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("👉 COMPANY PROFILE:", res.data.data); // 👈 DEBUG
+
+    if (res.data?.data?._id) {
+      setForm((prev) => ({
+        ...prev,
+        companyId: res.data.data._id,
+      }));
+    }
+  } catch (err) {
+    console.log("Chưa có company");
+  }
+};
+
+  /* ================= HANDLERS ================= */
   const onChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const onAvatarChange = (e) => {
@@ -51,42 +97,45 @@ export default function RecruiterProfile() {
     setAvatarPreview(URL.createObjectURL(file));
   };
 
+  /* ================= SUBMIT ================= */
   const onSubmit = async () => {
-  try {
-    // 1. Tạo đối tượng FormData
-    const formData = new FormData();
+    try {
+      const formData = new FormData();
 
-    // 2. Thêm dữ liệu text
-    formData.append("fullName", form.fullName);
-    formData.append("position", form.position);
-    formData.append("phone", form.phone);
-    formData.append("workEmail", form.workEmail);
-    formData.append("bio", form.bio);
+      formData.append("fullName", form.fullName);
+      formData.append("position", form.position);
+      formData.append("phone", form.phone);
+      formData.append("workEmail", form.workEmail);
+      formData.append("bio", form.bio);
 
-    // 3. Thêm file ảnh (nếu có)
-    if (avatarFile) {
-      formData.append("avatar", avatarFile);
-    }
-    
-    // 4. Gửi FormData
-    const res = await axios.post(
-      "http://localhost:8080/api/recruiter/profile/me",
-      formData, // Gửi FormData thay vì `form` object
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "multipart/form-data", // Quan trọng: Báo cho server biết đây là dữ liệu có file
-        },
+      // 🔥 QUAN TRỌNG: GỬI companyId
+      if (form.companyId) {
+        formData.append("companyId", form.companyId);
       }
-    );
 
-    alert(res.data.message);
-  } catch (err) {
-    alert("Lỗi khi lưu hồ sơ!");
-    console.log(err);
-  }
-};
+      if (avatarFile) {
+        formData.append("avatar", avatarFile);
+      }
 
+      await axios.post(
+        "http://localhost:8080/api/recruiter/profile/me",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      alert("✅ Lưu hồ sơ nhà tuyển dụng thành công!");
+    } catch (err) {
+      console.error(err);
+      alert("❌ Lỗi khi lưu hồ sơ!");
+    }
+  };
+
+  /* ================= UI ================= */
   if (loading) {
     return (
       <div className="text-center text-gray-500 p-10 text-lg">
@@ -116,97 +165,58 @@ export default function RecruiterProfile() {
           <label className="block mb-2 font-medium text-gray-700">
             Ảnh đại diện
           </label>
-          <input
-            type="file"
-            onChange={onAvatarChange}
-            className="text-sm"
-            accept="image/*"
-          />
+          <input type="file" onChange={onAvatarChange} accept="image/*" />
         </div>
       </div>
 
       {/* Form */}
       <div className="space-y-5">
-        {/* Full Name */}
-        <div>
-          <label className="block font-semibold text-gray-700 mb-1">
-            Họ và tên *
-          </label>
-          <input
-            name="fullName"
-            value={form.fullName}
-            onChange={onChange}
-            className="w-full p-3 border rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            placeholder="VD: Nguyễn Văn A"
-          />
-        </div>
+        <input
+          name="fullName"
+          value={form.fullName}
+          onChange={onChange}
+          className="w-full p-3 border rounded-lg"
+          placeholder="Họ và tên"
+        />
 
-        {/* Position */}
-        <div>
-          <label className="block font-semibold text-gray-700 mb-1">
-            Chức vụ *
-          </label>
-          <input
-            name="position"
-            value={form.position}
-            onChange={onChange}
-            className="w-full p-3 border rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            placeholder="VD: HR Manager"
-          />
-        </div>
+        <input
+          name="position"
+          value={form.position}
+          onChange={onChange}
+          className="w-full p-3 border rounded-lg"
+          placeholder="Chức vụ"
+        />
 
-        {/* Phone */}
-        <div>
-          <label className="block font-semibold text-gray-700 mb-1">
-            Số điện thoại *
-          </label>
-          <input
-            name="phone"
-            value={form.phone}
-            onChange={onChange}
-            className="w-full p-3 border rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            placeholder="VD: 0909 999 999"
-          />
-        </div>
+        <input
+          name="phone"
+          value={form.phone}
+          onChange={onChange}
+          className="w-full p-3 border rounded-lg"
+          placeholder="Số điện thoại"
+        />
 
-        {/* Email */}
-        <div>
-          <label className="block font-semibold text-gray-700 mb-1">
-            Email công việc *
-          </label>
-          <input
-            name="workEmail"
-            value={form.workEmail}
-            onChange={onChange}
-            className="w-full p-3 border rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            placeholder="VD: hr@company.com"
-            type="email"
-          />
-        </div>
+        <input
+          name="workEmail"
+          value={form.workEmail}
+          onChange={onChange}
+          className="w-full p-3 border rounded-lg"
+          placeholder="Email công việc"
+        />
 
-        {/* Bio */}
-        <div>
-          <label className="block font-semibold text-gray-700 mb-1">
-            Giới thiệu bản thân *
-          </label>
-          <textarea
-            name="bio"
-            value={form.bio}
-            onChange={onChange}
-            className="w-full p-3 border rounded-lg shadow-sm h-32 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            placeholder="Giới thiệu ngắn về bạn và công việc HR..."
-          />
-        </div>
+        <textarea
+          name="bio"
+          value={form.bio}
+          onChange={onChange}
+          className="w-full p-3 border rounded-lg h-32"
+          placeholder="Giới thiệu bản thân"
+        />
 
-        {/* Save Button */}
-        <div className="pt-4">
-          <button
-            onClick={onSubmit}
-            className="px-8 py-3 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 font-semibold"
-          >
-            Lưu hồ sơ
-          </button>
-        </div>
+        <button
+          onClick={onSubmit}
+          className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold"
+        >
+          Lưu hồ sơ
+        </button>
       </div>
     </div>
   );

@@ -92,7 +92,7 @@ const JobSearch = () => {
     setLoading(true);
     try {
       const res = await axios.get(`${VITE_API_URL}/api/jobs`);
-      const jobList = res.data || [];
+      const jobList = res.data?.data || [];
       setJobs(jobList.slice(0, limit));
       setHasMore(jobList.length > limit);
       setNeedsProfile(false);
@@ -184,8 +184,9 @@ const JobSearch = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+      
       message.success("Đã lưu công việc!");
+      fetchJobs(); 
     } catch (err) {
       console.error(err);
       message.error(err.response?.data?.message || "Lỗi khi lưu công việc");

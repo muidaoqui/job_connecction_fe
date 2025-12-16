@@ -31,8 +31,8 @@ import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
 
 import "react-toastify/dist/ReactToastify.css";
 
-import ApplyJob from "./pages/customer/ApplyJob";
-import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
+// import ApplyJob from "./pages/customer/ApplyJob";
+// import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
 
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -51,9 +51,10 @@ import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import UsersPage from "./pages/admin/User";
 import AdminPendingJobs from "./pages/admin/Job";
-
+import Verification from "./pages/recruiter/Verification";
 import "react-toastify/dist/ReactToastify.css";
 import AdminJob from "./pages/admin/Jobs";
+import RecruiterVerification from "./pages/admin/RecruiterVerification";
 // import CreateJob from "./pages/recruiter/CreateJob";
 // import ManageJobs from "./pages/recruiter/ManageJobs";
 // import Applicants from "./pages/recruiter/Applicants";
@@ -254,6 +255,15 @@ function App() {
           }
         />
 
+        <Route
+          path="/recruiter/verification"
+          element={
+            <RequireAuth>
+              <Verification />
+            </RequireAuth>
+          }
+        />
+
         {/** ---------------- ADMIN AREA ---------------- */}
         <Route
           path="/admin"
@@ -266,6 +276,10 @@ function App() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="jobs" element={<AdminPendingJobs />} />
+          <Route
+            path="recruiters-verification"
+            element={<RecruiterVerification />}
+          />
         </Route>
       </Routes>
     </Router>

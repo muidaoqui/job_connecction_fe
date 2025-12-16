@@ -56,3 +56,41 @@ export const toggleUserStatus = async (id) => {
 
   return res.data; // trả về user sau khi update
 };
+
+export const getPendingRecruiters = async () => {
+  const token = getToken();
+
+  const res = await axios.get(`${API_URL}/recruiters/pending`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  return res.data; // trả về danh sách recruiter pending
+};
+
+export const approveRecruiter = async (id) => {
+  const token = getToken();
+
+  const res = await axios.patch(
+    `${API_URL}/recruiters/${id}/approve`,
+    {},
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+
+  return res.data; // trả về recruiter đã update
+};
+
+export const rejectRecruiter = async (id, note) => {
+  const token = getToken();
+
+  const res = await axios.patch(
+    `${API_URL}/recruiters/${id}/reject`,
+    { note }, // có thể gửi lý do từ chối
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+
+  return res.data;
+};

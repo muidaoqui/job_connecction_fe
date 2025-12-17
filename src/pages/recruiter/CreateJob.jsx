@@ -1,156 +1,269 @@
-import { useState } from "react";
+import { useState, memo, useMemo } from "react";
 import axios from "axios";
 
+/* ===================== CONSTANTS ===================== */
+const LOCATIONS = [
+  "Hồ Chí Minh",
+  "Hà Nội",
+  "Đà Nẵng",
+  "Cần Thơ",
+  "Remote",
+];
+
+const JOB_TYPES = [
+  "Full-time",
+  "Part-time",
+  "Remote",
+  "Hybrid",
+  "Intern",
+];
+
+const SALARY_RANGES = [
+  "Thỏa thuận",
+  "10 - 15 triệu",
+  "15 - 25 triệu",
+  "25 - 40 triệu",
+  "Trên 40 triệu",
+];
+const EXPERIENCE_LEVELS = [
+  "Không yêu cầu",
+  "Dưới 1 năm",
+  "1 - 2 năm",
+  "2 - 3 năm",
+  "3 - 5 năm",
+  "Trên 5 năm",
+];
+/* ===================== STEP INDICATOR ===================== */
+const StepIndicator = memo(({ step }) => {
+  const steps = [
+    { id: 1, label: "Thông tin cơ bản" },
+    { id: 2, label: "Chi tiết công việc" },
+    { id: 3, label: "Xác nhận" },
+  ];
+
+  return (
+    <div className="flex items-center justify-center gap-8 mb-10">
+      {steps.map((item) => (
+        <div key={item.id} className="flex flex-col items-center">
+          <div
+            className={`w-10 h-10 flex items-center justify-center rounded-full text-white font-bold
+              ${
+                step === item.id
+                  ? "bg-blue-600"
+                  : step > item.id
+                  ? "bg-green-500"
+                  : "bg-gray-300"
+              }`}
+          >
+            {step > item.id ? "✓" : item.id}
+          </div>
+          <p
+            className={`mt-2 text-sm font-medium ${
+              step === item.id ? "text-blue-600" : "text-gray-600"
+            }`}
+          >
+            {item.label}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+});
+
+/* ===================== CREATE JOB ===================== */
 export default function CreateJob() {
-  const user = JSON.parse(localStorage.getItem("user"));
-  const company = JSON.parse(localStorage.getItem("company")); 
-  const token = localStorage.getItem("token");
+  const [step, setStep] = useState(1);
 
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    requirements: "",
-    salary: "",
-    location: "",
-    jobType: "Full-time",
-  });
+  // Step 1
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  // Step 2
+  const [requirements, setRequirements] = useState("");
+  const [salary, setSalary] = useState("");
+  const [jobType, setJobType] = useState("");
+  const [experience, setExperience] = useState("");
+
+
+  const nextStep = () => setStep((s) => s + 1);
+  const prevStep = () => setStep((s) => s - 1);
+
+  /* ===================== SUBMIT JOB ===================== */
+  const submitJob = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return alert("Bạn chưa đăng nhập!");
+
+      await axios.post(
+        "http://localhost:8080/api/jobs",
+        {
+          title,
+          description,
+          requirements,
+          salary,
+          location,
+          jobType,
+          experience,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      alert("🎉 Đăng tin thành công!");
+    } catch (err) {
+      console.error(err);
+      alert("❌ Không thể đăng tin");
+    }
   };
 
-  const handleSubmit = async () => {
-  try {
-    if (!token) {
-      alert("Bạn chưa đăng nhập!");
-      return;
-    }
+  /* ===================== STEP 1 ===================== */
+  const Step1 = useMemo(
+    () => (
+      <div className="bg-white p-8 rounded-2xl shadow">
+        <h2 className="text-2xl font-bold text-blue-700 mb-6">
+          1. Thông tin cơ bản
+        </h2>
 
-    if (!company?._id) {
-      alert("Bạn chưa tạo hồ sơ công ty!");
-      return;
-    }
+        <div className="space-y-5">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full p-3 border rounded-lg"
+            placeholder="Tiêu đề công việc"
+          />
 
-    const jobData = {
-      ...form,
-      companyId: company._id,     // 🔥 BẮT BUỘC, BE yêu cầu
-      // recruiterId KHÔNG gửi, BE tự gán
-      jobType: form.jobType || "Full-time",
-    };
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full p-3 border rounded-lg h-28"
+            placeholder="Mô tả công việc"
+          />
 
-    const res = await axios.post(
-      "http://localhost:8080/api/jobs",
-      jobData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+          <select
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="w-full p-3 border rounded-lg bg-white"
+          >
+            <option value="">-- Chọn địa điểm --</option>
+            {LOCATIONS.map((loc) => (
+              <option key={loc}>{loc}</option>
+            ))}
+          </select>
+        </div>
 
-    alert("Đăng tin tuyển dụng thành công!");
-    console.log("JOB CREATED:", res.data);
+        <div className="flex justify-end mt-6">
+          <button
+            onClick={nextStep}
+            className="px-6 py-3 bg-blue-600 text-white rounded-xl"
+          >
+            Tiếp tục →
+          </button>
+        </div>
+      </div>
+    ),
+    [title, description, location]
+  );
 
-  } catch (err) {
-    console.log(err);
+  /* ===================== STEP 2 ===================== */
+  const Step2 = useMemo(
+    () => (
+      <div className="bg-white p-8 rounded-2xl shadow">
+        <h2 className="text-2xl font-bold text-blue-700 mb-6">
+          2. Chi tiết công việc
+        </h2>
 
-    if (err.response?.status === 403) {
-      alert("Bạn cần có hồ sơ Nhà tuyển dụng trước khi đăng tin.");
-    } else if (err.response?.status === 401) {
-      alert("Token hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.");
-    } else {
-      alert("Lỗi khi tạo job!");
-    }
-  }
-};
+        <textarea
+          value={requirements}
+          onChange={(e) => setRequirements(e.target.value)}
+          className="w-full p-3 border rounded-lg h-28 mb-5"
+          placeholder="Yêu cầu công việc"
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <select
+            value={salary}
+            onChange={(e) => setSalary(e.target.value)}
+            className="p-3 border rounded-lg bg-white"
+          >
+            <option value="">-- Chọn mức lương --</option>
+            {SALARY_RANGES.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
+          </select>
+
+          <select
+            value={jobType}
+            onChange={(e) => setJobType(e.target.value)}
+            className="p-3 border rounded-lg bg-white"
+          >
+            <option value="">-- Chọn hình thức --</option>
+            {JOB_TYPES.map((t) => (
+              <option key={t}>{t}</option>
+            ))}
+          </select>
+           <select
+    value={experience}
+    onChange={(e) => setExperience(e.target.value)}
+    className="p-3 border rounded-lg bg-white"
+  >
+    <option value="">-- Chọn kinh nghiệm --</option>
+    {EXPERIENCE_LEVELS.map((exp) => (
+      <option key={exp}>{exp}</option>
+    ))}
+  </select>
+          
+        </div>
+
+        <div className="flex justify-between mt-6">
+          <button onClick={prevStep} className="px-6 py-3 bg-gray-200 rounded-xl">
+            ← Quay lại
+          </button>
+          <button onClick={nextStep} className="px-6 py-3 bg-blue-600 text-white rounded-xl">
+            Tiếp tục →
+          </button>
+        </div>
+      </div>
+    ),
+    [requirements, salary, jobType,experience]
+  );
+
+  /* ===================== STEP 3 ===================== */
+  const Step3 = useMemo(
+    () => (
+      <div className="bg-white p-8 rounded-2xl shadow">
+        <h2 className="text-2xl font-bold text-blue-700 mb-6">
+          3. Xác nhận
+        </h2>
+
+        <p><b>Tiêu đề:</b> {title}</p>
+        <p><b>Địa điểm:</b> {location}</p>
+        <p><b>Lương:</b> {salary}</p>
+        <p><b>Hình thức:</b> {jobType}</p>
+        <p><b>Kinh nghiệm:</b> {experience}</p>
+
+
+        <div className="flex justify-between mt-6">
+          <button onClick={prevStep} className="px-6 py-3 bg-gray-200 rounded-xl">
+            ← Quay lại
+          </button>
+          <button onClick={submitJob} className="px-6 py-3 bg-blue-600 text-white rounded-xl">
+            Đăng tin
+          </button>
+        </div>
+      </div>
+    ),
+    [title, location, salary, jobType]
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 py-10">
-      <div className="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-8">
-        <h1 className="text-3xl font-bold text-blue-700 mb-6">
-          Tạo tin tuyển dụng
-        </h1>
-
-        <div className="space-y-4">
-          <div>
-            <label className="font-semibold">Tiêu đề</label>
-            <input
-              name="title"
-              value={form.title}
-              placeholder="VD: Backend Developer"
-              onChange={handleChange}
-              className="w-full border border-slate-300 p-3 rounded-lg mt-1"
-            />
-          </div>
-
-          <div>
-            <label className="font-semibold">Mô tả</label>
-            <textarea
-              name="description"
-              value={form.description}
-              placeholder="Mô tả chi tiết công việc..."
-              className="w-full border border-slate-300 p-3 rounded-lg mt-1 h-28"
-              onChange={handleChange}
-            />
-          </div>
-
-          <div>
-            <label className="font-semibold">Yêu cầu</label>
-            <textarea
-              name="requirements"
-              value={form.requirements}
-              placeholder="Kinh nghiệm, kỹ năng..."
-              className="w-full border border-slate-300 p-3 rounded-lg mt-1 h-28"
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="font-semibold">Lương</label>
-              <input
-                name="salary"
-                value={form.salary}
-                placeholder="VD: 15 - 25 triệu"
-                className="w-full border border-slate-300 p-3 rounded-lg mt-1"
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <label className="font-semibold">Địa điểm</label>
-              <input
-                name="location"
-                value={form.location}
-                placeholder="VD: Hồ Chí Minh"
-                className="w-full border border-slate-300 p-3 rounded-lg mt-1"
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Hình thức làm việc</label>
-            <select
-              name="jobType"
-              value={form.jobType}
-              onChange={handleChange}
-              className="w-full border border-slate-300 p-3 rounded-lg mt-1"
-            >
-              <option value="Full-time">Toàn thời gian</option>
-              <option value="Part-time">Bán thời gian</option>
-              <option value="Remote">Remote</option>
-            </select>
-          </div>
-
-          <button
-            onClick={handleSubmit}
-            className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-lg font-semibold transition"
-          >
-            Đăng tin tuyển dụng
-          </button>
-        </div>
+      <div className="max-w-3xl mx-auto">
+        <StepIndicator step={step} />
+        {step === 1 && Step1}
+        {step === 2 && Step2}
+        {step === 3 && Step3}
       </div>
     </div>
   );

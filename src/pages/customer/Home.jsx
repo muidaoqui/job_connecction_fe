@@ -3,6 +3,8 @@ import Slider from "react-slick";
 import axios from "axios";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { message } from "antd";
+import useSavedJobs from "../../hooks/useSavedJobs";
+
 
 // Nút mũi tên trái
 function PrevArrow({ onClick }) {
@@ -61,8 +63,8 @@ function Home() {
   const [companiesLoading, setCompaniesLoading] = useState(false);
   const [topCompaniesLoading, setTopCompaniesLoading] = useState(false);
   const [recruitersLoading, setRecruitersLoading] = useState(false);
+  const { savedJobsMap, toggleSaveJob } = useSavedJobs();
 
-  const [savedJobsMap, setSavedJobsMap] = useState({});
 
   // Check if user is logged in
   useEffect(() => {
@@ -214,7 +216,7 @@ function Home() {
       setRecommendedLoading(true);
       try {
         console.log("Fetching recommendations with token:", token.substring(0, 20) + "...");
-        
+
         const res = await axios.get(
           `${API}/api/embeddings/recommendations/jobs?limit=6`,
           {
@@ -234,7 +236,7 @@ function Home() {
       } catch (err) {
         console.error("Lỗi khi lấy recommended jobs:", err);
         console.error("Error response:", err.response?.data);
-        
+
 
         if (err.response?.status === 404 || err.response?.status === 401) {
           setNeedsProfile(true);
@@ -391,7 +393,10 @@ function Home() {
                   </span>
 
                   <button
-                    onClick={(e) => handleSaveJob(job._id, e)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSaveJob(job._id);
+                    }}
                     className={`px-3 py-1 rounded-lg text-sm transition ${savedJobsMap[job._id]
                       ? "bg-red-100 text-red-600"
                       : "bg-gray-100 text-gray-600"
@@ -399,6 +404,7 @@ function Home() {
                   >
                     {savedJobsMap[job._id] ? "❤️ Đã Lưu" : "🤍 Lưu"}
                   </button>
+
 
                 </div>
               </div>
@@ -483,14 +489,18 @@ function Home() {
                     </span>
 
                     <button
-                      onClick={(e) => handleSaveJob(job._id, e)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSaveJob(job._id);
+                      }}
                       className={`px-3 py-1 rounded-lg text-sm transition ${savedJobsMap[job._id]
-                        ? "bg-red-100 text-red-600"
-                        : "bg-gray-100 text-gray-600"
+                          ? "bg-red-100 text-red-600"
+                          : "bg-gray-100 text-gray-600"
                         }`}
                     >
                       {savedJobsMap[job._id] ? "❤️ Đã Lưu" : "🤍 Lưu"}
                     </button>
+
                   </div>
                 </div>
               ))

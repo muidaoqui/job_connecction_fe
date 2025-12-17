@@ -46,6 +46,13 @@ function Login() {
         return; 
       }
 
+      if (user.status === "banned") {
+        toast.error("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+        setError("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.");
+        setLoading(false);
+        return;
+      }
+
       // Lưu token và thông tin user vào localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));

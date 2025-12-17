@@ -1,5 +1,10 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
 import CustomerLayout from "./components/customer/CustomerLayout";
@@ -20,8 +25,14 @@ import CusJobSearch from "./pages/customer/JobSearch";
 import Recruiters from "./pages/customer/Recruiters";
 import People from "./pages/customer/People";
 import CompanyDetail from "./pages/customer/CompanyDetail";
+
 import ApplyJob from "./pages/customer/ApplyJob";
 import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
+
+import "react-toastify/dist/ReactToastify.css";
+
+// import ApplyJob from "./pages/customer/ApplyJob";
+// import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
 
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -41,9 +52,10 @@ import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import UsersPage from "./pages/admin/User";
 import AdminPendingJobs from "./pages/admin/Job";
-
+import Verification from "./pages/recruiter/Verification";
 import "react-toastify/dist/ReactToastify.css";
 import AdminJob from "./pages/admin/Jobs";
+import RecruiterVerification from "./pages/admin/RecruiterVerification";
 // import CreateJob from "./pages/recruiter/CreateJob";
 // import ManageJobs from "./pages/recruiter/ManageJobs";
 // import Applicants from "./pages/recruiter/Applicants";
@@ -59,7 +71,6 @@ import AdminJob from "./pages/admin/Jobs";
 // import AdminDashboard from "./pages/admin/Dashboard";
 // import UsersPage from "./pages/admin/User";
 
-
 // ========================
 // AUTH GUARD
 // ========================
@@ -67,7 +78,6 @@ const RequireAuth = ({ children }) => {
   const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/login" replace />;
 };
-
 
 // ========================
 // MAIN APP
@@ -83,7 +93,6 @@ function App() {
           <Route index element={<Home />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
-
           {/* Profile section */}
           <Route path="customer" element={<Profile />}>
             <Route path="navbar" element={<Navbar />} />
@@ -93,7 +102,6 @@ function App() {
             <Route path="emailmanagement" element={<EmailMana />} />
             <Route path="pertest" element={<PerTest />} />
           </Route>
-
           {/* Public customer pages */}
           <Route path="companies" element={<Companies />} />
           <Route path="recruiters" element={<Recruiters />} />
@@ -102,17 +110,14 @@ function App() {
           <Route path="job/:id" element={<CusJobDetail />} />
           <Route path="job-search" element={<CusJobSearch />} />
           <Route path="apply-job/:id" element={<ApplyJob />} />
-
           {/* Others */}
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ResetPassword />} />
           <Route path="jobs" element={<JobSearch />} />
           <Route path="jobs/:id" element={<JobDetail />} />
-=======
+          =======
           <Route path="/recruiter/manage-job/edit/:id" element={<EditJob />} />
           <Route path="/recruiter/profile" element={<RecruiterProfile />} />
-
-
           {/* Xem ứng viên theo từng job */}
           <Route path="/recruiter/applicants" element={<Applicants />} />
           <Route path="profile" element={<Profile />} />
@@ -120,7 +125,6 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/jobs" element={<JobSearch />} />
           <Route path="/jobs/:id" element={<JobDetail />} />
-
           <Route path="/recruiter/create-job" element={<CreateJob />} />
           <Route path="/recruiter/manage-jobs" element={<ManageJobs />} />
           <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
@@ -189,7 +193,6 @@ function App() {
           />
         </Route>
 
-
         {/** ---------------- RECRUITER AREA ---------------- */}
         <Route
           path="/recruiter/dashboard"
@@ -254,6 +257,14 @@ function App() {
           }
         />
 
+        <Route
+          path="/recruiter/verification"
+          element={
+            <RequireAuth>
+              <Verification />
+            </RequireAuth>
+          }
+        />
 
         {/** ---------------- ADMIN AREA ---------------- */}
         <Route
@@ -267,8 +278,11 @@ function App() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="jobs" element={<AdminPendingJobs />} />
+          <Route
+            path="recruiters-verification"
+            element={<RecruiterVerification />}
+          />
         </Route>
-
       </Routes>
     </Router>
   );

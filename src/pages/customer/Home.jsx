@@ -6,7 +6,6 @@ import { message } from "antd";
 import useSavedJobs from "../../hooks/useSavedJobs";
 
 
-// Nút mũi tên trái
 function PrevArrow({ onClick }) {
   return (
     <button
@@ -18,7 +17,6 @@ function PrevArrow({ onClick }) {
   );
 }
 
-// Nút mũi tên phải
 function NextArrow({ onClick }) {
   return (
     <button
@@ -39,8 +37,9 @@ const sliderSettings = {
   speed: 600,
   slidesToShow: 1,
   slidesToScroll: 1,
-  prevArrow: <PrevArrow />,
+  prevArrow: <PrevArrow />, 
   nextArrow: <NextArrow />,
+  lazyLoad: 'ondemand',
 };
 
 function Home() {
@@ -284,36 +283,19 @@ function Home() {
       <div className="w-full my-4 relative">
         <Slider {...sliderSettings}>
           {topCompaniesLoading ? (
-            <div className="flex justify-center items-center h-[400px]">
-              <p className="text-gray-500">Đang tải công ty...</p>
-            </div>
+            <div className="flex justify-center items-center h-[400px]"><p>Đang tải công ty...</p></div>
           ) : topCompanies.length === 0 ? (
-            <div className="flex justify-center items-center h-[400px]">
-              <p className="text-gray-500">Hiện chưa có công ty</p>
-            </div>
+            <div className="flex justify-center items-center h-[400px]"><p>Hiện chưa có công ty</p></div>
           ) : (
-            topCompanies.map((company) => (
-              <div key={company._id} className="px-2">
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-100 h-[400px] rounded-2xl shadow-lg flex flex-col items-center justify-center p-8 text-center hover:shadow-xl transition cursor-pointer">
-                  {company.logo && (
-                    <img src={company.logo} alt={company.name} className="h-24 object-contain mb-6" />
-                  )}
-                  <h2 className="text-3xl font-bold text-blue-600 mb-3">{company.name}</h2>
-
-                  {company.industry && (<p className="text-lg text-gray-600 mb-2">{company.industry}</p>)}
-                  {company.description && (<p className="text-gray-600 max-w-md mb-4">{company.description}</p>)}
-
-                  <div className="flex gap-6 justify-center text-sm text-gray-700 mb-6">
-                    {company.country && <span>📍 {company.country}</span>}
-                    {company.size && <span>👥 {company.size}</span>}
+            topCompanies.map(c => (
+              <div key={c._id} className="px-2">
+                <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition cursor-pointer">
+                  {c.coverImage && <img src={c.coverImage} alt={c.name} className="w-full h-full object-cover" />}
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center p-6">
+                    {c.logo && <img src={c.logo} alt={c.name} className="h-24 object-contain mb-4" />}
+                    <h2 className="text-3xl font-bold text-white mb-4">{c.name}</h2>
+                    <button onClick={() => window.location.href=`/company/${c._id}`} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition">Xem Chi Tiết</button>
                   </div>
-
-                  <button
-                    onClick={(e) => { e.stopPropagation(); window.location.href = `/company/${company._id}`; }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
-                  >
-                    Xem Chi Tiết
-                  </button>
                 </div>
               </div>
             ))

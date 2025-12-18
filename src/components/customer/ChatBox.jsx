@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 const ChatBox = () => {
   const [open, setOpen] = useState(false);
@@ -6,25 +6,120 @@ const ChatBox = () => {
   const [messages, setMessages] = useState([
     { from: "bot", text: "Xin chào! Tôi có thể giúp gì cho bạn?" }
   ]);
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef(null);
 
-  const summarizeText = async (text) => {
-    const res = await fetch(import.meta.env.VITE_API_URL + "/summarize", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text })
-    });
-    const data = await res.json();
-    return data;
+  // API URL - thay đổi nếu cần
+  const API_URL = "http://localhost:8080/api/llm/generate-text";
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    setMessages((prev) => [...prev, { from: "user", text: input }]);
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const generateResponse = async (userMessage) => {
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ 
+          prompt: userMessage,
+          maxTokens: 200
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.result) {
+        return data.result;
+      } else {
+        throw new Error(data.message || "Không nhận được phản hồi hợp lệ");
+      }
+    } catch (error) {
+      console.error("API Error:", error);
+      return "Xin lỗi, tôi đang gặp sự cố kỹ thuật. Vui lòng thử lại sau.";
+    }
+  };
+
+  const handleSend = async () => {
+    if (!input.trim() || loading) return;
+
+    const userMessage = input.trim();
     setInput("");
-    // Gọi API tóm tắt
-    const res = await summarizeText(input);
-    setMessages((prev) => [...prev, { from: "bot", text: res.summary || "Không có kết quả" }]);
+    
+    // Thêm tin nhắn người dùng
+    setMessages((prev) => [...prev, { from: "user", text: userMessage }]);
+    
+    // Hiển thị trạng thái đang xử lý
+    setLoading(true);
+    setMessages((prev) => [...prev, { from: "bot", text: "Đang xử lý...", typing: true }]);
+
+    // Gọi API
+    const botResponse = await generateResponse(userMessage);
+    
+    // Xóa tin nhắn "Đang xử lý..." và thêm phản hồi thực
+    setMessages((prev) => {
+      const filtered = prev.filter(msg => !msg.typing);
+      return [...filtered, { from: "bot", text: botResponse }];
+    });
+    setLoading(false);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const formatMessage = (text) => {
+    // Escape HTML để tránh XSS
+    let formatted = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // Format code blocks ```code```
+    formatted = formatted.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+      return `<div style="background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 8px; margin: 8px 0; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 13px;"><div style="color: #94a3b8; font-size: 11px; margin-bottom: 6px;">${lang || 'code'}</div><pre style="margin: 0; white-space: pre-wrap;">${code.trim()}</pre></div>`;
+    });
+
+    // Format inline code `code`
+    formatted = formatted.replace(/`([^`]+)`/g, '<code style="background: #f1f5f9; color: #e11d48; padding: 2px 6px; border-radius: 4px; font-family: \'Courier New\', monospace; font-size: 13px;">$1</code>');
+
+    // Format bold **text**
+    formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong style="font-weight: 600;">$1</strong>');
+
+    // Format italic *text*
+    formatted = formatted.replace(/\*([^*]+)\*/g, '<em style="font-style: italic;">$1</em>');
+
+    // Format numbered lists
+    formatted = formatted.replace(/^\d+\.\s+(.+)$/gm, '<div style="margin: 4px 0; padding-left: 8px;">• $1</div>');
+
+    // Format bullet lists
+    formatted = formatted.replace(/^[-*]\s+(.+)$/gm, '<div style="margin: 4px 0; padding-left: 8px;">• $1</div>');
+
+    // Format links [text](url)
+    formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color: #2563eb; text-decoration: underline;">$1</a>');
+
+    // Format line breaks
+    formatted = formatted.replace(/\n/g, '<br/>');
+
+    // Format headers
+    formatted = formatted.replace(/^### (.+)$/gm, '<div style="font-size: 15px; font-weight: 600; margin: 10px 0 6px 0;">$1</div>');
+    formatted = formatted.replace(/^## (.+)$/gm, '<div style="font-size: 16px; font-weight: 700; margin: 12px 0 8px 0;">$1</div>');
+    formatted = formatted.replace(/^# (.+)$/gm, '<div style="font-size: 17px; font-weight: 700; margin: 14px 0 10px 0;">$1</div>');
+
+    return formatted;
   };
 
   return (
@@ -33,126 +128,229 @@ const ChatBox = () => {
       bottom: 24,
       right: 24,
       zIndex: 1000,
-      fontFamily: "inherit"
+      fontFamily: "system-ui, -apple-system, sans-serif"
     }}>
       {open ? (
         <div style={{
-          width: 320,
-          height: 400,
+          width: 360,
+          height: 500,
           background: "#fff",
-          borderRadius: 12,
-          boxShadow: "0 2px 16px rgba(0,0,0,0.15)",
+          borderRadius: 16,
+          boxShadow: "0 4px 24px rgba(0,0,0,0.15)",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden"
         }}>
+          {/* Header */}
           <div style={{
-            background: "#2563eb",
+            background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
             color: "#fff",
-            padding: "12px 16px",
-            fontWeight: "bold",
+            padding: "16px 20px",
+            fontWeight: "600",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center"
           }}>
-            <span>Hỗ trợ trực tuyến</span>
+            <div>
+              <div style={{ fontSize: 16 }}>Hỗ trợ trực tuyến</div>
+              <div style={{ fontSize: 12, opacity: 0.9, marginTop: 2 }}>
+                {loading ? "Đang trả lời..." : "Sẵn sàng hỗ trợ"}
+              </div>
+            </div>
             <button
               onClick={() => setOpen(false)}
               style={{
-                background: "transparent",
+                background: "rgba(255,255,255,0.2)",
                 border: "none",
                 color: "#fff",
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
                 fontSize: 20,
-                cursor: "pointer"
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "background 0.2s"
               }}
+              onMouseEnter={(e) => e.target.style.background = "rgba(255,255,255,0.3)"}
+              onMouseLeave={(e) => e.target.style.background = "rgba(255,255,255,0.2)"}
               aria-label="Đóng"
             >×</button>
           </div>
+
+          {/* Messages Area */}
           <div style={{
             flex: 1,
-            padding: 16,
+            padding: "16px 20px",
             overflowY: "auto",
-            background: "#f9fafb"
+            background: "#f8fafc"
           }}>
             {messages.map((msg, idx) => (
               <div
                 key={idx}
                 style={{
-                  marginBottom: 10,
-                  textAlign: msg.from === "user" ? "right" : "left"
+                  marginBottom: 12,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: msg.from === "user" ? "flex-end" : "flex-start"
                 }}
               >
-                <span
+                <div
                   style={{
                     display: "inline-block",
-                    background: msg.from === "user" ? "#2563eb" : "#e5e7eb",
-                    color: msg.from === "user" ? "#fff" : "#111",
-                    borderRadius: 16,
-                    padding: "8px 14px",
-                    maxWidth: 220,
-                    wordBreak: "break-word"
+                    background: msg.from === "user" 
+                      ? "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)" 
+                      : "#ffffff",
+                    color: msg.from === "user" ? "#fff" : "#1e293b",
+                    borderRadius: msg.from === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                    padding: "12px 16px",
+                    maxWidth: 260,
+                    wordBreak: "break-word",
+                    fontSize: 14,
+                    lineHeight: 1.6,
+                    boxShadow: msg.from === "user" 
+                      ? "0 2px 8px rgba(37,99,235,0.3)" 
+                      : "0 2px 8px rgba(0,0,0,0.08)",
+                    animation: msg.typing ? "pulse 1.5s infinite" : "none",
+                    whiteSpace: "pre-wrap"
                   }}
-                >
-                  {msg.text}
-                </span>
+                  dangerouslySetInnerHTML={{
+                    __html: formatMessage(msg.text)
+                  }}
+                />
               </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
-          <form
-            onSubmit={handleSend}
-            style={{
-              display: "flex",
-              borderTop: "1px solid #e5e7eb",
-              background: "#fff"
-            }}
-          >
+
+          {/* Input Area */}
+          <div style={{
+            display: "flex",
+            borderTop: "1px solid #e2e8f0",
+            background: "#fff",
+            padding: "12px 16px",
+            gap: 8
+          }}>
             <input
               type="text"
               value={input}
               onChange={e => setInput(e.target.value)}
-              placeholder="Nhập tin nhắn..."
+              onKeyPress={handleKeyPress}
+              placeholder="Nhập câu hỏi của bạn..."
+              disabled={loading}
               style={{
                 flex: 1,
-                border: "none",
+                border: "1px solid #e2e8f0",
                 outline: "none",
-                padding: 12,
-                fontSize: 15,
-                background: "transparent"
+                padding: "10px 14px",
+                fontSize: 14,
+                borderRadius: 20,
+                background: loading ? "#f8fafc" : "#fff",
+                transition: "border 0.2s"
               }}
+              onFocus={(e) => e.target.style.border = "1px solid #2563eb"}
+              onBlur={(e) => e.target.style.border = "1px solid #e2e8f0"}
             />
             <button
-              type="submit"
+              onClick={handleSend}
+              disabled={loading || !input.trim()}
               style={{
-                background: "#2563eb",
+                background: loading || !input.trim() 
+                  ? "#94a3b8" 
+                  : "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
                 color: "#fff",
                 border: "none",
-                padding: "0 18px",
-                fontWeight: "bold",
-                cursor: "pointer",
-                borderRadius: 0
+                padding: "10px 20px",
+                fontWeight: "600",
+                cursor: loading || !input.trim() ? "not-allowed" : "pointer",
+                borderRadius: 20,
+                fontSize: 14,
+                transition: "transform 0.2s, box-shadow 0.2s",
+                boxShadow: "0 2px 8px rgba(37,99,235,0.3)"
               }}
-            >Gửi</button>
-          </form>
+              onMouseEnter={(e) => {
+                if (!loading && input.trim()) {
+                  e.target.style.transform = "translateY(-1px)";
+                  e.target.style.boxShadow = "0 4px 12px rgba(37,99,235,0.4)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "translateY(0)";
+                e.target.style.boxShadow = "0 2px 8px rgba(37,99,235,0.3)";
+              }}
+            >
+              {loading ? "..." : "Gửi"}
+            </button>
+          </div>
         </div>
       ) : (
         <button
           onClick={() => setOpen(true)}
           style={{
-            width: 56,
-            height: 56,
+            width: 64,
+            height: 64,
             borderRadius: "50%",
-            background: "#2563eb",
+            background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
             color: "#fff",
             border: "none",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
-            fontSize: 28,
-            cursor: "pointer"
+            boxShadow: "0 4px 16px rgba(37,99,235,0.4)",
+            fontSize: 32,
+            cursor: "pointer",
+            transition: "transform 0.3s, box-shadow 0.3s",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = "scale(1.1)";
+            e.target.style.boxShadow = "0 6px 20px rgba(37,99,235,0.5)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = "scale(1)";
+            e.target.style.boxShadow = "0 4px 16px rgba(37,99,235,0.4)";
           }}
           aria-label="Mở chat"
         >
           💬
         </button>
       )}
+      
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        /* Scrollbar styling */
+        div::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        div::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        
+        div::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 3px;
+        }
+        
+        div::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+      `}</style>
     </div>
   );
 };

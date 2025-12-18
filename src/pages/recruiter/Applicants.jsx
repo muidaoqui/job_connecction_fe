@@ -7,7 +7,11 @@ export default function Applicants() {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cvModal, setCvModal] = useState({ open: false, content: "", title: "" });
-  const MAX_CV_LENGTH = 50000; // hoặc giá trị phù hợp
+  const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, selectedText: "" });
+  const [translating, setTranslating] = useState(false);
+  const [translationResult, setTranslationResult] = useState("");
+  const MAX_CV_LENGTH = 50000;
+
   // Hàm xem CV
   const handleViewCV = async (filePath, name) => {
     if (!filePath) return alert("Không có file CV");
@@ -58,12 +62,97 @@ export default function Applicants() {
     }
   };
 
+  // Xử lý chọn văn bản
+  const handleTextSelection = (e) => {
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+
+    if (selectedText.length > 0) {
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      
+      setContextMenu({
+        show: true,
+        x: rect.left + rect.width / 2,
+        y: rect.top - 10,
+        selectedText: selectedText
+      });
+    } else {
+      setContextMenu({ show: false, x: 0, y: 0, selectedText: "" });
+    }
+  };
+
+  // Dịch văn bản
+  const handleTranslate = async () => {
+    if (!contextMenu.selectedText) return;
+    
+    try {
+      setTranslating(true);
+      const res = await axios.post(
+        "http://localhost:8080/api/llm/translate",
+        {
+          text: contextMenu.selectedText,
+          input_language: "English",
+          output_language: "Vietnamese"
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      
+      setTranslationResult(`<div style="background:#dbeafe;padding:12px;border-radius:8px;margin-top:10px;border-left:4px solid #3b82f6">
+        <div style="font-weight:bold;color:#1e40af;margin-bottom:6px">📝 Bản dịch:</div>
+        <div style="color:#1e3a8a">${res.data.translation || res.data.result || "Không có kết quả"}</div>
+      </div>`);
+      setContextMenu({ show: false, x: 0, y: 0, selectedText: "" });
+    } catch (err) {
+      alert("Lỗi khi dịch: " + (err?.response?.data?.message || err.message));
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  // Tóm tắt văn bản
+    const handleSummarize = async () => {
+    if (!contextMenu.selectedText) return;
+    
+    try {
+      setTranslating(true);
+      const res = await axios.post(
+        "http://localhost:8080/api/llm/summarize",
+        {
+          text: contextMenu.selectedText,
+          language: "English" // hoặc auto-detect
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      
+      // Hiển thị cả bản gốc và bản dịch
+      let displayContent = `<div style="background:#fef3c7;padding:12px;border-radius:8px;margin-top:10px;border-left:4px solid #f59e0b">
+        <div style="font-weight:bold;color:#92400e;margin-bottom:6px">✨ Tóm tắt (Tiếng Việt):</div>
+        <div style="color:#78350f">${res.data.result || "Không có kết quả"}</div>`;
+      
+      // Nếu có bản tóm tắt gốc (khác tiếng Việt)
+      if (res.data.original_summary && res.data.language !== "Vietnamese") {
+        displayContent += `<div style="margin-top:10px;padding-top:10px;border-top:1px solid #fcd34d">
+          <div style="font-weight:bold;color:#92400e;margin-bottom:6px">📄 Bản gốc (${res.data.language}):</div>
+          <div style="color:#78350f;font-size:0.9em">${res.data.original_summary}</div>
+        </div>`;
+      }
+      
+      displayContent += `</div>`;
+      
+      setTranslationResult(displayContent);
+      setContextMenu({ show: false, x: 0, y: 0, selectedText: "" });
+    } catch (err) {
+      alert("Lỗi khi tóm tắt: " + (err?.response?.data?.message || err.message));
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   const fetchApps = async () => {
     try {
       setLoading(true);
-
       const token = localStorage.getItem("token");
-
       const res = await axios.get(
         "http://localhost:8080/api/jobs/applications/all",
         {
@@ -72,7 +161,6 @@ export default function Applicants() {
           },
         }
       );
-
       setApps(res.data.apps || []);
       setLoading(false);
     } catch (err) {
@@ -84,7 +172,6 @@ export default function Applicants() {
   const updateStatus = async (appId, status) => {
     try {
       const token = localStorage.getItem("token");
-
       await axios.put(
         `http://localhost:8080/api/jobs/applications/${appId}/status`,
         { status },
@@ -92,7 +179,6 @@ export default function Applicants() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
       fetchApps();
     } catch (err) {
       console.log("Lỗi cập nhật trạng thái:", err);
@@ -102,6 +188,21 @@ export default function Applicants() {
   useEffect(() => {
     fetchApps();
   }, []);
+
+  // Đóng context menu khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setContextMenu({ show: false, x: 0, y: 0, selectedText: "" });
+    };
+    
+    if (contextMenu.show) {
+      document.addEventListener("click", handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [contextMenu.show]);
 
   const statusBadge = {
     accepted: "bg-green-100 text-green-700 border border-green-300",
@@ -155,7 +256,6 @@ export default function Applicants() {
                       {app.jobId?.title || "Không có dữ liệu"}
                     </td>
 
-                    {/* Badge trạng thái */}
                     <td className="p-4">
                       <span
                         className={`text-sm px-3 py-1 rounded-full ${statusBadge[app.status]}`}
@@ -191,7 +291,6 @@ export default function Applicants() {
                       )}
                     </td>
 
-                    {/* Nút xem CV */}
                     <td className="p-4">
                       {app.cvFile ? (
                         <button
@@ -210,12 +309,67 @@ export default function Applicants() {
             </table>
           </div>
         )}
+
         {/* Modal xem CV */}
-        <Modal open={cvModal.open} onClose={() => setCvModal({ ...cvModal, open: false })} title={cvModal.title} width={700}>
-          <div style={{ whiteSpace: "pre-wrap", maxHeight: 500, overflowY: "auto" }}
+        <Modal 
+          open={cvModal.open} 
+          onClose={() => {
+            setCvModal({ ...cvModal, open: false });
+            setTranslationResult("");
+            setContextMenu({ show: false, x: 0, y: 0, selectedText: "" });
+          }} 
+          title={cvModal.title} 
+          width={700}
+        >
+          <div 
+            style={{ whiteSpace: "pre-wrap", maxHeight: 500, overflowY: "auto" }}
+            onMouseUp={handleTextSelection}
             dangerouslySetInnerHTML={{ __html: cvModal.content }}
           />
+          
+          {/* Hiển thị kết quả dịch/tóm tắt */}
+          {translationResult && (
+            <div 
+              dangerouslySetInnerHTML={{ __html: translationResult }}
+              style={{ marginTop: "16px" }}
+            />
+          )}
         </Modal>
+
+        {/* Context Menu cho Dịch và Tóm tắt */}
+        {contextMenu.show && (
+          <div
+            style={{
+              position: "fixed",
+              top: contextMenu.y,
+              left: contextMenu.x,
+              transform: "translate(-50%, -100%)",
+              zIndex: 9999,
+              backgroundColor: "white",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              borderRadius: "8px",
+              padding: "4px",
+              display: "flex",
+              gap: "4px"
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={handleTranslate}
+              disabled={translating}
+              className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium disabled:opacity-50"
+            >
+              {translating ? "⏳" : "🌐"} Dịch
+            </button>
+            <button
+              onClick={handleSummarize}
+              disabled={translating}
+              className="px-3 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 text-sm font-medium disabled:opacity-50"
+            >
+              {translating ? "⏳" : "✨"} Tóm tắt
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

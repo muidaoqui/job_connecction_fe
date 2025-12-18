@@ -39,22 +39,11 @@ function Login() {
         return;
       }
 
-      // Kiểm tra email đã được xác thực chưa
-      if (!user.emailVerified) {
-        // Gửi lại mã OTP
-        await axios.post(`${BASE_URL}/api/auth/send-otp`, { email });
-
-        toast.warning(
-          "Email chưa được xác thực. Vui lòng kiểm tra email để lấy mã OTP!"
-        );
-        navigate("/register", {
-          state: {
-            email,
-            needVerification: true,
-          },
-        });
+      if (user.status === "banned") {
+        toast.error("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.");
+        setError("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.");
         setLoading(false);
-        return;
+        return; 
       }
 
       if (user.status === "banned") {

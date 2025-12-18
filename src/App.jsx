@@ -46,6 +46,7 @@ import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
 import ReviewApplications from "./pages/recruiter/ReviewApplications";
 import EditJob from "./pages/recruiter/EditJob";
 import CompanyProfile from "./pages/recruiter/CompanyProfile";
+import CompanyPublicProfile from "./pages/recruiter/CompanyPublicProfile";
 
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -152,6 +153,7 @@ function App() {
             path="/recruiter/applicants/manage"
             element={<ReviewApplications />}
           />
+          <Route path="/recruiter/company/:id" element={<CompanyPublicProfile />} />
           <Route
             path="/recruiter/create-job"
             element={

@@ -48,6 +48,12 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [hotJobs, setHotJobs] = useState([]);
 
+  // Recommended jobs state
+  const [recommendedJobs, setRecommendedJobs] = useState([]);
+  const [recommendedLoading, setRecommendedLoading] = useState(false);
+  const [needsProfile, setNeedsProfile] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const [companies, setCompanies] = useState([]);
   const [topCompanies, setTopCompanies] = useState([]);
   const [topRecruiters, setTopRecruiters] = useState([]);
@@ -58,13 +64,70 @@ function Home() {
 
   const [savedJobsMap, setSavedJobsMap] = useState({});
 
+  // Check if user is logged in
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  // Fetch recommended jobs for candidate
+  useEffect(() => {
+    const fetchRecommendedJobs = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.log("No token, skipping recommendations");
+        return;
+      }
+
+      setRecommendedLoading(true);
+      try {
+        console.log("Fetching recommendations with token:", token.substring(0, 20) + "...");
+
+        const res = await axios.get(
+          `${API}/api/embeddings/recommendation/jobs?limit=6`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+
+        console.log("Recommendations response:", res.data);
+
+        if (res.data.needsProfile) {
+          setNeedsProfile(true);
+          setRecommendedJobs([]);
+        } else {
+          setNeedsProfile(false);
+          setRecommendedJobs(res.data.data?.jobs || []);
+        }
+      } catch (err) {
+        console.error("Lỗi khi lấy recommended jobs:", err);
+        console.error("Error response:", err.response?.data);
+
+
+        if (err.response?.status === 404 || err.response?.status === 401) {
+          setNeedsProfile(true);
+        }
+      } finally {
+        setRecommendedLoading(false);
+      }
+    };
+
+    fetchRecommendedJobs();
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
+
   // Fetch jobs
   useEffect(() => {
     const fetchJobs = async () => {
       setLoading(true);
       try {
         const res = await axios.get(`${API}/api/jobs`);
-        const data = res.data || [];
+        const data = res.data?.data || [];
+
         setJobs(data);
         setHotJobs(data.slice(0, 6));
       } catch (err) {
@@ -79,24 +142,28 @@ function Home() {
   // Load saved jobs when logged in
   useEffect(() => {
     const loadSavedJobs = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+        const res = await axios.get(
+          "http://localhost:8080/api/candidate/saved-jobs",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
-        const res = await axios.get(`${API}/api/candidate/saved-jobs`, {
-          headers: { Authorization: `Bearer ${token}` }
+        const map = {};
+        res.data.data.forEach((item) => {
+          map[item.jobId._id] = true; // ✅ CHUẨN
         });
 
-        const saved = {};
-        (res.data?.data || []).forEach((item) => {
-          if (item.jobId?._id) saved[item.jobId._id] = true;
-        });
-
-        setSavedJobsMap(saved);
+        setSavedJobsMap(map);
       } catch (err) {
-        console.error("Lỗi khi tải saved jobs:", err);
+        console.error("Error loading saved jobs", err);
       }
     };
+
     loadSavedJobs();
   }, []);
 
@@ -134,22 +201,51 @@ function Home() {
     fetchTopCompanies();
   }, []);
 
-  // Fetch recruiters
+
+  // Fetch recommended jobs for candidate
   useEffect(() => {
-    const fetchTopRecruiters = async () => {
-      setRecruitersLoading(true);
+    const fetchRecommendedJobs = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.log("No token, skipping recommendations");
+        return;
+      }
+
+      setRecommendedLoading(true);
       try {
-        const res = await axios.get(`${API}/api/recruiter/top?limit=6`);
-        setTopRecruiters(res.data?.recruiters || []);
+        console.log("Fetching recommendations with token:", token.substring(0, 20) + "...");
+        
+        const res = await axios.get(
+          `${API}/api/embeddings/recommendations/jobs?limit=6`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+
+        console.log("Recommendations response:", res.data);
+
+        if (res.data.needsProfile) {
+          setNeedsProfile(true);
+          setRecommendedJobs([]);
+        } else {
+          setNeedsProfile(false);
+          setRecommendedJobs(res.data.data?.jobs || []);
+        }
       } catch (err) {
-        console.error("Lỗi khi lấy recruiters:", err);
+        console.error("Lỗi khi lấy recommended jobs:", err);
+        console.error("Error response:", err.response?.data);
+        
+
+        if (err.response?.status === 404 || err.response?.status === 401) {
+          setNeedsProfile(true);
+        }
       } finally {
-        setRecruitersLoading(false);
+        setRecommendedLoading(false);
       }
     };
-    fetchTopRecruiters();
-  }, []);
 
+    fetchRecommendedJobs();
+  }, [isLoggedIn]);
   const handleSaveJob = async (jobId, e) => {
     e.stopPropagation();
     try {
@@ -252,6 +348,8 @@ function Home() {
           )}
         </div>
       </div>
+      {/* ========== Recommendations JOBS ========== */}
+
 
       {/* ========== HOT JOBS ========== */}
       <div className="flex flex-col gap-2 my-4 px-10 min-h-screen">
@@ -294,14 +392,14 @@ function Home() {
 
                   <button
                     onClick={(e) => handleSaveJob(job._id, e)}
-                    className={`px-3 py-1 rounded-lg text-sm transition ${
-                      savedJobsMap[job._id]
-                        ? "bg-red-100 text-red-600"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
+                    className={`px-3 py-1 rounded-lg text-sm transition ${savedJobsMap[job._id]
+                      ? "bg-red-100 text-red-600"
+                      : "bg-gray-100 text-gray-600"
+                      }`}
                   >
                     {savedJobsMap[job._id] ? "❤️ Đã Lưu" : "🤍 Lưu"}
                   </button>
+
                 </div>
               </div>
             ))
@@ -318,6 +416,99 @@ function Home() {
           </button>
         </div>
       </div>
+
+      {/* ========== RECOMMENDED JOBS (Only for logged in candidates) ========== */}
+      {isLoggedIn && (
+        <div className="flex flex-col gap-2 my-4 px-10 min-h-[400px] bg-gradient-to-b from-green-50 to-white">
+          <h1 className="text-3xl text-green-600 font-bold ml-10 mt-6">✨ CÔNG VIỆC GỢI Ý CHO BẠN</h1>
+          <p className="ml-10 text-gray-600">Dựa trên hồ sơ và kỹ năng của bạn</p>
+
+          <div className="grid grid-cols-3 gap-6 mt-6">
+            {recommendedLoading ? (
+              <p className="text-gray-500 col-span-3 text-center">Đang tải gợi ý công việc...</p>
+            ) : needsProfile ? (
+              <div className="col-span-3 flex flex-col items-center justify-center py-12 px-6 bg-yellow-50 rounded-xl border-2 border-yellow-200">
+                <div className="text-6xl mb-4">📝</div>
+                <h3 className="text-xl font-bold text-yellow-700 mb-2">Hoàn thiện hồ sơ để nhận gợi ý công việc</h3>
+                <p className="text-gray-600 text-center mb-6 max-w-lg">
+                  Hãy cập nhật đầy đủ thông tin về học vấn, kinh nghiệm làm việc, dự án và kỹ năng của bạn.
+                  Hãy cập nhật đầy đủ thông tin về học vấn, kinh nghiệm làm việc, dự án và kỹ năng của bạn.
+                  Hệ thống sẽ tự động gợi ý những công việc phù hợp nhất với bạn!
+                </p>
+                <button
+                  onClick={() => window.location.href = "/customer/mysaramin"}
+                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold shadow-md transition"
+                >
+                  Cập Nhật Hồ Sơ Ngay →
+                </button>
+              </div>
+            ) : recommendedJobs.length === 0 ? (
+              <div className="col-span-3 text-center py-12">
+                <p className="text-gray-500">Hiện chưa có công việc phù hợp với hồ sơ của bạn.</p>
+              </div>
+            ) : (
+              recommendedJobs.map((job) => (
+                <div
+                  key={job._id}
+                  className="rounded-xl border-2 border-green-200 p-5 bg-white shadow-sm hover:shadow-lg transition cursor-pointer relative"
+                  onClick={() => window.location.href = `/job/${job._id}`}
+                >
+                  {/* Match score badge */}
+                  {job.score && (
+                    <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-3 py-1 rounded-full font-bold">
+                      {Math.round(job.score * 100)}% Phù hợp
+                    </div>
+                  )}
+
+                  <h3 className="text-lg font-bold text-green-600 mb-1">{job.title}</h3>
+                  <p className="text-sm font-semibold text-gray-700">
+                    {job.companyId?.name || job.recruiterId?.companyId?.name || "Nhà tuyển dụng"}
+                    <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-3 py-1 rounded-full shadow">
+                      ⭐ {Math.round(job.score * 100)}% phù hợp
+                    </div>
+                  </p>
+                  {/* <h3 className="text-lg font-bold text-green-700 mb-1">{job.title}</h3> */}
+                  {/* <p className="text-sm font-semibold text-gray-700">
+                    {job.companyId?.name || job.recruiterId?.name || "Nhà tuyển dụng"}
+                  </p> */}
+
+                  <div className="space-y-2 my-4">
+                    <p className="text-sm text-gray-700">📍 {job.location || "Chưa rõ"}</p>
+                    <p className="text-green-600 font-bold">{job.salary || "Thương lượng"}</p>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                    <span className="text-xs text-gray-500">
+                      {new Date(job.createdAt).toLocaleDateString("vi-VN")}
+                    </span>
+
+                    <button
+                      onClick={(e) => handleSaveJob(job._id, e)}
+                      className={`px-3 py-1 rounded-lg text-sm transition ${savedJobsMap[job._id]
+                        ? "bg-red-100 text-red-600"
+                        : "bg-gray-100 text-gray-600"
+                        }`}
+                    >
+                      {savedJobsMap[job._id] ? "❤️ Đã Lưu" : "🤍 Lưu"}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {!needsProfile && recommendedJobs.length > 0 && (
+            <div className="text-center mt-6 mb-10">
+              <button
+                onClick={() => window.location.href = "/job-search"}
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold shadow-md"
+              >
+                Xem Thêm Công Việc →
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ========== COMPANIES GRID FULL ========== */}
       <div className="flex flex-col gap-2 my-4 px-10 min-h-screen bg-gradient-to-b from-blue-50 to-white">

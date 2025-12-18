@@ -79,6 +79,25 @@ const RequireAuth = ({ children }) => {
 };
 
 // ========================
+// REQUIRE ROLE (PREVENT OTHER USERS ACCESS TO ADMIN ROUTES)
+// ========================
+const RequireRole = ({ allow, children }) => {
+  const userStr = localStorage.getItem("user");
+
+  if (!userStr) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const user = JSON.parse(userStr);
+
+  // check role
+  if (!allow.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+// ========================
 // MAIN APP
 // ========================
 function App() {
@@ -269,7 +288,9 @@ function App() {
           path="/admin"
           element={
             <RequireAuth>
-              <AdminLayout />
+              <RequireRole allow={["admin"]}>
+                <AdminLayout />
+              </RequireRole>
             </RequireAuth>
           }
         >

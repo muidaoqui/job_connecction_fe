@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Card, Empty, Spin, Tag } from "antd";
+import { Button, Card, Empty, Spin, Tag, message } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -11,48 +11,72 @@ const CompanyDetail = () => {
   const [company, setCompany] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [recruiters, setRecruiters] = useState([]);
+  const [followingCompanies, setFollowingCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const VITE_API_URL = import.meta.env.VITE_API_URL;
+  const API = import.meta.env.VITE_API_URL;
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (companyId) fetchCompanyDetail();
+    if (companyId) {
+      fetchCompanyDetail();
+      fetchFollowingCompanies();
+    }
   }, [companyId]);
 
+  /* ================= FOLLOW ================= */
+  const fetchFollowingCompanies = async () => {
+    if (!token) return;
+    try {
+      const res = await axios.get(`${API}/api/company/following`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const ids = res.data.data.map(item => item.companyId._id);
+      setFollowingCompanies(ids);
+    } catch (err) {
+      console.error("Fetch following companies error", err);
+    }
+  };
+
+  const handleFollow = async () => {
+    if (!token) {
+      message.warning("Vui lòng đăng nhập để theo dõi công ty");
+      return;
+    }
+
+    try {
+      const isFollowing = followingCompanies.includes(companyId);
+
+      await axios.post(
+        `${API}/api/company/${companyId}/${isFollowing ? "unfollow" : "follow"}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      message.success(isFollowing ? "Đã bỏ theo dõi" : "Đã theo dõi công ty");
+      fetchFollowingCompanies();
+    } catch (err) {
+      console.error("Follow error", err);
+      message.error("Thao tác thất bại");
+    }
+  };
+
+  /* ================= FETCH DATA ================= */
   const fetchCompanyDetail = async () => {
     setLoading(true);
     try {
-      /* ================= COMPANY ================= */
-      const companyRes = await axios.get(
-        `${VITE_API_URL}/api/company/${companyId}`
+      const companyRes = await axios.get(`${API}/api/company/${companyId}`);
+      setCompany(companyRes.data?.company || companyRes.data?.data || null);
+
+      const jobsRes = await axios.get(`${API}/api/jobs?companyId=${companyId}`);
+      setJobs(Array.isArray(jobsRes.data?.data) ? jobsRes.data.data.slice(0, 6) : []);
+
+      const recruitersRes = await axios.get(`${API}/api/recruiter?companyId=${companyId}`);
+      setRecruiters(
+        Array.isArray(recruitersRes.data?.recruiters)
+          ? recruitersRes.data.recruiters
+          : []
       );
-
-      const companyData =
-        companyRes.data?.company || companyRes.data?.data || null;
-
-      setCompany(companyData);
-
-      /* ================= JOBS ================= */
-      const jobsRes = await axios.get(
-        `${VITE_API_URL}/api/jobs?companyId=${companyId}`
-      );
-
-      const jobsData = Array.isArray(jobsRes.data?.data)
-        ? jobsRes.data.data
-        : [];
-
-      setJobs(jobsData.slice(0, 6));
-
-      /* ================= RECRUITERS ================= */
-      const recruitersRes = await axios.get(
-        `${VITE_API_URL}/api/recruiter?companyId=${companyId}`
-      );
-
-      const recruitersData = Array.isArray(recruitersRes.data?.recruiters)
-        ? recruitersRes.data.recruiters
-        : [];
-
-      setRecruiters(recruitersData);
     } catch (error) {
       console.error("❌ Lỗi khi lấy chi tiết công ty:", error);
     } finally {
@@ -60,7 +84,7 @@ const CompanyDetail = () => {
     }
   };
 
-  /* ================= LOADING ================= */
+  /* ================= UI ================= */
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -69,21 +93,18 @@ const CompanyDetail = () => {
     );
   }
 
-  /* ================= NOT FOUND ================= */
   if (!company) {
     return (
       <div className="container mx-auto px-6 py-6">
-        <Button
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate(-1)}
-          className="mb-4"
-        >
+        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
           Quay lại
         </Button>
         <Empty description="Không tìm thấy công ty" />
       </div>
     );
   }
+
+  const isFollowing = followingCompanies.includes(companyId);
 
   return (
     <div className="container mx-auto px-6 py-6 bg-gray-50 min-h-screen">
@@ -118,15 +139,28 @@ const CompanyDetail = () => {
           )}
 
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-blue-600 mb-3">
-              {company.name}
-            </h1>
+            <div className="flex justify-between gap-4">
+              <div>
+                <h1 className="text-4xl font-bold text-blue-600 mb-3">
+                  {company.name}
+                </h1>
 
-            {company.industry && (
-              <Tag color="blue" className="mb-3">
-                {company.industry}
-              </Tag>
-            )}
+                {company.industry && (
+                  <Tag color="blue" className="mb-3">
+                    {company.industry}
+                  </Tag>
+                )}
+              </div>
+              <div>
+              <Button
+                type={isFollowing ? "default" : "primary"}
+                danger={isFollowing}
+                onClick={handleFollow}
+              >
+                {isFollowing ? "Bỏ theo dõi" : "Theo dõi"}
+              </Button>
+            </div>
+            </div>
 
             <div className="grid grid-cols-3 gap-4 text-sm bg-gray-50 p-4 rounded">
               {company.country && (

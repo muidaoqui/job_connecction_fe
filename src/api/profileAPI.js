@@ -1,4 +1,5 @@
 import axios from "axios";
+const API = "http://localhost:8080";
 
 const BASE_URL = "http://localhost:8080/api/candidate";
 
@@ -126,3 +127,25 @@ export const getViewedJobs = () =>
 
 export const removeViewedJob = (jobViewId) =>
   axios.delete(`${BASE_URL}/viewed-jobs/${jobViewId}`, getAuthHeaders());
+
+export const getFollowedCompanies = () => {
+  const token = localStorage.getItem("token");
+  return axios.get(`${API}/api/company/following`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const unfollowCompany = (companyId) => {
+  const token = localStorage.getItem("token");
+  return axios.post(
+    `${API}/api/company/${companyId}/unfollow`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};

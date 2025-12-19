@@ -4,6 +4,7 @@ import axios from "axios";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { message } from "antd";
 import useSavedJobs from "../../hooks/useSavedJobs";
+import { toast } from "react-toastify";
 
 
 function PrevArrow({ onClick }) {
@@ -48,6 +49,8 @@ function Home() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hotJobs, setHotJobs] = useState([]);
+  const [followingCompanies, setFollowingCompanies] = useState([]);
+
 
   // Recommended jobs state
   const [recommendedJobs, setRecommendedJobs] = useState([]);
@@ -276,6 +279,73 @@ function Home() {
     }
   };
 
+
+
+  const fetchFollowingCompanies = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `${API}/api/company/following`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Lấy ra mảng companyId
+      const ids = res.data.data.map(item => item.companyId._id);
+      setFollowingCompanies(ids);
+    } catch (error) {
+      console.error("Fetch following companies error", error);
+    }
+  };
+
+  const handleFollow = async (companyId, isFollowing) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast.warning("Vui lòng đăng nhập để theo dõi công ty");
+      return;
+    }
+
+    try {
+      if (isFollowing) {
+        await axios.post(
+          `${API}/api/company/${companyId}/unfollow`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setFollowingCompanies(prev =>
+          prev.filter(id => id !== companyId)
+        );
+      } else {
+        await axios.post(
+          `${API}/api/company/${companyId}/follow`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setFollowingCompanies(prev => [...prev, companyId]);
+      }
+    } catch (error) {
+      if (error.response?.status === 400) {
+        toast.info("Bạn đã theo dõi công ty này rồi");
+      } else {
+        console.error("Follow error:", error);
+      }
+    }
+  };
+
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchFollowingCompanies();
+    }
+  }, []);
+
+
+
   return (
     <div className="w-full">
 
@@ -315,7 +385,7 @@ function Home() {
           ) : (
             companies.map((company) => (
               <button
-                key={company._id}
+                key={company.companyId}
                 onClick={() => window.location.href = `/company/${company._id}`}
                 className="hover:scale-110 transition-transform duration-300 flex items-center justify-center p-2 rounded-lg hover:bg-white hover:shadow-md"
                 title={company.name}
@@ -453,15 +523,43 @@ function Home() {
                 onClick={() => window.location.href = `/company/${company._id}`}
               >
                 {company.logo && (
-                  <img src={company.logo} alt={company.name} className="h-20 object-contain mb-4" />
+                  <img src={company.logo} alt={company.name} className="w-full h-20 object-contain mb-4" />
                 )}
-                <h2 className="text-xl font-bold text-blue-600">{company.name}</h2>
+                <h2
+                  onClick={() => window.location.href = `/company/${company._id}`}
+                  className="cursor-pointer text-xl font-bold text-blue-600"
+                >
+                  {company.name}
+                </h2>
+
                 <p className="text-gray-600">{company.industry}</p>
 
-                <div className="flex gap-3 text-sm text-gray-700 mt-3">
-                  {company.country && <span>📍 {company.country}</span>}
-                  {company.size && <span>👥 {company.size}</span>}
+                <div className="flex gap-3 text-sm text-gray-700 mt-3 justify-between">
+                  <div className="flex flex-col">
+                    {company.country && <span>📍 {company.country}</span>}
+                    {company.size && <span>👥 {company.size}</span>}
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFollow(
+                        company._id,
+                        followingCompanies.includes(company._id)
+                      );
+                    }}
+                    className={`mt-4 w-1/2 py-2 rounded-lg font-semibold transition ${followingCompanies.includes(company._id)
+                        ? "bg-gray-300 text-gray-700 hover:bg-gray-400"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
+                      }`}
+                  >
+                    {followingCompanies.includes(company._id)
+                      ? "Bỏ theo dõi"
+                      : "Theo dõi"}
+                  </button>
+
+
                 </div>
+
               </div>
             ))
           )}

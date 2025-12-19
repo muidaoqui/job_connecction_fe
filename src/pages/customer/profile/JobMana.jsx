@@ -32,7 +32,10 @@ import {
     unsaveJob,
     removeViewedJob,
     getProfile,
+    getFollowedCompanies,
+    unfollowCompany,
 } from "../../../api/profileAPI";
+
 
 const JobManagementSidebar = ({ profileData }) => (
     <ProfileSidebar userName={profileData?.name} />
@@ -186,12 +189,80 @@ const JobListTab = ({ loading, jobs, onDelete, deleteLabel }) => {
     );
 };
 
+const FollowedCompanyTab = ({ loading, companies, onUnfollow }) => {
+    const navigate = useNavigate();
+
+    if (loading) return <Spin />;
+    if (!companies.length)
+        return <Empty description="Chưa theo dõi công ty nào" />;
+
+    return (
+        <div className="space-y-3">
+            {companies.map((item) => {
+                const company = item.companyId;
+                return (
+                    <Card key={item._id}>
+                        <Row justify="space-between" align="middle">
+                            <Col span={18}>
+                                <div
+                                    className="flex items-center gap-3 cursor-pointer"
+                                    onClick={() => navigate(`/company/${company._id}`)}
+                                >
+                                    {company.logo && (
+                                        <img
+                                            src={company.logo}
+                                            alt={company.name}
+                                            className="w-12 h-12 object-contain border rounded"
+                                        />
+                                    )}
+                                    <div>
+                                        <h4 className="text-blue-600 font-semibold">
+                                            {company.name}
+                                        </h4>
+                                        <p className="text-sm text-gray-600">
+                                            {company.industry} · {company.country}
+                                        </p>
+                                    </div>
+                                </div>
+                            </Col>
+
+                            <Col span={6} className="text-right">
+                                <Button
+                                    danger
+                                    icon={<DeleteOutlined />}
+                                    onClick={() => onUnfollow(company._id)}
+                                >
+                                    Bỏ theo dõi
+                                </Button>
+                            </Col>
+                        </Row>
+                    </Card>
+                );
+            })}
+        </div>
+    );
+};
+
+
 const MainContent = ({ profileData }) => {
     const [selectedResume, setSelectedResume] = useState(null);
     const [applications, setApplications] = useState([]);
     const [savedJobs, setSavedJobs] = useState([]);
-    const [viewedJobs, setViewedJobs] = useState([]);
+    const [followedCompanies, setFollowedCompanies] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const handleUnfollow = async (companyId) => {
+        try {
+            await unfollowCompany(companyId);
+            setFollowedCompanies(prev =>
+                prev.filter(item => item.companyId._id !== companyId)
+            );
+            message.success("Đã bỏ theo dõi công ty");
+        } catch (err) {
+            message.error("Bỏ theo dõi thất bại");
+        }
+    };
+
 
     const {
         resumes,
@@ -212,21 +283,24 @@ const MainContent = ({ profileData }) => {
         fetchAllData();
     }, []);
 
+
     const fetchAllData = async () => {
         try {
             setLoading(true);
-            const [a, s, v] = await Promise.all([
+            const [a, s, f] = await Promise.all([
                 getApplications(),
                 getSavedJobs(),
-                getViewedJobs(),
+                getFollowedCompanies(),
             ]);
+
             setApplications(a?.data?.data || []);
             setSavedJobs(s?.data?.data || []);
-            setViewedJobs(v?.data?.data || []);
+            setFollowedCompanies(f?.data?.data || []);
         } finally {
             setLoading(false);
         }
     };
+
 
     const subTabs = [
         {
@@ -270,16 +344,16 @@ const MainContent = ({ profileData }) => {
         },
         {
             key: "4",
-            label: "Việc đã xem",
+            label: "Công ty đã theo dõi",
             children: (
-                <JobListTab
+                <FollowedCompanyTab
                     loading={loading}
-                    jobs={viewedJobs}
-                    onDelete={removeViewedJob}
-                    deleteLabel="việc đã xem"
+                    companies={followedCompanies}
+                    onUnfollow={handleUnfollow}
                 />
             ),
-        },
+        }
+
     ];
 
     return <Tabs defaultActiveKey="1" items={subTabs} />;

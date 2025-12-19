@@ -1,85 +1,33 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { CheckCircle, XCircle, User, Briefcase, Mail } from "lucide-react";
-import Modal from "../../components/Modal";
 
 export default function Applicants() {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [cvModal, setCvModal] = useState({ open: false, content: "", title: "" });
-  const MAX_CV_LENGTH = 50000; // hoặc giá trị phù hợp
-  // Hàm xem CV
-  const handleViewCV = async (filePath, name) => {
-    if (!filePath) return alert("Không có file CV");
-    try {
-      setCvModal({ open: true, content: "Đang tải CV...", title: name || "CV Ứng viên" });
-      const res = await axios.post(
-        "http://localhost:8080/api/rags/read-pdf",
-        { filePath },
-        { headers: { "Content-Type": "application/json" } }
-      );
-      const { structure } = res.data;
-      let content = "";
 
-      // Nổi bật contactInfo
-      if (structure?.contactInfo) {
-        content += `<div style="margin-bottom:16px"><b>Thông tin liên hệ:</b><br/>`;
-        Object.entries(structure.contactInfo).forEach(([key, val]) => {
-          if (val && Array.isArray(val) && val.length > 0) {
-            content += `<span style="background: #fef08a; color: #b45309; font-weight: bold">${key}: ${val.join(", ")}</span><br/>`;
-          } else if (val) {
-            content += `<span style="background: #fef08a; color: #b45309; font-weight: bold">${key}: ${val}</span><br/>`;
-          }
-        });
-        content += `</div>`;
-      }
-
-      // Hiển thị các section
-      if (structure?.sections) {
-        structure.sections.forEach((section) => {
-          if (section.title) {
-            content += `<div style="margin-top:18px;margin-bottom:6px;font-size:1.1em;color:#2563eb;font-weight:bold">${section.title}</div>`;
-          }
-          if (section.content) {
-            content += `<div style="margin-bottom:10px;white-space:pre-line">${section.content}</div>`;
-          }
-        });
-      } else {
-        content = "Không có dữ liệu section trong CV";
-      }
-
-      setCvModal({
-        open: true,
-        content,
-        title: name || "CV Ứng viên"
-      });
-    } catch (err) {
-      setCvModal({ open: true, content: "Không thể đọc CV: " + (err?.response?.data?.message || err.message), title: name || "CV Ứng viên" });
-    }
-  };
 
   const fetchApps = async () => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
+    const token = localStorage.getItem("token");
 
-      const token = localStorage.getItem("token");
+    const res = await axios.get(
+      "http://localhost:8080/api/recruiter/applications",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-      const res = await axios.get(
-        "http://localhost:8080/api/jobs/applications/all",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setApps(res.data.apps || []);
-      setLoading(false);
-    } catch (err) {
-      console.log("Lỗi tải ứng viên:", err);
-      setLoading(false);
-    }
-  };
+    setApps(res.data.applications || []);
+  } catch (err) {
+    console.log("Lỗi tải ứng viên:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const updateStatus = async (appId, status) => {
     try {
@@ -99,9 +47,10 @@ export default function Applicants() {
     }
   };
 
-  useEffect(() => {
-    fetchApps();
-  }, []);
+
+ useEffect(() => {
+  fetchApps();
+}, []);
 
   const statusBadge = {
     accepted: "bg-green-100 text-green-700 border border-green-300",
@@ -133,7 +82,6 @@ export default function Applicants() {
                   <th className="p-4">Công việc</th>
                   <th className="p-4">Trạng thái</th>
                   <th className="p-4">Hành động</th>
-                  <th className="p-4">CV</th>
                 </tr>
               </thead>
 
@@ -190,32 +138,12 @@ export default function Applicants() {
                         </div>
                       )}
                     </td>
-
-                    {/* Nút xem CV */}
-                    <td className="p-4">
-                      {app.cvFile ? (
-                        <button
-                          onClick={() => handleViewCV(app.cvFile, app.userId?.name || app.name)}
-                          className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                        >
-                          Xem CV
-                        </button>
-                      ) : (
-                        <span className="text-gray-400 italic">Không có CV</span>
-                      )}
-                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-        {/* Modal xem CV */}
-        <Modal open={cvModal.open} onClose={() => setCvModal({ ...cvModal, open: false })} title={cvModal.title} width={700}>
-          <div style={{ whiteSpace: "pre-wrap", maxHeight: 500, overflowY: "auto" }}
-            dangerouslySetInnerHTML={{ __html: cvModal.content }}
-          />
-        </Modal>
       </div>
     </div>
   );

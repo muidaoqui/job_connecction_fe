@@ -38,9 +38,11 @@ export default function RecruiterDashboard() {
   useEffect(() => {
     if (user?._id) {
       axios
-        .get(`${import.meta.env.VITE_API_URL}/api/jobs/stats/${user._id}`)
-        .then((res) => setStats(res.data))
-        .catch((err) => console.log(err));
+  .get(`${import.meta.env.VITE_API_URL}/api/jobs/recruiter/stats`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  .then((res) => setStats(res.data))
+  .catch((err) => console.log(err));
     }
   }, [user?._id]);
 

@@ -37,7 +37,7 @@ const sliderSettings = {
   speed: 600,
   slidesToShow: 1,
   slidesToScroll: 1,
-  prevArrow: <PrevArrow />, 
+  prevArrow: <PrevArrow />,
   nextArrow: <NextArrow />,
   lazyLoad: 'ondemand',
 };
@@ -294,7 +294,7 @@ function Home() {
                   <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center p-6">
                     {c.logo && <img src={c.logo} alt={c.name} className="h-24 object-contain mb-4" />}
                     <h2 className="text-3xl font-bold text-white mb-4">{c.name}</h2>
-                    <button onClick={() => window.location.href=`/company/${c._id}`} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition">Xem Chi Tiết</button>
+                    <button onClick={() => window.location.href = `/company/${c._id}`} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition">Xem Chi Tiết</button>
                   </div>
                 </div>
               </div>
@@ -335,171 +335,104 @@ function Home() {
       {/* ========== Recommendations JOBS ========== */}
 
 
-      {/* ========== HOT JOBS ========== */}
-      <div className="flex flex-col gap-2 my-4 px-10 min-h-screen">
-        <h1 className="text-3xl text-blue-600 font-bold ml-10">🔥 CÔNG VIỆC HOT HÔM NAY</h1>
-        <p className="ml-10 text-gray-600">Những cơ hội việc làm được tìm kiếm nhiều nhất</p>
+      <section className="px-10 my-10">
+        <h1 className="text-3xl text-blue-600 font-bold mb-6">
+          🔥 CÔNG VIỆC HOT HÔM NAY
+        </h1>
 
-        <div className="grid grid-cols-3 gap-6 mt-6">
+        <div className="grid grid-cols-3 gap-6">
+          {hotJobs.map((job) => (
+            <div
+              key={job._id}
+              onClick={() => (window.location.href = `/job/${job._id}`)}
+              className="border rounded-xl p-5 bg-white shadow hover:shadow-lg cursor-pointer"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <img
+                  src={job.companyId?.logo}
+                  className="w-12 h-12 object-contain border rounded-md"
+                />
+                <div>
+                  <h3 className="font-bold text-blue-600">{job.title}</h3>
+                  <p className="text-sm font-semibold">
+                    {job.companyId?.name}
+                  </p>
+                </div>
+              </div>
 
-          {loading ? (
-            <p className="text-gray-500">Đang tải công việc...</p>
-          ) : hotJobs.length === 0 ? (
-            <p className="text-gray-500">Hiện chưa có công việc hot.</p>
-          ) : (
-            hotJobs.map((job) => (
+              <p>📍 {job.location}</p>
+              <p className="font-bold text-blue-600">{job.salary}</p>
+
+              <div className="flex justify-between mt-4 border-t pt-3">
+                <span className="text-xs text-gray-500">
+                  {new Date(job.createdAt).toLocaleDateString("vi-VN")}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSaveJob(job._id);
+                  }}
+                >
+                  {savedJobsMap[job._id] ? "❤️" : "🤍"}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ========== RECOMMENDED JOBS ========== */}
+      {isLoggedIn && (
+        <section className="px-10 my-10 bg-green-50 py-10">
+          <h1 className="text-3xl text-green-600 font-bold mb-6">
+            ✨ CÔNG VIỆC GỢI Ý CHO BẠN
+          </h1>
+
+          <div className="grid grid-cols-3 gap-6">
+            {recommendedJobs.map((job) => (
               <div
                 key={job._id}
-                className="rounded-xl border border-gray-200 p-5 bg-white shadow-sm hover:shadow-lg transition cursor-pointer"
-                onClick={() => window.location.href = `/job/${job._id}`}
+                onClick={() => (window.location.href = `/job/${job._id}`)}
+                className="border-2 border-green-200 rounded-xl p-5 bg-white shadow hover:shadow-lg cursor-pointer relative"
               >
-                {job.saveCount > 50 && (
-                  <div className="absolute top-3 right-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full">
-                    🔥 HOT ({job.saveCount})
-                  </div>
+                {job.score && (
+                  <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-3 py-1 rounded-full">
+                    {Math.round(job.score * 100)}% Phù hợp
+                  </span>
                 )}
 
-                <h3 className="text-lg font-bold text-blue-600 mb-1">{job.title}</h3>
-                <p className="text-sm font-semibold text-gray-700">
-                  {job.companyId?.name || job.recruiterId?.name || "Nhà tuyển dụng"}
-                </p>
-
-                <div className="space-y-2 my-4">
-                  <p className="text-sm text-gray-700">📍 {job.location || "Chưa rõ"}</p>
-                  <p className="text-blue-600 font-bold">{job.salary || "Thương lượng"}</p>
+                <div className="flex items-center gap-3 mb-3">
+                  <img
+                    src={job.companyId?.logo}
+                    className="w-12 h-12 object-contain border rounded-md"
+                  />
+                  <div>
+                    <h3 className="font-bold text-green-600">{job.title}</h3>
+                    <p className="text-sm font-semibold">
+                      {job.companyId?.name}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                <p>📍 {job.location}</p>
+                <p className="font-bold text-green-600">{job.salary}</p>
+                <div className="flex justify-between mt-4 border-t pt-3">
                   <span className="text-xs text-gray-500">
                     {new Date(job.createdAt).toLocaleDateString("vi-VN")}
                   </span>
-
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleSaveJob(job._id);
                     }}
-                    className={`px-3 py-1 rounded-lg text-sm transition ${savedJobsMap[job._id]
-                      ? "bg-red-100 text-red-600"
-                      : "bg-gray-100 text-gray-600"
-                      }`}
                   >
-                    {savedJobsMap[job._id] ? "❤️ Đã Lưu" : "🤍 Lưu"}
+                    {savedJobsMap[job._id] ? "❤️" : "🤍"}
                   </button>
-
-
                 </div>
               </div>
-            ))
-          )}
-
-        </div>
-
-        <div className="text-center mt-10 mb-10">
-          <button
-            onClick={() => window.location.href = "/job-search"}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold shadow-md"
-          >
-            Xem Tất Cả Công Việc →
-          </button>
-        </div>
-      </div>
-
-      {/* ========== RECOMMENDED JOBS (Only for logged in candidates) ========== */}
-      {isLoggedIn && (
-        <div className="flex flex-col gap-2 my-4 px-10 min-h-[400px] bg-gradient-to-b from-green-50 to-white">
-          <h1 className="text-3xl text-green-600 font-bold ml-10 mt-6">✨ CÔNG VIỆC GỢI Ý CHO BẠN</h1>
-          <p className="ml-10 text-gray-600">Dựa trên hồ sơ và kỹ năng của bạn</p>
-
-          <div className="grid grid-cols-3 gap-6 mt-6">
-            {recommendedLoading ? (
-              <p className="text-gray-500 col-span-3 text-center">Đang tải gợi ý công việc...</p>
-            ) : needsProfile ? (
-              <div className="col-span-3 flex flex-col items-center justify-center py-12 px-6 bg-yellow-50 rounded-xl border-2 border-yellow-200">
-                <div className="text-6xl mb-4">📝</div>
-                <h3 className="text-xl font-bold text-yellow-700 mb-2">Hoàn thiện hồ sơ để nhận gợi ý công việc</h3>
-                <p className="text-gray-600 text-center mb-6 max-w-lg">
-                  Hãy cập nhật đầy đủ thông tin về học vấn, kinh nghiệm làm việc, dự án và kỹ năng của bạn.
-                  Hãy cập nhật đầy đủ thông tin về học vấn, kinh nghiệm làm việc, dự án và kỹ năng của bạn.
-                  Hệ thống sẽ tự động gợi ý những công việc phù hợp nhất với bạn!
-                </p>
-                <button
-                  onClick={() => window.location.href = "/customer/mysaramin"}
-                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold shadow-md transition"
-                >
-                  Cập Nhật Hồ Sơ Ngay →
-                </button>
-              </div>
-            ) : recommendedJobs.length === 0 ? (
-              <div className="col-span-3 text-center py-12">
-                <p className="text-gray-500">Hiện chưa có công việc phù hợp với hồ sơ của bạn.</p>
-              </div>
-            ) : (
-              recommendedJobs.map((job) => (
-                <div
-                  key={job._id}
-                  className="rounded-xl border-2 border-green-200 p-5 bg-white shadow-sm hover:shadow-lg transition cursor-pointer relative"
-                  onClick={() => window.location.href = `/job/${job._id}`}
-                >
-                  {/* Match score badge */}
-                  {job.score && (
-                    <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-3 py-1 rounded-full font-bold">
-                      {Math.round(job.score * 100)}% Phù hợp
-                    </div>
-                  )}
-
-                  <h3 className="text-lg font-bold text-green-600 mb-1">{job.title}</h3>
-                  <p className="text-sm font-semibold text-gray-700">
-                    {job.companyId?.name || job.recruiterId?.companyId?.name || "Nhà tuyển dụng"}
-                    <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-3 py-1 rounded-full shadow">
-                      ⭐ {Math.round(job.score * 100)}% phù hợp
-                    </div>
-                  </p>
-                  {/* <h3 className="text-lg font-bold text-green-700 mb-1">{job.title}</h3> */}
-                  {/* <p className="text-sm font-semibold text-gray-700">
-                    {job.companyId?.name || job.recruiterId?.name || "Nhà tuyển dụng"}
-                  </p> */}
-
-                  <div className="space-y-2 my-4">
-                    <p className="text-sm text-gray-700">📍 {job.location || "Chưa rõ"}</p>
-                    <p className="text-green-600 font-bold">{job.salary || "Thương lượng"}</p>
-                  </div>
-
-                  <div className="flex justify-between items-center pt-3 border-t border-gray-200">
-                    <span className="text-xs text-gray-500">
-                      {new Date(job.createdAt).toLocaleDateString("vi-VN")}
-                    </span>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleSaveJob(job._id);
-                      }}
-                      className={`px-3 py-1 rounded-lg text-sm transition ${savedJobsMap[job._id]
-                          ? "bg-red-100 text-red-600"
-                          : "bg-gray-100 text-gray-600"
-                        }`}
-                    >
-                      {savedJobsMap[job._id] ? "❤️ Đã Lưu" : "🤍 Lưu"}
-                    </button>
-
-                  </div>
-                </div>
-              ))
-            )}
+            ))}
           </div>
-
-          {!needsProfile && recommendedJobs.length > 0 && (
-            <div className="text-center mt-6 mb-10">
-              <button
-                onClick={() => window.location.href = "/job-search"}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold shadow-md"
-              >
-                Xem Thêm Công Việc →
-              </button>
-            </div>
-          )}
-        </div>
+        </section>
       )}
 
       {/* ========== COMPANIES GRID FULL ========== */}

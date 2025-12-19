@@ -51,7 +51,7 @@ import Verification from "./pages/recruiter/Verification";
 /* ================= ADMIN ================= */
 import AdminDashboard from "./pages/admin/Dashboard";
 import UsersPage from "./pages/admin/User";
-import AdminPendingJobs from "./pages/admin/Job";
+import AdminPendingJobs from "./pages/admin/Jobs";
 import RecruiterVerification from "./pages/admin/RecruiterVerification";
 
 import "react-toastify/dist/ReactToastify.css";
@@ -71,18 +71,17 @@ function App() {
       <Routes>
         {/* ================= CUSTOMER + RECRUITER LAYOUT ================= */}
         <Route path="/" element={<CustomerLayout />}>
-        {/* -------- CUSTOMER PROFILE -------- */}
-<Route path="customer" element={<Profile />}>
-  <Route path="navbar" element={<Navbar />} />
-  <Route path="mysaramin" element={<MySaramin />} />
-  <Route path="jobmanagement" element={<JobMana />} />
-  <Route path="cvmanagement" element={<CVMana />} />
-  <Route path="emailmanagement" element={<EmailMana />} />
-  <Route path="pertest" element={<PerTest />} />
-
-</Route>
-  <Route path="jobs" element={<JobSearch />} />
-<Route path="jobs/:id" element={<JobDetail />} />
+          {/* -------- CUSTOMER PROFILE -------- */}
+          <Route path="customer" element={<Profile />}>
+            <Route path="navbar" element={<Navbar />} />
+            <Route path="mysaramin" element={<MySaramin />} />
+            <Route path="jobmanagement" element={<JobMana />} />
+            <Route path="cvmanagement" element={<CVMana />} />
+            <Route path="emailmanagement" element={<EmailMana />} />
+            <Route path="pertest" element={<PerTest />} />
+          </Route>
+          <Route path="jobs" element={<JobSearch />} />
+          <Route path="jobs/:id" element={<JobDetail />} />
           {/* -------- CUSTOMER -------- */}
           <Route index element={<Home />} />
           <Route path="login" element={<Login />} />

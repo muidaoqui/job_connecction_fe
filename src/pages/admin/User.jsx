@@ -33,6 +33,7 @@ import "react-toastify/dist/ReactToastify.css";
 const { Title, Text } = Typography;
 
 export default function UsersPage() {
+  const API_URL = "http://localhost:8080/api/admin";
   const [users, setUsers] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -71,6 +71,8 @@ function App() {
       <Routes>
         {/* ================= CUSTOMER + RECRUITER LAYOUT ================= */}
         <Route path="/" element={<CustomerLayout />}>
+        {/* ROUTE ĐĂNG KÝ RECRUITER */}
+        
         {/* -------- CUSTOMER PROFILE -------- */}
 <Route path="customer" element={<Profile />}>
   <Route path="navbar" element={<Navbar />} />
@@ -97,8 +99,10 @@ function App() {
           <Route path="job/:id" element={<CusJobDetail />} />
           <Route path="job-search" element={<CusJobSearch />} />
           <Route path="apply-job/:id" element={<ApplyJob />} />
+          
 
           {/* -------- RECRUITER -------- */}
+          
           <Route
             path="recruiter/dashboard"
             element={
@@ -218,6 +222,7 @@ function App() {
             element={<RecruiterVerification />}
           />
         </Route>
+        
       </Routes>
     </Router>
   );

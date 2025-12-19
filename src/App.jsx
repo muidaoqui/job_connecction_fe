@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
 import CustomerLayout from "./components/customer/CustomerLayout";
@@ -25,14 +20,8 @@ import CusJobSearch from "./pages/customer/JobSearch";
 import Recruiters from "./pages/customer/Recruiters";
 import People from "./pages/customer/People";
 import CompanyDetail from "./pages/customer/CompanyDetail";
-
 import ApplyJob from "./pages/customer/ApplyJob";
 import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
-
-import "react-toastify/dist/ReactToastify.css";
-
-// import ApplyJob from "./pages/customer/ApplyJob";
-// import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
 
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -47,16 +36,14 @@ import ReviewApplications from "./pages/recruiter/ReviewApplications";
 import EditJob from "./pages/recruiter/EditJob";
 import CompanyProfile from "./pages/recruiter/CompanyProfile";
 import CompanyPublicProfile from "./pages/recruiter/CompanyPublicProfile";
-import JobApplicants from "./pages/recruiter/JobApplicants";
 
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import UsersPage from "./pages/admin/User";
 import AdminPendingJobs from "./pages/admin/Job";
-import Verification from "./pages/recruiter/Verification";
+
 import "react-toastify/dist/ReactToastify.css";
 import AdminJob from "./pages/admin/Jobs";
-import RecruiterVerification from "./pages/admin/RecruiterVerification";
 // import CreateJob from "./pages/recruiter/CreateJob";
 // import ManageJobs from "./pages/recruiter/ManageJobs";
 // import Applicants from "./pages/recruiter/Applicants";
@@ -72,6 +59,7 @@ import RecruiterVerification from "./pages/admin/RecruiterVerification";
 // import AdminDashboard from "./pages/admin/Dashboard";
 // import UsersPage from "./pages/admin/User";
 
+
 // ========================
 // AUTH GUARD
 // ========================
@@ -80,173 +68,207 @@ const RequireAuth = ({ children }) => {
   return token ? children : <Navigate to="/login" replace />;
 };
 
-// ========================
-// REQUIRE ROLE (PREVENT OTHER USERS ACCESS TO ADMIN ROUTES)
-// ========================
-const RequireRole = ({ allow, children }) => {
-  const userStr = localStorage.getItem("user");
 
-  if (!userStr) {
-    return <Navigate to="/login" replace />;
-  }
-
-  const user = JSON.parse(userStr);
-
-  // check role
-  if (!allow.includes(user.role)) {
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
-};
 // ========================
 // MAIN APP
 // ========================
 function App() {
   return (
     <Router>
-  <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={3000} />
 
-  <Routes>
-    {/* ================= LAYOUT ================= */}
-    <Route path="/" element={<CustomerLayout />}>
-      {/* ================= CUSTOMER ================= */}
-      <Route index element={<Home />} />
-      <Route path="login" element={<Login />} />
-      <Route path="register" element={<Register />} />
-      <Route path="forgot-password" element={<ForgotPassword />} />
-      <Route path="reset-password" element={<ResetPassword />} />
+      <Routes>
+        {/** ---------------- CUSTOMER AREA ---------------- */}
+        <Route path="/" element={<CustomerLayout />}>
+          <Route index element={<Home />} />
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
 
-      <Route path="companies" element={<Companies />} />
-      <Route path="recruiters" element={<Recruiters />} />
-      <Route path="people" element={<People />} />
-      <Route path="company/:companyId" element={<CompanyDetail />} />
-      <Route path="job/:id" element={<CusJobDetail />} />
-      <Route path="job-search" element={<CusJobSearch />} />
-      <Route path="apply-job/:id" element={<ApplyJob />} />
+          {/* Profile section */}
+          <Route path="customer" element={<Profile />}>
+            <Route path="navbar" element={<Navbar />} />
+            <Route path="mysaramin" element={<MySaramin />} />
+            <Route path="jobmanagement" element={<JobMana />} />
+            <Route path="cvmanagement" element={<CVMana />} />
+            <Route path="emailmanagement" element={<EmailMana />} />
+            <Route path="pertest" element={<PerTest />} />
+          </Route>
 
-      {/* ================= RECRUITER ================= */}
-      <Route
-        path="recruiter/dashboard"
-        element={
-          <RequireAuth>
-            <RecruiterDashboard />
-          </RequireAuth>
-        }
-      />
+          {/* Public customer pages */}
+          <Route path="companies" element={<Companies />} />
+          <Route path="recruiters" element={<Recruiters />} />
+          <Route path="people" element={<People />} />
+          <Route path="company/:companyId" element={<CompanyDetail />} />
+          <Route path="job/:id" element={<CusJobDetail />} />
+          <Route path="job-search" element={<CusJobSearch />} />
+          <Route path="apply-job/:id" element={<ApplyJob />} />
 
-      <Route
-        path="recruiter/create-job"
-        element={
-          <RequireAuth>
-            <CreateJob />
-          </RequireAuth>
-        }
-      />
-
-      <Route
-        path="recruiter/manage-jobs"
-        element={
-          <RequireAuth>
-            <ManageJobs />
-          </RequireAuth>
-        }
-      />
-
-      <Route
-        path="recruiter/edit-job/:id"
-        element={
-          <RequireAuth>
-            <EditJob />
-          </RequireAuth>
-        }
-      />
-
-      <Route
-        path="recruiter/applicants"
-        element={
-          <RequireAuth>
-            <Applicants />
-          </RequireAuth>
-        }
-      />
-
-      <Route
-        path="recruiter/applicants/:jobId"
-        element={
-          <RequireAuth>
-            <JobApplicants />
-          </RequireAuth>
-        }
-      />
-
-      <Route
-        path="recruiter/applicants/manage"
-        element={
-          <RequireAuth>
-            <ReviewApplications />
-          </RequireAuth>
-        }
-      />
-
-      <Route
-        path="recruiter/company-profile"
-        element={
-          <RequireAuth>
-            <CompanyProfile />
-          </RequireAuth>
-        }
-      />
-      <Route
-  path="/recruiter/company/:companyId"
-  element={
-    <RequireAuth>
-      <CompanyPublicProfile />
-    </RequireAuth>
-  }
-/>
-<Route
-  path="/recruiter/profile"
-  element={
-    <RequireAuth>
-      <RecruiterProfile />
-    </RequireAuth>
-  }
-/>
-
-      <Route
-        path="recruiter/verification"
-        element={
-          <RequireAuth>
-            <Verification />
-          </RequireAuth>
-        }
-      />
-    </Route>
-    
+          {/* Others */}
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<ResetPassword />} />
+          <Route path="jobs" element={<JobSearch />} />
+          <Route path="jobs/:id" element={<JobDetail />} />
+=======
+          <Route path="/recruiter/manage-job/edit/:id" element={<EditJob />} />
+          <Route path="/recruiter/profile" element={<RecruiterProfile />} />
 
 
-  
-        
+          {/* Xem ứng viên theo từng job */}
+          <Route path="/recruiter/applicants" element={<Applicants />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/jobs" element={<JobSearch />} />
+          <Route path="/jobs/:id" element={<JobDetail />} />
+
+          <Route path="/recruiter/create-job" element={<CreateJob />} />
+          <Route path="/recruiter/manage-jobs" element={<ManageJobs />} />
+          <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
+          <Route path="/recruiter/edit-job/:id" element={<EditJob />} />
+          <Route path="/jobs/:id/apply" element={<ApplyJob />} />
+          <Route
+            path="/recruiter/applicants/manage"
+            element={<ReviewApplications />}
+          />
+          <Route path="/recruiter/company/:id" element={<CompanyPublicProfile />} />
+          <Route
+            path="/recruiter/create-job"
+            element={
+              <RequireAuth>
+                <CreateJob />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/recruiter/manage-jobs"
+            element={
+              <RequireAuth>
+                <ManageJobs />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/recruiter/applicants"
+            element={
+              <RequireAuth>
+                <Applicants />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/recruiter/dashboard"
+            element={
+              <RequireAuth>
+                <RecruiterDashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/recruiter/edit-job/:id"
+            element={
+              <RequireAuth>
+                <EditJob />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/recruiter/applicants/manage"
+            element={
+              <RequireAuth>
+                <ReviewApplications />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/recruiter/company-profile"
+            element={
+              <RequireAuth>
+                <CompanyProfile />
+              </RequireAuth>
+            }
+          />
+        </Route>
+
+
+        {/** ---------------- RECRUITER AREA ---------------- */}
+        <Route
+          path="/recruiter/dashboard"
+          element={
+            <RequireAuth>
+              <RecruiterDashboard />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/recruiter/create-job"
+          element={
+            <RequireAuth>
+              <CreateJob />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/recruiter/manage-jobs"
+          element={
+            <RequireAuth>
+              <ManageJobs />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/recruiter/edit-job/:id"
+          element={
+            <RequireAuth>
+              <EditJob />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/recruiter/applicants"
+          element={
+            <RequireAuth>
+              <Applicants />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/recruiter/applicants/manage"
+          element={
+            <RequireAuth>
+              <ReviewApplications />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/recruiter/company-profile"
+          element={
+            <RequireAuth>
+              <CompanyProfile />
+            </RequireAuth>
+          }
+        />
+
+
         {/** ---------------- ADMIN AREA ---------------- */}
         <Route
           path="/admin"
           element={
             <RequireAuth>
-              <RequireRole allow={["admin"]}>
-                <AdminLayout />
-              </RequireRole>
+              <AdminLayout />
             </RequireAuth>
           }
         >
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="jobs" element={<AdminPendingJobs />} />
-          <Route
-            path="recruiters-verification"
-            element={<RecruiterVerification />}
-          />
         </Route>
+
       </Routes>
     </Router>
   );

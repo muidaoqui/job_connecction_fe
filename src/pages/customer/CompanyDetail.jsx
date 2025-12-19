@@ -96,16 +96,17 @@ const CompanyDetail = () => {
       </Button>
 
       {/* ================= COMPANY HEADER ================= */}
-      <Card className="mb-6 shadow-lg overflow-hidden">
+      <Card className="mb-6 shadow-lg overflow-hidden" >
         {/* Banner */}
-        {company.backgroundImage ? (
+        {company.coverImage ? (
           <div
             className="w-full h-64 bg-cover bg-center rounded-lg mb-4"
-            style={{ backgroundImage: `url(${company.backgroundImage})` }}
+            style={{ backgroundImage: `url(${company.coverImage})` }}
           />
         ) : (
           <div className="w-full h-64 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg mb-4" />
         )}
+
 
         <div className="flex gap-8 items-start">
           {company.logo && (

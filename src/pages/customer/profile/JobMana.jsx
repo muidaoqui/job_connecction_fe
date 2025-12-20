@@ -5,7 +5,6 @@ import {
     Col,
     Button,
     Tabs,
-    Input,
     Radio,
     Tag,
     Empty,
@@ -17,7 +16,6 @@ import {
 import {
     EyeOutlined,
     UploadOutlined,
-    RightCircleOutlined,
     DeleteOutlined,
 } from "@ant-design/icons";
 import ProfileSidebar from "../../../components/customer/ProfileSidebar";
@@ -27,168 +25,173 @@ import { openProtectedFile } from "../../../utils/fileHelpers";
 import {
     getApplications,
     getSavedJobs,
-    getViewedJobs,
     withdrawApplication,
     unsaveJob,
-    removeViewedJob,
     getProfile,
     getFollowedCompanies,
     unfollowCompany,
 } from "../../../api/profileAPI";
 
-
+/* ===================== SIDEBAR ===================== */
 const JobManagementSidebar = ({ profileData }) => (
     <ProfileSidebar userName={profileData?.name} />
 );
 
+/* ===================== LOI MOI UNG TUYEN ===================== */
 const ContentLoiMoiUngTuyen = ({
     selectedResume,
     setSelectedResume,
     resumes,
-    profileData,
     onUpload,
     uploading,
     onSelectMain,
 }) => {
     return (
-        <div className="space-y-6">
-            <Card className="shadow-md">
-                <h3 className="text-lg font-semibold mb-4">
-                    Chọn CV Chính Của Bạn Để Hiển Thị Cho Nhà Tuyển Dụng
-                </h3>
+        <Card className="shadow-md">
+            <h3 className="text-lg font-semibold mb-4">
+                Chọn CV chính để hiển thị cho nhà tuyển dụng
+            </h3>
 
-                <h4 className="font-medium mb-3">CV hiện tại</h4>
-
-                {resumes.length === 0 ? (
-                    <Empty description="Chưa có CV nào" />
-                ) : (
-                    <Radio.Group
-                        value={selectedResume}
-                        onChange={(e) => {
-                            setSelectedResume(e.target.value);
-                            onSelectMain(e.target.value); // path
-                        }}
-                    >
-
-                        {resumes.map((resume) => (
-                            <div key={resume.id} className="relative">
-                                <Radio
-                                    value={resume.path}
-                                    className="w-full py-4 px-4 rounded-lg"
-                                    style={{
-                                        border:
-                                            selectedResume === resume.id
-                                                ? "1px solid #1890ff"
-                                                : "1px solid #d9d9d9",
-                                        background:
-                                            selectedResume === resume.id
-                                                ? "#e6f7ff"
-                                                : "#fff",
-                                    }}
-                                >
-                                    <div className="flex justify-between items-center">
-                                        <div>
-                                            <b>{resume.name}</b>
-                                            {resume.isMain && (
-                                                <Tag color="blue" className="ml-2">
-                                                    CV chính
-                                                </Tag>
-                                            )}
-                                            {resume.path && (
-                                                <Space className="ml-3">
-                                                    <Button
-                                                        type="link"
-                                                        onClick={() =>
-                                                            openProtectedFile(
-                                                                resume.path,
-                                                                false
-                                                            )
-                                                        }
-                                                    >
-                                                        Xem
-                                                    </Button>
-                                                    <Button
-                                                        type="link"
-                                                        onClick={() =>
-                                                            openProtectedFile(
-                                                                resume.path,
-                                                                true
-                                                            )
-                                                        }
-                                                    >
-                                                        Tải
-                                                    </Button>
-                                                </Space>
-                                            )}
-                                        </div>
-                                        <EyeOutlined />
-                                    </div>
-                                </Radio>
-                            </div>
-                        ))}
-                    </Radio.Group>
-                )}
-
-                <div className="pt-6">
-                    <Upload
-                        accept=".doc,.docx,.pdf"
-                        beforeUpload={() => false}
-                        onChange={(i) => onUpload(i.file)}
-                    >
-                        <Button
-                            type="primary"
-                            icon={<UploadOutlined />}
-                            loading={uploading}
+            {resumes.length === 0 ? (
+                <Empty description="Chưa có CV nào" />
+            ) : (
+                <Radio.Group
+                    value={selectedResume}
+                    onChange={(e) => {
+                        setSelectedResume(e.target.value);
+                        onSelectMain(e.target.value);
+                    }}
+                >
+                    {resumes.map((resume) => (
+                        <Radio
+                            key={resume._id}
+                            value={resume.path}
+                            className="w-full block p-3 rounded mb-2 border"
                         >
-                            Tải CV mới lên
-                        </Button>
-                    </Upload>
-                </div>
-            </Card>
-        </div>
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <b>{resume.name}</b>
+                                    {resume.isMain && (
+                                        <Tag color="blue" className="ml-2">
+                                            CV chính
+                                        </Tag>
+                                    )}
+                                    <Space className="ml-3">
+                                        <Button
+                                            type="link"
+                                            onClick={() =>
+                                                openProtectedFile(resume.path, false)
+                                            }
+                                        >
+                                            Xem
+                                        </Button>
+                                        <Button
+                                            type="link"
+                                            onClick={() =>
+                                                openProtectedFile(resume.path, true)
+                                            }
+                                        >
+                                            Tải
+                                        </Button>
+                                    </Space>
+                                </div>
+                                <EyeOutlined />
+                            </div>
+                        </Radio>
+                    ))}
+                </Radio.Group>
+            )}
+
+            <div className="mt-4">
+                <Upload
+                    accept=".pdf,.doc,.docx"
+                    beforeUpload={() => false}
+                    onChange={(i) => onUpload(i.file)}
+                >
+                    <Button
+                        type="primary"
+                        icon={<UploadOutlined />}
+                        loading={uploading}
+                    >
+                        Tải CV mới
+                    </Button>
+                </Upload>
+            </div>
+        </Card>
     );
 };
 
-const JobListTab = ({ loading, jobs, onDelete, deleteLabel }) => {
-    const jobsArray = Array.isArray(jobs) ? jobs : [];
+/* ===================== JOB CARD ===================== */
+const JobCard = ({ job, onDelete }) => {
     const navigate = useNavigate();
+    const company = job?.jobId?.companyId;
 
+    return (
+        <Card className="shadow-sm hover:shadow-md">
+            <Row justify="space-between" align="middle">
+                <Col span={18}>
+                    <div
+                        className="flex gap-3 items-center cursor-pointer"
+                        onClick={() => navigate(`/job/${job?.jobId?._id}`)}
+                    >
+                        {company?.logo && (
+                            <img
+                                src={company.logo}
+                                alt={company.name}
+                                className="w-12 h-12 object-contain border rounded"
+                            />
+                        )}
+                        <div>
+                            <h4 className="text-blue-600 font-semibold">
+                                {job?.jobId?.title}
+                            </h4>
+                            <p className="text-sm text-gray-600">
+                                {company?.name}
+                            </p>
+                            <div className="mt-1">
+                                {job?.jobId?.salary && (
+                                    <Tag color="green">{job.jobId.salary}</Tag>
+                                )}
+                                {job?.jobId?.location && (
+                                    <Tag>{job.jobId.location}</Tag>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </Col>
+                <Col span={6} className="text-right">
+                    <Button
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => onDelete(job._id)}
+                    >
+                        Xóa
+                    </Button>
+                </Col>
+            </Row>
+        </Card>
+    );
+};
+
+/* ===================== JOB LIST TAB ===================== */
+const JobListTab = ({ loading, jobs, onDelete, emptyLabel }) => {
     if (loading) return <Spin />;
-    if (jobsArray.length === 0)
-        return <Empty description={`Chưa có ${deleteLabel}`} />;
+    if (!jobs.length) return <Empty description={emptyLabel} />;
 
     return (
         <div className="space-y-3">
-            {jobsArray.map((job) => (
-                <Card key={job._id}>
-                    <Row justify="space-between">
-                        <Col span={20}>
-                            <h4
-                                className="text-blue-600 cursor-pointer"
-                                onClick={() =>
-                                    navigate(`/job/${job?.jobId?._id}`)
-                                }
-                            >
-                                {job?.jobId?.title}
-                            </h4>
-                            <p>{job?.jobId?.companyId?.name}</p>
-                        </Col>
-                        <Col span={4}>
-                            <Button
-                                danger
-                                icon={<DeleteOutlined />}
-                                onClick={() => onDelete(job._id)}
-                            >
-                                Xóa
-                            </Button>
-                        </Col>
-                    </Row>
-                </Card>
+            {jobs.map((job) => (
+                <JobCard
+                    key={job._id}
+                    job={job}
+                    onDelete={onDelete}
+                />
             ))}
         </div>
     );
 };
 
+/* ===================== FOLLOWED COMPANY ===================== */
 const FollowedCompanyTab = ({ loading, companies, onUnfollow }) => {
     const navigate = useNavigate();
 
@@ -205,8 +208,10 @@ const FollowedCompanyTab = ({ loading, companies, onUnfollow }) => {
                         <Row justify="space-between" align="middle">
                             <Col span={18}>
                                 <div
-                                    className="flex items-center gap-3 cursor-pointer"
-                                    onClick={() => navigate(`/company/${company._id}`)}
+                                    className="flex gap-3 items-center cursor-pointer"
+                                    onClick={() =>
+                                        navigate(`/company/${company._id}`)
+                                    }
                                 >
                                     {company.logo && (
                                         <img
@@ -225,7 +230,6 @@ const FollowedCompanyTab = ({ loading, companies, onUnfollow }) => {
                                     </div>
                                 </div>
                             </Col>
-
                             <Col span={6} className="text-right">
                                 <Button
                                     danger
@@ -243,26 +247,13 @@ const FollowedCompanyTab = ({ loading, companies, onUnfollow }) => {
     );
 };
 
-
+/* ===================== MAIN CONTENT ===================== */
 const MainContent = ({ profileData }) => {
-    const [selectedResume, setSelectedResume] = useState(null);
     const [applications, setApplications] = useState([]);
     const [savedJobs, setSavedJobs] = useState([]);
     const [followedCompanies, setFollowedCompanies] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    const handleUnfollow = async (companyId) => {
-        try {
-            await unfollowCompany(companyId);
-            setFollowedCompanies(prev =>
-                prev.filter(item => item.companyId._id !== companyId)
-            );
-            message.success("Đã bỏ theo dõi công ty");
-        } catch (err) {
-            message.error("Bỏ theo dõi thất bại");
-        }
-    };
-
+    const [selectedResume, setSelectedResume] = useState(null);
 
     const {
         resumes,
@@ -273,92 +264,93 @@ const MainContent = ({ profileData }) => {
 
     useEffect(() => {
         const main = resumes.find((r) => r.isMain);
-        if (main?.path) {
-            setSelectedResume(main.path);
-        }
+        if (main) setSelectedResume(main.path);
     }, [resumes]);
 
-
     useEffect(() => {
-        fetchAllData();
+        fetchData();
     }, []);
 
-
-    const fetchAllData = async () => {
-        try {
-            setLoading(true);
-            const [a, s, f] = await Promise.all([
-                getApplications(),
-                getSavedJobs(),
-                getFollowedCompanies(),
-            ]);
-
-            setApplications(a?.data?.data || []);
-            setSavedJobs(s?.data?.data || []);
-            setFollowedCompanies(f?.data?.data || []);
-        } finally {
-            setLoading(false);
-        }
+    const fetchData = async () => {
+        setLoading(true);
+        const [a, s, f] = await Promise.all([
+            getApplications(),
+            getSavedJobs(),
+            getFollowedCompanies(),
+        ]);
+        setApplications(a?.data?.data || []);
+        setSavedJobs(s?.data?.data || []);
+        setFollowedCompanies(f?.data?.data || []);
+        setLoading(false);
     };
 
+    const handleUnfollow = async (id) => {
+        await unfollowCompany(id);
+        setFollowedCompanies((prev) =>
+            prev.filter((i) => i.companyId._id !== id)
+        );
+        message.success("Đã bỏ theo dõi");
+    };
 
-    const subTabs = [
-        {
-            key: "1",
-            label: "Lời mời ứng tuyển",
-            children: (
-                <ContentLoiMoiUngTuyen
-                    selectedResume={selectedResume}
-                    setSelectedResume={setSelectedResume}
-                    resumes={resumes}
-                    profileData={profileData}
-                    onUpload={uploadNewResume}
-                    uploading={resumeLoading}
-                    onSelectMain={setMainResume}
-                />
-            ),
-        },
-        {
-            key: "2",
-            label: "Việc đã ứng tuyển",
-            children: (
-                <JobListTab
-                    loading={loading}
-                    jobs={applications}
-                    onDelete={withdrawApplication}
-                    deleteLabel="đơn ứng tuyển"
-                />
-            ),
-        },
-        {
-            key: "3",
-            label: "Việc đã lưu",
-            children: (
-                <JobListTab
-                    loading={loading}
-                    jobs={savedJobs}
-                    onDelete={unsaveJob}
-                    deleteLabel="việc đã lưu"
-                />
-            ),
-        },
-        {
-            key: "4",
-            label: "Công ty đã theo dõi",
-            children: (
-                <FollowedCompanyTab
-                    loading={loading}
-                    companies={followedCompanies}
-                    onUnfollow={handleUnfollow}
-                />
-            ),
-        }
-
-    ];
-
-    return <Tabs defaultActiveKey="1" items={subTabs} />;
+    return (
+        <Tabs
+            defaultActiveKey="1"
+            items={[
+                {
+                    key: "1",
+                    label: "Lời mời ứng tuyển",
+                    children: (
+                        <ContentLoiMoiUngTuyen
+                            selectedResume={selectedResume}
+                            setSelectedResume={setSelectedResume}
+                            resumes={resumes}
+                            onUpload={uploadNewResume}
+                            uploading={resumeLoading}
+                            onSelectMain={setMainResume}
+                        />
+                    ),
+                },
+                {
+                    key: "2",
+                    label: "Việc đã ứng tuyển",
+                    children: (
+                        <JobListTab
+                            loading={loading}
+                            jobs={applications}
+                            onDelete={withdrawApplication}
+                            emptyLabel="Chưa có đơn ứng tuyển"
+                        />
+                    ),
+                },
+                {
+                    key: "3",
+                    label: "Việc đã lưu",
+                    children: (
+                        <JobListTab
+                            loading={loading}
+                            jobs={savedJobs}
+                            onDelete={unsaveJob}
+                            emptyLabel="Chưa có việc đã lưu"
+                        />
+                    ),
+                },
+                {
+                    key: "4",
+                    label: "Công ty đã theo dõi",
+                    children: (
+                        <FollowedCompanyTab
+                            loading={loading}
+                            companies={followedCompanies}
+                            onUnfollow={handleUnfollow}
+                        />
+                    ),
+                },
+            ]}
+        />
+    );
 };
 
+/* ===================== PAGE ===================== */
 export default function JobMana() {
     const [profileData, setProfileData] = useState({});
 

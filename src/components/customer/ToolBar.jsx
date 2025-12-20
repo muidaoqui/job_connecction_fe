@@ -81,9 +81,6 @@ function ToolBar() {
 
   {/* Dropdown Nhà tuyển dụng */}
   <div className="relative group">
-    <button className="cursor-pointer hover:text-yellow-300 transition font-semibold">
-      Employers ▼
-    </button>
 
     {/* Dropdown */}
     <div

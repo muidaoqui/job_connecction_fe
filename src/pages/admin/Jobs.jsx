@@ -5,35 +5,35 @@ import {
   Modal,
   Tag,
   Avatar,
-  Image,
   Input,
   Space,
   Popconfirm,
   notification,
-  Spin,
   Segmented,
+  Empty,
+  Skeleton,
 } from "antd";
 import {
+  EyeOutlined,
   CheckOutlined,
   CloseOutlined,
-  EyeOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-
-// AdminPendingJobs.jsx
-// - Single-file React component using antd + Tailwind CSS
-// - Drop into your React app (e.g. src/pages/admin/AdminPendingJobs.jsx)
-// - Requirements: antd and tailwind configured in your project
-// - Assumptions: API endpoints exist:
-//     GET  /api/jobs/pending            -> list of pending jobs
-//     POST /api/jobs/:id/approve        -> approve a job (returns updated job)
-//     POST /api/jobs/:id/reject         -> reject a job (optionally with reason)
-// Adjust endpoints/headers as needed.
-
+import { format } from "date-fns";
+import {
+  Building2,
+  MapPin,
+  DollarSign,
+  Calendar,
+  Users,
+  Bookmark,
+  AlertCircle,
+  RefreshCw,
+} from "lucide-react";
 export default function AdminPendingJobs() {
+  const API_URL = "http://localhost:8080/api/admin";
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [pageSize, setPageSize] = useState(10);
   const [selectedJob, setSelectedJob] = useState(null);
   const [detailVisible, setDetailVisible] = useState(false);
   const [search, setSearch] = useState("");
@@ -44,7 +44,6 @@ export default function AdminPendingJobs() {
   }, []);
 
   const apiFetch = (path, options = {}) => {
-    // helper to attach token if present
     const token = localStorage.getItem("token");
     const headers = {
       "Content-Type": "application/json",
@@ -57,16 +56,14 @@ export default function AdminPendingJobs() {
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("http://localhost:8080/api/admin/jobs");
-      if (!res.ok) throw new Error("Failed to fetch pending jobs");
+      const res = await apiFetch(`${API_URL}/jobs`);
+      if (!res.ok) throw new Error("Failed to fetch jobs");
       const json = await res.json();
-      // assume payload shape { success: true, data: [...] }
       setJobs(Array.isArray(json.data) ? json.data : []);
     } catch (err) {
-      console.error(err);
       notification.error({
-        message: "Không thể tải danh sách công việc",
-        description: err.message,
+        message: "Không thể tải danh sách tin tuyển dụng",
+        description: err.message || "Lỗi kết nối server",
       });
     } finally {
       setLoading(false);
@@ -76,17 +73,13 @@ export default function AdminPendingJobs() {
   const handleApprove = async (jobId) => {
     setLoading(true);
     try {
-      const res = await apiFetch(
-        `http://localhost:8080/api/admin/jobs/${jobId}/approve`,
-        {
-          method: "PUT",
-        }
-      );
+      const res = await apiFetch(`${API_URL}/jobs/${jobId}/approve`, {
+        method: "PUT",
+      });
       if (!res.ok) throw new Error("Approve failed");
-      notification.success({ message: "Đã duyệt tin tuyển dụng" });
-      await fetchJobs();
+      notification.success({ message: "Đã duyệt tin tuyển dụng thành công" });
+      fetchJobs();
     } catch (err) {
-      console.error(err);
       notification.error({
         message: "Duyệt thất bại",
         description: err.message,
@@ -99,17 +92,13 @@ export default function AdminPendingJobs() {
   const handleReject = async (jobId) => {
     setLoading(true);
     try {
-      const res = await apiFetch(
-        `http://localhost:8080/api/admin/jobs/${jobId}/reject`,
-        {
-          method: "PUT",
-        }
-      );
+      const res = await apiFetch(`${API_URL}/jobs/${jobId}/reject`, {
+        method: "PUT",
+      });
       if (!res.ok) throw new Error("Reject failed");
       notification.info({ message: "Đã từ chối tin tuyển dụng" });
-      await fetchJobs();
+      fetchJobs();
     } catch (err) {
-      console.error(err);
       notification.error({
         message: "Từ chối thất bại",
         description: err.message,
@@ -124,278 +113,409 @@ export default function AdminPendingJobs() {
     setDetailVisible(true);
   };
 
+  const filteredJobs = jobs.filter((j) => {
+    if (statusFilter !== "all" && j.status !== statusFilter) return false;
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (
+      (j.title || "").toLowerCase().includes(q) ||
+      (j.companyId?.name || "").toLowerCase().includes(q) ||
+      (j.location || "").toLowerCase().includes(q) ||
+      (j.description || "").toLowerCase().includes(q)
+    );
+  });
+
   const columns = [
     {
-      title: "Tiêu đề",
-      dataIndex: "title",
-      key: "title",
-      render: (text, record) => (
-        <div className="flex items-center gap-3">
+      title: "Tin tuyển dụng",
+      key: "job",
+      render: (_, record) => (
+        <div className="flex items-center gap-4">
           <Avatar
-            size={48}
+            size={56}
             src={record.companyId?.logo}
-            alt={record.companyId?.name}
+            icon={<Building2 />}
+            className="flex-shrink-0 border border-gray-200"
           />
-          <div className="flex flex-col leading-tight">
-            <div className="font-medium">{text}</div>
-            <div className="text-sm text-gray-500">
+          <div className="min-w-0">
+            <div className="font-semibold text-base truncate">
+              {record.title}
+            </div>
+            <div className="text-sm text-gray-600 mt-1">
               {record.companyId?.name}
+            </div>
+            <div className="text-xs text-gray-500 mt-1 flex items-center gap-3">
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5" />
+                {record.location || "Không rõ"}
+              </span>
             </div>
           </div>
         </div>
       ),
-      sorter: (a, b) => (a.title || "").localeCompare(b.title || ""),
     },
     {
-      title: "Địa điểm",
-      dataIndex: "location",
-      key: "location",
-      width: 160,
-    },
-    {
-      title: "Hình thức",
-      dataIndex: "jobType",
-      key: "jobType",
-      width: 120,
-      render: (t) => <Tag>{t || "-"}</Tag>,
-    },
-    {
-      title: "Lương",
-      dataIndex: "salary",
-      key: "salary",
-      width: 160,
-      render: (s) => s || "-",
-    },
-    {
-      title: "Người đăng",
-      dataIndex: ["recruiterId", "position"],
-      key: "recruiter",
-      width: 180,
+      title: "Thông tin",
+      key: "info",
+      width: 280,
       render: (_, record) => (
-        <div className="flex flex-col">
-          <div className="text-sm">{record.recruiterId?.position || "-"}</div>
-          <div className="text-xs text-gray-500">
-            Followers: {record.recruiterId?.followers ?? 0}
+        <div className="space-y-2">
+          <div className="flex items-center gap-4 text-sm">
+            <span className="flex items-center gap-1 text-gray-600">
+              <DollarSign className="w-4 h-4" />
+              <span className="font-medium">
+                {record.salary || "Thoả thuận"}
+              </span>
+            </span>
+            <Tag color="blue">{record.jobType || "Full-time"}</Tag>
+          </div>
+          <div className="flex items-center gap-4 text-xs text-gray-500">
+            <span className="flex items-center gap-1">
+              <Bookmark className="w-3.5 h-3.5" />
+              {record.saveCount || 0} lưu
+            </span>
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5" />
+              {record.createdAt
+                ? format(new Date(record.createdAt), "dd/MM/yyyy")
+                : "-"}
+            </span>
           </div>
         </div>
       ),
-    },
-    {
-      title: "Lượt lưu",
-      dataIndex: "saveCount",
-      key: "saveCount",
-      width: 100,
-      sorter: (a, b) => (a.saveCount || 0) - (b.saveCount || 0),
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       width: 120,
-      render: (s) => {
-        const color =
-          s === "pending" ? "orange" : s === "approved" ? "green" : "red";
-        return <Tag color={color}>{s}</Tag>;
+      render: (status) => {
+        const config = {
+          pending: { color: "orange", text: "Chờ duyệt" },
+          approved: { color: "green", text: "Đã duyệt" },
+          rejected: { color: "red", text: "Đã từ chối" },
+        };
+        const cfg = config[status] || config.pending;
+        return <Tag color={cfg.color}>{cfg.text}</Tag>;
       },
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      width: 180,
-      render: (d) => (d ? new Date(d).toLocaleString() : "-"),
-      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
     },
     {
       title: "Hành động",
       key: "action",
-      width: 220,
+      width: 240,
+      fixed: "right",
       render: (_, record) => (
-        <Space>
-          <Button icon={<EyeOutlined />} onClick={() => openDetail(record)}>
-            Xem
+        <Space size="small">
+          <Button
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => openDetail(record)}
+          >
+            Chi tiết
           </Button>
-
-          {record.status !== "approved" && (
-            <Popconfirm
-              title="Bạn chắc chắn muốn duyệt tin này?"
-              onConfirm={() => handleApprove(record._id)}
-            >
-              <Button icon={<CheckOutlined />} type="primary">
-                Duyệt
-              </Button>
-            </Popconfirm>
-          )}
-
-          {record.status !== "rejected" && (
-            <Popconfirm
-              title="Từ chối tin này?"
-              onConfirm={() => handleReject(record._id)}
-            >
-              <Button icon={<CloseOutlined />} danger>
-                Từ chối
-              </Button>
-            </Popconfirm>
+          {record.status === "pending" && (
+            <>
+              <Popconfirm
+                title="Duyệt tin tuyển dụng này?"
+                onConfirm={() => handleApprove(record._id)}
+                okText="Duyệt"
+                cancelText="Huỷ"
+              >
+                <Button size="small" type="primary" icon={<CheckOutlined />}>
+                  Duyệt
+                </Button>
+              </Popconfirm>
+              <Popconfirm
+                title="Từ chối tin này?"
+                description="Hành động này không thể hoàn tác"
+                onConfirm={() => handleReject(record._id)}
+                okText="Từ chối"
+                cancelText="Huỷ"
+                okButtonProps={{ danger: true }}
+              >
+                <Button size="small" danger icon={<CloseOutlined />}>
+                  Từ chối
+                </Button>
+              </Popconfirm>
+            </>
           )}
         </Space>
       ),
     },
   ];
 
-  const filteredJobs = jobs.filter((j) => {
-    // Lọc theo trạng thái
-    if (statusFilter !== "all" && j.status !== statusFilter) return false;
-
-    // Lọc theo search
-    if (!search) return true;
-    const q = search.toLowerCase();
-
-    return (
-      (j.title || "").toLowerCase().includes(q) ||
-      (j.description || "").toLowerCase().includes(q) ||
-      (j.companyId?.name || "").toLowerCase().includes(q) ||
-      (j.location || "").toLowerCase().includes(q)
-    );
-  });
-
   return (
-    <div className="p-4 md:p-8">
-      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Duyệt tin tuyển dụng</h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Duyệt tin tuyển dụng
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Quản lý và duyệt các tin tuyển dụng đang chờ xử lý
+              </p>
+            </div>
 
-        <div className="flex items-center gap-3">
-          <Segmented
-            options={[
-              { label: "Chờ duyệt", value: "pending" },
-              { label: "Đã duyệt", value: "approved" },
-              { label: "Đã từ chối", value: "rejected" },
-              { label: "Tất cả", value: "all" },
-            ]}
-            value={statusFilter}
-            onChange={setStatusFilter}
-          />
-
-          <Input
-            placeholder="Tìm kiếm theo tiêu đề / công ty / địa điểm"
-            prefix={<SearchOutlined />}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-80"
-            allowClear
-          />
-
-          <Button onClick={fetchJobs}>Tải lại</Button>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm p-4">
-        {loading ? (
-          <div className="flex justify-center py-16">
-            <Spin size="large" />
-          </div>
-        ) : (
-          <Table
-            columns={columns}
-            dataSource={filteredJobs}
-            rowKey={(r) => r._id}
-            pagination={{ pageSize }}
-            onChange={(pagination) => setPageSize(pagination.pageSize || 10)}
-          />
-        )}
-      </div>
-
-      <Modal
-        visible={detailVisible}
-        title={selectedJob?.title}
-        onCancel={() => setDetailVisible(false)}
-        footer={null}
-        width={900}
-      >
-        {selectedJob ? (
-          <div className="space-y-4">
-            <div className="flex gap-4">
-              <Image
-                width={120}
-                src={selectedJob.companyId?.logo}
-                preview={false}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Segmented
+                size="large"
+                options={[
+                  { label: "Chờ duyệt", value: "pending" },
+                  { label: "Đã duyệt", value: "approved" },
+                  { label: "Đã từ chối", value: "rejected" },
+                  { label: "Tất cả", value: "all" },
+                ]}
+                value={statusFilter}
+                onChange={setStatusFilter}
               />
-              <div>
-                <h3 className="text-lg font-semibold">
-                  {selectedJob.companyId?.name}
-                </h3>
-                <div className="text-sm text-gray-600">
-                  {selectedJob.companyId?.industry} •{" "}
-                  {selectedJob.companyId?.size}
-                </div>
-                <div className="text-sm text-gray-500 mt-2">
-                  {selectedJob.companyId?.address}
-                </div>
-                <a
-                  href={selectedJob.companyId?.website}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block mt-2 underline"
-                >
-                  Website
-                </a>
-              </div>
-            </div>
 
-            <div>
-              <h4 className="font-medium">Mô tả</h4>
-              <p className="whitespace-pre-wrap">{selectedJob.description}</p>
-            </div>
+              <Input
+                placeholder="Tìm kiếm tiêu đề, công ty, địa điểm..."
+                prefix={<SearchOutlined className="text-gray-400" />}
+                allowClear
+                size="large"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full sm:w-96"
+              />
 
-            <div>
-              <h4 className="font-medium">Yêu cầu</h4>
-              <p className="whitespace-pre-wrap">{selectedJob.requirements}</p>
-            </div>
-
-            <div className="flex gap-4">
-              <div>
-                <h4 className="font-medium">Lương</h4>
-                <div>{selectedJob.salary}</div>
-              </div>
-
-              <div>
-                <h4 className="font-medium">Địa điểm</h4>
-                <div>{selectedJob.location}</div>
-              </div>
-
-              <div>
-                <h4 className="font-medium">Trạng thái</h4>
-                <Tag>{selectedJob.status}</Tag>
-              </div>
-            </div>
-
-            <div className="flex gap-3 justify-end">
-              <Button onClick={() => setDetailVisible(false)}>Đóng</Button>
-
-              {selectedJob.status !== "approved" && (
-                <Popconfirm
-                  title="Duyệt tin này?"
-                  onConfirm={() => handleApprove(selectedJob._id)}
-                >
-                  <Button icon={<CheckOutlined />} type="primary">
-                    Duyệt
-                  </Button>
-                </Popconfirm>
-              )}
-
-              {selectedJob.status !== "rejected" && (
-                <Popconfirm
-                  title="Từ chối tin này?"
-                  onConfirm={() => handleReject(selectedJob._id)}
-                >
-                  <Button icon={<CloseOutlined />} danger>
-                    Từ chối
-                  </Button>
-                </Popconfirm>
-              )}
+              <Button
+                size="large"
+                icon={<RefreshCw className={loading ? "animate-spin" : ""} />}
+                onClick={fetchJobs}
+                loading={loading}
+              >
+                Tải lại
+              </Button>
             </div>
           </div>
-        ) : null}
-      </Modal>
+        </div>
+
+        {/* Table */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          {loading ? (
+            <div className="p-8">
+              <Skeleton active paragraph={{ rows: 8 }} />
+            </div>
+          ) : filteredJobs.length === 0 ? (
+            <div className="p-16">
+              <Empty
+                description={
+                  jobs.length === 0
+                    ? "Chưa có tin tuyển dụng nào"
+                    : "Không tìm thấy tin nào phù hợp với bộ lọc"
+                }
+              />
+            </div>
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={filteredJobs}
+              rowKey="_id"
+              pagination={{
+                pageSize: 10,
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total, range) =>
+                  `${range[0]}-${range[1]} của ${total} tin`,
+              }}
+              scroll={{ x: 1000 }}
+              className="ant-table-custom"
+            />
+          )}
+        </div>
+
+        {/* Detail Modal */}
+        <Modal
+          open={detailVisible}
+          title={false}
+          onCancel={() => setDetailVisible(false)}
+          footer={null}
+          width={1000}
+          closeIcon={null}
+          className="top-8"
+        >
+          {selectedJob && (
+            <div className="max-h-[80vh] overflow-y-auto">
+              {/* Header */}
+              <div className="flex justify-between items-start mb-8">
+                <div className="flex gap-6">
+                  <Avatar
+                    size={100}
+                    src={selectedJob.companyId?.logo}
+                    icon={<Building2 />}
+                    className="border-4 border-gray-100"
+                  />
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      {selectedJob.title}
+                    </h2>
+                    <h3 className="text-xl text-gray-700 mt-1">
+                      {selectedJob.companyId?.name}
+                    </h3>
+                    <div className="flex items-center gap-4 mt-3 text-gray-600">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-4 h-4" />
+                        {selectedJob.location}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <DollarSign className="w-4 h-4" />
+                        {selectedJob.salary || "Thoả thuận"}
+                      </span>
+                      <Tag color="blue">{selectedJob.jobType}</Tag>
+                    </div>
+                  </div>
+                </div>
+
+                <Tag
+                  color={
+                    selectedJob.status === "pending"
+                      ? "orange"
+                      : selectedJob.status === "approved"
+                      ? "green"
+                      : "red"
+                  }
+                  className="text-lg px-4 py-1"
+                >
+                  {selectedJob.status === "pending"
+                    ? "Chờ duyệt"
+                    : selectedJob.status === "approved"
+                    ? "Đã duyệt"
+                    : "Đã từ chối"}
+                </Tag>
+              </div>
+
+              {/* Content Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                  <div>
+                    <h4 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                      <AlertCircle className="w-5 h-5 text-blue-600" />
+                      Mô tả công việc
+                    </h4>
+                    <div className="bg-gray-50 rounded-lg p-5 text-gray-700 whitespace-pre-wrap">
+                      {selectedJob.description || "Không có mô tả"}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-lg font-semibold mb-3">
+                      Yêu cầu ứng viên
+                    </h4>
+                    <div className="bg-gray-50 rounded-lg p-5 text-gray-700 whitespace-pre-wrap">
+                      {selectedJob.requirements || "Không có yêu cầu cụ thể"}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6">
+                    <h4 className="font-semibold text-lg mb-4">
+                      Thông tin công ty
+                    </h4>
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <span className="text-gray-600">Ngành nghề:</span>
+                        <p className="font-medium">
+                          {selectedJob.companyId?.industry || "-"}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Quy mô:</span>
+                        <p className="font-medium">
+                          {selectedJob.companyId?.size || "-"}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Địa chỉ:</span>
+                        <p className="font-medium">
+                          {selectedJob.companyId?.address || "-"}
+                        </p>
+                      </div>
+                      {selectedJob.companyId?.website && (
+                        <a
+                          href={selectedJob.companyId.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          Trang web công ty →
+                        </a>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    <h4 className="font-semibold text-lg mb-4">Thống kê</h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Lượt lưu</span>
+                        <span className="font-semibold">
+                          {selectedJob.saveCount || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Ngày đăng</span>
+                        <span className="font-semibold">
+                          {format(
+                            new Date(selectedJob.createdAt),
+                            "dd/MM/yyyy HH:mm"
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-4 mt-10 pt-6 border-t">
+                <Button size="large" onClick={() => setDetailVisible(false)}>
+                  Đóng
+                </Button>
+                {selectedJob.status === "pending" && (
+                  <>
+                    <Popconfirm
+                      title="Duyệt tin tuyển dụng này?"
+                      onConfirm={() => {
+                        handleApprove(selectedJob._id);
+                        setDetailVisible(false);
+                      }}
+                      okText="Duyệt ngay"
+                      okButtonProps={{ type: "primary" }}
+                    >
+                      <Button
+                        size="large"
+                        type="primary"
+                        icon={<CheckOutlined />}
+                      >
+                        Duyệt tin
+                      </Button>
+                    </Popconfirm>
+                    <Popconfirm
+                      title="Từ chối tin này?"
+                      description="Tin sẽ bị ẩn và không thể khôi phục"
+                      onConfirm={() => {
+                        handleReject(selectedJob._id);
+                        setDetailVisible(false);
+                      }}
+                      okText="Từ chối"
+                      okButtonProps={{ danger: true }}
+                    >
+                      <Button size="large" danger icon={<CloseOutlined />}>
+                        Từ chối
+                      </Button>
+                    </Popconfirm>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </Modal>
+      </div>
     </div>
   );
 }

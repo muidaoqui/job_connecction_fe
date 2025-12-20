@@ -3,19 +3,19 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 
 const CompanyPublicProfile = () => {
-  const { id } = useParams();
+  const { companyId } = useParams();
   const [company, setCompany] = useState(null);
   const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
     fetchCompany();
     fetchJobs();
-  }, [id]);
+  }, [companyId]);
 
   const fetchCompany = async () => {
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/company/${id}`
+        `${import.meta.env.VITE_API_URL}/api/company/${companyId}`
       );
       setCompany(res.data.data);
     } catch (error) {
@@ -26,7 +26,7 @@ const CompanyPublicProfile = () => {
   const fetchJobs = async () => {
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/jobs/company/${id}`
+        `${import.meta.env.VITE_API_URL}/api/jobs/company/${companyId}`
       );
       setJobs(res.data.data || []);
     } catch (error) {

@@ -1,7 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Input, Select, Button, Card, Empty, Spin, Tag, message } from "antd";
+import {
+  Input,
+  Select,
+  Button,
+  Card,
+  Empty,
+  Spin,
+  Tag,
+  message,
+  Divider,
+} from "antd";
 import { SearchOutlined, SaveOutlined } from "@ant-design/icons";
+import useSavedJobs from "../../hooks/useSavedJobs";
+
 
 const JobSearch = () => {
   const [jobs, setJobs] = useState([]);
@@ -16,167 +28,129 @@ const JobSearch = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [needsProfile, setNeedsProfile] = useState(false);
   const [isSemanticSearch, setIsSemanticSearch] = useState(false);
-  
+  const { savedJobsMap, toggleSaveJob } = useSavedJobs();
+
+
+
   const VITE_API_URL = import.meta.env.VITE_API_URL;
 
-  // Check if user is logged in
+  // ==============================
+  // Auth check
+  // ==============================
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    setIsLoggedIn(!!localStorage.getItem("token"));
   }, []);
 
-  // Fetch initial jobs (recommended or all)
   useEffect(() => {
     fetchJobs();
   }, [isLoggedIn, limit]);
 
-  // Fetch all locations and job types for filters
   useEffect(() => {
     fetchFiltersData();
   }, []);
 
-  // Auto search when filters change (debounced)
+  // Debounce semantic search
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
+    const t = setTimeout(() => {
       handleSemanticSearch();
-    }, 500); // 500ms debounce
-
-    return () => clearTimeout(delayDebounceFn);
+    }, 500);
+    return () => clearTimeout(t);
   }, [searchTerm, selectedLocation, selectedJobType]);
 
-  // ================================================
-  // Fetch recommended jobs or all jobs
-  // ================================================
+  // ==============================
+  // Fetch jobs
+  // ==============================
   const fetchJobs = async () => {
     const token = localStorage.getItem("token");
-    
-    if (!token) {
-      // Not logged in → fetch all jobs
-      await fetchAllJobs();
-      return;
-    }
+    if (!token) return fetchAllJobs();
 
     setLoading(true);
     try {
       const res = await axios.get(
         `${VITE_API_URL}/api/embeddings/recommendations/jobs?limit=${limit}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (res.data.needsProfile) {
         setNeedsProfile(true);
-        await fetchAllJobs(); // Fallback to all jobs
+        fetchAllJobs();
       } else {
-        setNeedsProfile(false);
         setJobs(res.data.data?.jobs || []);
         setHasMore(res.data.data?.jobs?.length === limit);
+        setNeedsProfile(false);
         setIsSemanticSearch(false);
       }
-    } catch (err) {
-      console.error("Lỗi khi lấy recommended jobs:", err);
-      if (err.response?.status === 404 || err.response?.status === 401) {
-        setNeedsProfile(true);
-        await fetchAllJobs();
-      }
+    } catch {
+      setNeedsProfile(true);
+      fetchAllJobs();
     } finally {
       setLoading(false);
     }
   };
 
-  // ================================================
-  // Fetch all jobs (fallback)
-  // ================================================
   const fetchAllJobs = async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${VITE_API_URL}/api/jobs`);
-      const jobList = res.data?.data || [];
-      setJobs(jobList.slice(0, limit));
-      setHasMore(jobList.length > limit);
-      setNeedsProfile(false);
+      const list = res.data?.data || [];
+      setJobs(list.slice(0, limit));
+      setHasMore(list.length > limit);
       setIsSemanticSearch(false);
-    } catch (err) {
-      console.error("Lỗi khi lấy jobs:", err);
-      message.error("Không lấy được danh sách công việc!");
+    } catch {
+      message.error("Không lấy được danh sách công việc");
     } finally {
       setLoading(false);
     }
   };
 
-  // ================================================
-  // Fetch filters data (locations + job types)
-  // ================================================
   const fetchFiltersData = async () => {
     try {
       const res = await axios.get(`${VITE_API_URL}/api/jobs`);
-      const jobList = res.data || [];
-
-      const uniqueLocations = [...new Set(jobList.map(j => j.location).filter(Boolean))];
-      const uniqueJobTypes = [...new Set(jobList.map(j => j.jobType).filter(Boolean))];
-
-      setLocations(uniqueLocations);
-      setJobTypes(uniqueJobTypes);
-    } catch (err) {
-      console.error("Lỗi khi lấy filters:", err);
-    }
+      const list = res.data?.data || [];
+      setLocations([...new Set(list.map(j => j.location).filter(Boolean))]);
+      setJobTypes([...new Set(list.map(j => j.jobType).filter(Boolean))]);
+    } catch { }
   };
 
-  // ================================================
-  // Semantic Search (using vector search API)
-  // ================================================
+  // ==============================
+  // Semantic search
+  // ==============================
   const handleSemanticSearch = async () => {
-    // If no search criteria, fetch recommended/all jobs
-    if (!searchTerm.trim() && !selectedLocation && !selectedJobType) {
+    if (!searchTerm && !selectedLocation && !selectedJobType) {
       fetchJobs();
       return;
     }
 
     setLoading(true);
     try {
-      // Build query string
-      let queryParts = [];
-      if (searchTerm.trim()) queryParts.push(searchTerm.trim());
-      if (selectedLocation) queryParts.push(selectedLocation);
-      if (selectedJobType) queryParts.push(selectedJobType);
-
-      const query = queryParts.join(" ");
+      const query = [searchTerm, selectedLocation, selectedJobType]
+        .filter(Boolean)
+        .join(" ");
 
       const res = await axios.post(
         `${VITE_API_URL}/api/embeddings/job/search`,
-        {
-          query,
-          limit: limit,
-          numCandidates: 100
-        }
+        { query, limit, numCandidates: 100 }
       );
 
       setJobs(res.data.data?.jobs || []);
-      setHasMore(false); // Semantic search returns fixed results
+      setHasMore(false);
       setIsSemanticSearch(true);
       setNeedsProfile(false);
-    } catch (err) {
-      console.error("Lỗi khi semantic search:", err);
-      message.error("Lỗi khi tìm kiếm công việc");
+    } catch {
+      message.error("Lỗi tìm kiếm công việc");
     } finally {
       setLoading(false);
     }
   };
 
-  // ================================================
-  // Load More
-  // ================================================
-  const handleLoadMore = () => {
-    setLimit((prevLimit) => prevLimit + 10);
-  };
-
-  // ================================================
-  // Save Job
-  // ================================================
   const handleSave = async (jobId) => {
     const token = localStorage.getItem("token");
-    if (!token) return message.warning("Bạn cần đăng nhập trước!");
+    if (!token) return message.warning("Bạn cần đăng nhập");
+
+    // Đã lưu rồi → không gọi API nữa
+    if (savedJobIds.has(jobId)) {
+      return message.info("Công việc đã được lưu");
+    }
 
     try {
       await axios.post(
@@ -184,139 +158,139 @@ const JobSearch = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       message.success("Đã lưu công việc!");
-      fetchJobs(); 
+
+      setSavedJobIds(prev => new Set(prev).add(jobId));
     } catch (err) {
-      console.error(err);
       message.error(err.response?.data?.message || "Lỗi khi lưu công việc");
     }
   };
 
+  const fetchSavedJobs = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const res = await axios.get(
+        `${VITE_API_URL}/api/candidate/saved-jobs`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const ids = res.data?.data?.map(j => j.jobId?._id || j.jobId) || [];
+      setSavedJobIds(new Set(ids));
+    } catch (err) {
+      console.error("Lỗi lấy saved jobs", err);
+    }
+  };
+
+
   return (
-    <div className="container mx-auto px-6 py-6 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold text-blue-600 mb-6">
-        {isSemanticSearch ? "🔍 Kết Quả Tìm Kiếm Thông Minh" : 
-         needsProfile ? "Tìm Kiếm Công Việc" : 
-         isLoggedIn ? "✨ Công Việc Gợi Ý Cho Bạn" : "Tìm Kiếm Công Việc"}
+    <div className="container mx-auto px-6 py-8 bg-gray-50 min-h-screen">
+      {/* Title */}
+      <h1 className="text-3xl font-bold text-blue-600 mb-2">
+        {isSemanticSearch
+          ? "🔍 Kết quả tìm kiếm thông minh"
+          : needsProfile
+            ? "Tìm kiếm công việc"
+            : isLoggedIn
+              ? "✨ Công việc gợi ý cho bạn"
+              : "Tìm kiếm công việc"}
       </h1>
 
-      {/* Profile completion notice */}
+      <p className="text-gray-600 mb-6">
+        Khám phá hàng ngàn cơ hội việc làm phù hợp với bạn
+      </p>
+
+      {/* Profile notice */}
       {needsProfile && isLoggedIn && (
         <Card className="mb-6 bg-yellow-50 border-yellow-200">
-          <div className="flex items-center gap-4">
-            <div className="text-4xl">📝</div>
-            <div className="flex-1">
-              <h3 className="font-bold text-yellow-700 mb-1">
-                Hoàn thiện hồ sơ để nhận gợi ý công việc phù hợp
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="font-semibold text-yellow-700">
+                📝 Hoàn thiện hồ sơ để nhận gợi ý tốt hơn
               </h3>
               <p className="text-sm text-gray-600">
-                Cập nhật học vấn, kinh nghiệm và kỹ năng để hệ thống gợi ý những công việc tốt nhất cho bạn
+                Thêm kỹ năng & kinh nghiệm để AI gợi ý chính xác
               </p>
             </div>
             <Button
               type="primary"
-              className="bg-yellow-600 hover:bg-yellow-700"
-              onClick={() => window.location.href = "/customer/mysaramin"}
+              className="bg-yellow-600"
+              onClick={() => (window.location.href = "/customer/mysaramin")}
             >
-              Cập Nhật Hồ Sơ
+              Cập nhật hồ sơ
             </Button>
           </div>
         </Card>
       )}
 
-      {/* Search Filters */}
-      <Card className="mb-6 shadow-md">
+      {/* Filters */}
+      <Card className="mb-6 shadow">
         <div className="grid grid-cols-4 gap-4">
           <div className="col-span-2">
-            <label className="block text-sm font-semibold mb-2">
-              Tên công việc hoặc từ khóa
-            </label>
             <Input
-              placeholder="VD: Backend Developer, Senior Manager..."
+              size="large"
+              placeholder="VD: Backend Developer, Data Engineer..."
               prefix={<SearchOutlined />}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              size="large"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              💡 Hệ thống sẽ tự động tìm kiếm công việc phù hợp khi bạn nhập
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-2">Địa điểm</label>
-            <Select
-              placeholder="Chọn địa điểm"
-              allowClear
-              size="large"
-              value={selectedLocation || undefined}
-              onChange={(val) => setSelectedLocation(val || "")}
-              options={locations.map(loc => ({ label: loc, value: loc }))}
-              className="w-full"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold mb-2">Loại công việc</label>
-            <Select
-              placeholder="Chọn loại"
-              allowClear
-              size="large"
-              value={selectedJobType || undefined}
-              onChange={(val) => setSelectedJobType(val || "")}
-              options={jobTypes.map(type => ({ label: type, value: type }))}
-              className="w-full"
-            />
-          </div>
+          <Select
+            size="large"
+            allowClear
+            placeholder="Địa điểm"
+            value={selectedLocation || undefined}
+            onChange={(v) => setSelectedLocation(v || "")}
+            options={locations.map(l => ({ label: l, value: l }))}
+          />
+
+          <Select
+            size="large"
+            allowClear
+            placeholder="Loại công việc"
+            value={selectedJobType || undefined}
+            onChange={(v) => setSelectedJobType(v || "")}
+            options={jobTypes.map(t => ({ label: t, value: t }))}
+          />
         </div>
 
         {isSemanticSearch && (
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-700">
-              🤖 <strong>Tìm kiếm thông minh:</strong> Hệ thống đang sử dụng AI để tìm các công việc phù hợp nhất với từ khóa của bạn
-            </p>
+          <div className="mt-3 text-sm text-blue-600">
+            🤖 Đang sử dụng AI Semantic Search
           </div>
         )}
       </Card>
 
       {/* Results */}
       {loading && jobs.length === 0 ? (
-        <div className="flex justify-center py-10">
-          <Spin size="large" tip="Đang tìm kiếm công việc phù hợp..." />
+        <div className="flex justify-center py-20">
+          <Spin size="large" />
         </div>
       ) : jobs.length === 0 ? (
-        <Empty 
-          description="Không tìm thấy công việc phù hợp" 
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-        >
-          <Button 
-            type="primary" 
-            onClick={() => {
-              setSearchTerm("");
-              setSelectedLocation("");
-              setSelectedJobType("");
-              fetchJobs();
-            }}
-          >
-            Xem Tất Cả Công Việc
-          </Button>
-        </Empty>
+        <Empty description="Không tìm thấy công việc phù hợp" />
       ) : (
         <>
-          <div className="mb-4 text-gray-600">
+          <div className="text-gray-600 mb-4">
             Tìm thấy <strong>{jobs.length}</strong> công việc
           </div>
-          
+
           <div className="space-y-4">
             {jobs.map((job) => (
-              <Card key={job._id} className="hover:shadow-lg transition cursor-pointer">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    {/* Title with score */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-xl font-semibold text-blue-600">{job.title}</h3>
-                      {job.saveCount > 50 && <Tag color="red">🔥 HOT</Tag>}
+              <Card
+                key={job._id}
+                hoverable
+                onClick={() => (window.location.href = `/job/${job._id}`)}
+              >
+                <div className="flex justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold text-blue-600">
+                        {job.title}
+                      </h3>
+                      {job.saveCount > 50 && <Tag color="red">HOT</Tag>}
                       {job.score && (
                         <Tag color="green">
                           {Math.round(job.score * 100)}% phù hợp
@@ -324,77 +298,63 @@ const JobSearch = () => {
                       )}
                     </div>
 
-                    {/* Company */}
-                    <p className="text-lg text-gray-700 font-semibold mt-2">
-                      {job.companyId?.name || "Nhà tuyển dụng"}
+                    <p className="font-semibold text-gray-700 mt-1">
+                      {job.companyId?.name}
                     </p>
 
-                    {/* Info */}
-                    <div className="flex gap-4 mt-2 text-sm text-gray-600">
-                      <span>📍 {job.location || "Chưa rõ"}</span>
+                    <div className="text-sm text-gray-600 flex gap-4 mt-2">
+                      <span>📍 {job.location}</span>
                       <span>💰 {job.salary || "Thương lượng"}</span>
-                      <span>📋 {job.jobType || "Không rõ"}</span>
+                      <span>📋 {job.jobType}</span>
                     </div>
 
-                    {/* Description */}
-                    <p className="text-gray-700 mt-3 line-clamp-2">{job.description}</p>
+                    <p className="mt-2 text-gray-700 line-clamp-2">
+                      {job.description}
+                    </p>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex flex-col gap-2 ml-4">
-                    <div className="text-right">
-                      <p className="text-sm text-blue-600 font-semibold">
-                        💾 {job.saveCount || 0} lượt lưu
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {new Date(job.createdAt).toLocaleDateString("vi-VN")}
-                      </p>
-                    </div>
-
+                  <div
+                    className="flex flex-col gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <Button
                       type="primary"
-                      className="bg-blue-600 hover:bg-blue-700"
-                      onClick={() => (window.location.href = `/job/${job._id}`)}
+                      onClick={() =>
+                        (window.location.href = `/job/${job._id}`)
+                      }
                     >
-                      Xem Chi Tiết
+                      Xem chi tiết
                     </Button>
-
-                    <Button
-                      icon={<SaveOutlined />}
-                      className="border-blue-500 text-blue-500 hover:text-blue-700"
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleSave(job._id);
+                        toggleSaveJob(job._id);
                       }}
+                      className={`px-3 py-1 rounded-lg text-sm transition ${savedJobsMap[job._id]
+                        ? "bg-red-100 text-red-600"
+                        : "bg-gray-100 text-gray-600"
+                        }`}
                     >
-                      Lưu
-                    </Button>
+                      {savedJobsMap[job._id] ? "❤️ Đã Lưu" : "🤍 Lưu"}
+                    </button>
+
+
                   </div>
                 </div>
               </Card>
             ))}
           </div>
 
-          {/* Load More Button */}
           {hasMore && !isSemanticSearch && (
             <div className="flex justify-center mt-8">
               <Button
-                type="primary"
                 size="large"
+                type="primary"
                 loading={loading}
-                onClick={handleLoadMore}
-                className="bg-blue-600 hover:bg-blue-700"
+                onClick={() => setLimit((l) => l + 10)}
               >
-                Xem Thêm Công Việc
+                Xem thêm
               </Button>
-            </div>
-          )}
-
-          {isSemanticSearch && jobs.length > 0 && (
-            <div className="text-center mt-8 p-4 bg-gray-100 rounded-lg">
-              <p className="text-gray-600">
-                Đã hiển thị tất cả kết quả tìm kiếm phù hợp nhất
-              </p>
             </div>
           )}
         </>

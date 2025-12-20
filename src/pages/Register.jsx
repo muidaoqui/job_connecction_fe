@@ -7,22 +7,39 @@ import { toast } from "react-toastify";
 
 function Register() {
   const BASE_URL = "http://localhost:8080";
+
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [confPass, setConfPass] = useState("");
+  const [otp, setOtp] = useState("");
+
   const [message, setMessage] = useState("");
   const [msgColor, setMsgColor] = useState("cyan");
+
   const [showPass, setShowPass] = useState(false);
   const [showConfPass, setShowConfPass] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [showOtpForm, setShowOtpForm] = useState(false);
-  const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Kiểm tra nếu user được chuyển từ trang login sang do chưa xác thực email
+  // ===== Fix Tailwind dynamic class =====
+  const getMsgColor = () => {
+    switch (msgColor) {
+      case "red":
+        return "text-red-600";
+      case "green":
+        return "text-green-600";
+      case "blue":
+        return "text-blue-600";
+      default:
+        return "text-cyan-600";
+    }
+  };
+
+  // ===== Nếu redirect từ login (email chưa verify) =====
   useEffect(() => {
     if (location.state?.needVerification) {
       setEmail(location.state.email);
@@ -32,6 +49,9 @@ function Register() {
     }
   }, [location]);
 
+  // =========================
+  // 🔥 Register + Send OTP
+  // =========================
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -44,17 +64,17 @@ function Register() {
 
     try {
       setLoading(true);
+
       await axios.post(`${BASE_URL}/api/auth/register`, {
         name: fullname,
         email,
         password: pass,
       });
 
-      // Gửi mã OTP
       await axios.post(`${BASE_URL}/api/auth/email/send-otp`, { email });
-      
+
       setShowOtpForm(true);
-      setMessage("Vui lòng kiểm tra email và nhập mã OTP để xác thực tài khoản!");
+      setMessage("Vui lòng kiểm tra email và nhập mã OTP để xác thực!");
       setMsgColor("green");
     } catch (err) {
       setMessage(err.response?.data?.message || "Đăng ký thất bại!");
@@ -64,21 +84,44 @@ function Register() {
     }
   };
 
+  // =========================
+  // 🔐 Verify OTP
+  // =========================
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
+
+    if (!/^\d{6}$/.test(otp)) {
+      toast.error("OTP phải gồm 6 chữ số");
+      return;
+    }
+
     try {
       setLoading(true);
+
       await axios.post(`${BASE_URL}/api/auth/email/verify-otp`, {
         email,
         otp,
       });
 
       toast.success("Xác thực email thành công!");
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       toast.error(err.response?.data?.message || "Xác thực OTP thất bại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // =========================
+  // 🔁 Resend OTP
+  // =========================
+  const handleResendOtp = async () => {
+    try {
+      setLoading(true);
+      await axios.post(`${BASE_URL}/api/auth/email/send-otp`, { email });
+      toast.success("Đã gửi lại mã OTP");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Không gửi lại được OTP");
     } finally {
       setLoading(false);
     }
@@ -87,7 +130,7 @@ function Register() {
   return (
     <div className="mt-30 w-full flex justify-center items-center min-h-screen bg-gray-100 px-4">
       <div className="flex flex-col md:flex-row w-full max-w-2xl overflow-hidden rounded-xl shadow-lg bg-white">
-        {/* Form */}
+        {/* ================= FORM ================= */}
         <div className="flex flex-col justify-center w-full p-6 md:p-10">
           {!showOtpForm ? (
             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
@@ -95,129 +138,142 @@ function Register() {
                 Đăng ký
               </h2>
 
-            <div>
-              <label className="block mb-1">Họ và tên</label>
-              <input
-                type="text"
-                className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                placeholder="Nhập họ và tên"
-                value={fullname}
-                onChange={(e) => setFullname(e.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1">Email</label>
-              <input
-                type="email"
-                className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                placeholder="Nhập email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1">Mật khẩu</label>
-              <div className="relative">
+              <div>
+                <label className="block mb-1">Họ và tên</label>
                 <input
-                  type={showPass ? "text" : "password"}
-                  className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                  placeholder="Nhập mật khẩu"
-                  value={pass}
-                  onChange={(e) => setPass(e.target.value)}
+                  type="text"
+                  className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-400"
+                  value={fullname}
+                  onChange={(e) => setFullname(e.target.value)}
                   required
                 />
-                <span
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
-                  onClick={() => setShowPass(!showPass)}
-                >
-                  <FaRegEye />
-                </span>
               </div>
-            </div>
 
-            <div>
-              <label className="block mb-1">Nhập lại mật khẩu</label>
-              <div className="relative">
+              <div>
+                <label className="block mb-1">Email</label>
                 <input
-                  type={showConfPass ? "text" : "password"}
-                  className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                  placeholder="Nhập lại mật khẩu"
-                  value={confPass}
-                  onChange={(e) => setConfPass(e.target.value)}
+                  type="email"
+                  className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-400"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
-                <span
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
-                  onClick={() => setShowConfPass(!showConfPass)}
-                >
-                  <FaRegEye />
-                </span>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-cyan-400 hover:bg-cyan-500 text-white h-10 rounded-lg font-semibold"
-            >
-              {loading ? "Đang đăng ký..." : "Đăng ký"}
-            </button>
+              <div>
+                <label className="block mb-1">Mật khẩu</label>
+                <div className="relative">
+                  <input
+                    type={showPass ? "text" : "password"}
+                    className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-400"
+                    value={pass}
+                    onChange={(e) => setPass(e.target.value)}
+                    required
+                  />
+                  <span
+                    className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+                    onClick={() => setShowPass(!showPass)}
+                  >
+                    <FaRegEye />
+                  </span>
+                </div>
+              </div>
 
-            {message && (
-              <p className={`text-sm text-${msgColor}-600 text-center`}>
-                {message}
+              <div>
+                <label className="block mb-1">Nhập lại mật khẩu</label>
+                <div className="relative">
+                  <input
+                    type={showConfPass ? "text" : "password"}
+                    className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-400"
+                    value={confPass}
+                    onChange={(e) => setConfPass(e.target.value)}
+                    required
+                  />
+                  <span
+                    className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+                    onClick={() => setShowConfPass(!showConfPass)}
+                  >
+                    <FaRegEye />
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-cyan-400 hover:bg-cyan-500 text-white h-10 rounded-lg font-semibold"
+              >
+                {loading ? "Đang đăng ký..." : "Đăng ký"}
+              </button>
+
+              {message && (
+                <p className={`text-sm text-center ${getMsgColor()}`}>
+                  {message}
+                </p>
+              )}
+
+              <p className="text-center text-sm">
+                Bạn đã có tài khoản?{" "}
+                <Link to="/login" className="text-cyan-400 hover:underline">
+                  Đăng nhập
+                </Link>
               </p>
-            )}
-
-            <p className="text-center text-sm">
-              Bạn đã có tài khoản?{" "}
-              <Link to="/login" className="text-cyan-400 hover:underline">
-                Đăng nhập
-              </Link>
-            </p>
-          </form>
-        ) : (
-          <form className="flex flex-col gap-4" onSubmit={handleVerifyOtp}>
-            <h2 className="text-3xl font-bold text-center text-cyan-400">
-              Xác thực OTP
-            </h2>
-
-            <div>
-              <label className="block mb-1">Nhập mã OTP</label>
-              <input
-                type="text"
-                className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                placeholder="Nhập mã OTP từ email"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-cyan-400 hover:bg-cyan-500 text-white h-10 rounded-lg font-semibold"
+            </form>
+          ) : (
+            // ================= OTP FORM =================
+            <form
+              className={`flex flex-col gap-4 ${
+                loading ? "opacity-60 pointer-events-none" : ""
+              }`}
+              onSubmit={handleVerifyOtp}
             >
-              {loading ? "Đang xác thực..." : "Xác thực OTP"}
-            </button>
+              <h2 className="text-3xl font-bold text-center text-cyan-400">
+                Xác thực OTP
+              </h2>
 
-            {message && (
-              <p className={`text-sm text-${msgColor}-600 text-center`}>
-                {message}
-              </p>
-            )}
-          </form>
-        )}
+              <div>
+                <label className="block mb-1">Email</label>
+                <input
+                  type="email"
+                  disabled
+                  value={email}
+                  className="w-full h-10 px-3 border bg-gray-100 rounded-lg cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-1">Mã OTP</label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  className="w-full h-10 px-3 border border-gray-300 rounded-lg text-center tracking-widest focus:ring-2 focus:ring-cyan-400"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="bg-cyan-400 hover:bg-cyan-500 text-white h-10 rounded-lg font-semibold"
+              >
+                {loading ? "Đang xác thực..." : "Xác thực OTP"}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleResendOtp}
+                className="text-sm text-cyan-500 hover:underline"
+              >
+                Gửi lại mã OTP
+              </button>
+            </form>
+          )}
         </div>
 
-        {/* Banner */}
-        <div className="bg-gradient-to-br from-purple-200 to-cyan-200 flex flex-col justify-center items-center p-6 md:p-10 text-cyan-700 md:rounded-r-xl">
-          <img src={logo} alt="Logo" className="w-auto h-40 rounded-xl mb-4" />
+        {/* ================= BANNER ================= */}
+        <div className="bg-gradient-to-br from-purple-200 to-cyan-200 flex flex-col justify-center items-center p-6 md:p-10 text-cyan-700">
+          <img src={logo} alt="Logo" className="h-40 rounded-xl mb-4" />
           <p className="text-center mt-10">
             Giải pháp tìm việc nhanh chóng và hiệu quả cho bạn!
           </p>

@@ -54,104 +54,108 @@ import {
     deleteProject,
 } from "../../../api/profileAPI";
 
-const GeneralInformationForm = ({ form, candidate, loading, onFinish, avatarUrl, onAvatarUpload }) => {
-    const [avatarLoading, setAvatarLoading] = useState(false);
-
+// ============================
+// General Information
+// ============================
+const GeneralInformationForm = ({
+    form,
+    candidate,
+    loading,
+    onFinish,
+    avatarUrl,
+    onAvatarUpload,
+}) => {
     const handleAvatarUpload = async (file) => {
-        setAvatarLoading(true);
         try {
             const formData = new FormData();
             formData.append("avatar", file);
-            
+
             const token = localStorage.getItem("token");
-            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/candidate/upload-avatar`, formData, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            
+            const res = await axios.post(
+                `${import.meta.env.VITE_API_URL}/api/candidate/upload-avatar`,
+                formData,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
             onAvatarUpload(res.data?.avatarUrl);
             message.success("Tải ảnh đại diện thành công");
         } catch (err) {
-            console.error("Avatar upload error:", err);
             message.error("Lỗi khi tải ảnh đại diện");
-        } finally {
-            setAvatarLoading(false);
         }
-        return false; // Prevent default upload
+        return false; // chặn auto upload của antd
     };
 
     return (
-    <Card
-        title={
-            <div className="flex justify-between items-center">
-                Thông tin chung (General Information)
-                <Button icon={<EditOutlined />} type="link">
-                    Chỉnh sửa
-                </Button>
-            </div>
-        }
-        className="mt-5"
-        extra={<Tag color="blue">Đạt 50% từ mục này</Tag>}
-    >
-        <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-        >
-            <div className="flex items-center mb-5">
-                <Upload
-                    beforeUpload={handleAvatarUpload}
-                    maxCount={1}
-                    accept="image/*"
-                    showUploadList={false}
-                >
-                    <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mr-5 cursor-pointer hover:bg-blue-100 transition relative group">
-                        {avatarUrl ? (
-                            <img
-                                src={avatarUrl}
-                                alt="Avatar"
-                                className="w-full h-full rounded-full object-cover"
-                            />
-                        ) : (
-                            <span className="text-2xl">👤</span>
-                        )}
-                        <div className="absolute inset-0 rounded-full bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                            <CameraOutlined className="text-white text-lg" />
-                        </div>
-                    </div>
-                </Upload>
-                <div className="flex-1">
-                    <Form.Item label="Họ và tên" name="name" className="mb-3">
-                        <Input placeholder="Nhập họ và tên" />
-                    </Form.Item>
+        <Card
+            title={
+                <div className="flex justify-between items-center">
+                    Thông tin chung (General Information)
+                    <Button icon={<EditOutlined />} type="link">
+                        Chỉnh sửa
+                    </Button>
                 </div>
-            </div>
+            }
+            className="mt-5"
+            extra={<Tag color="blue">Đạt 50% từ mục này</Tag>}
+        >
+            <Form
+                form={form}
+                layout="vertical"
+                onFinish={onFinish}
+            >
+                <div className="flex items-center mb-5">
+                    <Upload
+                        beforeUpload={handleAvatarUpload}
+                        maxCount={1}
+                        accept="image/*"
+                        showUploadList={false}
+                    >
+                        <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mr-5 cursor-pointer hover:bg-blue-100 transition relative group">
+                            {avatarUrl ? (
+                                <img
+                                    src={avatarUrl}
+                                    alt="Avatar"
+                                    className="w-full h-full rounded-full object-cover"
+                                />
+                            ) : (
+                                <span className="text-2xl">👤</span>
+                            )}
+                            <div className="absolute inset-0 rounded-full bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                <CameraOutlined className="text-white text-lg" />
+                            </div>
+                        </div>
+                    </Upload>
+                    <div className="flex-1">
+                        <Form.Item label="Họ và tên" name="name" className="mb-3">
+                            <Input placeholder="Nhập họ và tên" />
+                        </Form.Item>
+                    </div>
+                </div>
 
-            <Form.Item label="Địa chỉ" name="address">
-                <Input placeholder="Nhập địa chỉ" />
-            </Form.Item>
+                <Form.Item label="Địa chỉ" name="address">
+                    <Input placeholder="Nhập địa chỉ" />
+                </Form.Item>
 
-            <Form.Item label="Ngày sinh" name="dateOfBirth">
-                <DatePicker />
-            </Form.Item>
+                <Form.Item label="Ngày sinh" name="dateOfBirth">
+                    <DatePicker />
+                </Form.Item>
 
-            <Form.Item label="Giới tính" name="gender">
-                <Radio.Group>
-                    <Radio value="male">Nam</Radio>
-                    <Radio value="female">Nữ</Radio>
-                </Radio.Group>
-            </Form.Item>
+                <Form.Item label="Giới tính" name="gender">
+                    <Radio.Group>
+                        <Radio value="male">Nam</Radio>
+                        <Radio value="female">Nữ</Radio>
+                    </Radio.Group>
+                </Form.Item>
 
-            <Form.Item label="Tóm tắt hồ sơ" name="profileSummary">
-                <Input.TextArea rows={4} placeholder="Nhập tóm tắt hồ sơ của bạn" />
-            </Form.Item>
+                <Form.Item label="Tóm tắt hồ sơ" name="profileSummary">
+                    <Input.TextArea rows={4} placeholder="Nhập tóm tắt hồ sơ của bạn" />
+                </Form.Item>
 
-            <Button type="primary" htmlType="submit" loading={loading} block>
-                Lưu thông tin
-            </Button>
-        </Form>
-    </Card>
+                <Button type="primary" htmlType="submit" loading={loading} block>
+                    Lưu thông tin
+                </Button>
+            </Form>
+        </Card>
     );
 };
 
@@ -162,27 +166,27 @@ const MySaramin = () => {
     const [candidate, setCandidate] = useState(null);
     const [loading, setLoading] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState(null);
-    
+
     // Experience states
     const [experiences, setExperiences] = useState([]);
     const [experienceFormVisible, setExperienceFormVisible] = useState(false);
     const [editingExperience, setEditingExperience] = useState(null);
-    
+
     // Skill states
     const [skills, setSkills] = useState([]);
     const [skillFormVisible, setSkillFormVisible] = useState(false);
     const [editingSkill, setEditingSkill] = useState(null);
-    
+
     // Education states
     const [educations, setEducations] = useState([]);
     const [educationFormVisible, setEducationFormVisible] = useState(false);
     const [editingEducation, setEditingEducation] = useState(null);
-    
+
     // Project states
     const [projects, setProjects] = useState([]);
     const [projectFormVisible, setProjectFormVisible] = useState(false);
     const [editingProject, setEditingProject] = useState(null);
-    
+
     // Use resume management hook
     const { resumes, mainResume, loading: resumeLoading, uploadNewResume } = useResumeManagement();
 
@@ -192,7 +196,7 @@ const MySaramin = () => {
             try {
                 const token = localStorage.getItem("token");
                 console.log("Token:", token);
-                
+
                 if (!token) {
                     message.error("Vui lòng đăng nhập để xem thông tin");
                     setTimeout(() => navigate("/login"), 1500);
@@ -247,7 +251,7 @@ const MySaramin = () => {
             if (candidate) {
                 await updateProfile(data);
                 message.success("Cập nhật profile thành công");
-                
+
                 // Tự động generate embedding sau khi cập nhật profile
                 try {
                     const token = localStorage.getItem("token");
@@ -267,7 +271,7 @@ const MySaramin = () => {
                 await createProfile(data);
                 message.success("Tạo profile thành công");
             }
-            
+
             // Reload data để cập nhật UI
             const profileRes = await getProfile();
             setCandidate(profileRes.data.candidate);
@@ -278,9 +282,12 @@ const MySaramin = () => {
         }
     };
 
-    const handleUpload = async ({ file }) => {
+    const handleUploadCV = async ({ file }) => {
+        if (!file || file.status === "removed") return;
         await uploadNewResume(file);
     };
+
+
 
     // Experience handlers
     const handleAddExperience = async (values) => {
@@ -426,8 +433,7 @@ const MySaramin = () => {
     return (
         <div className="container mx-auto px-6 py-6 bg-gray-50 min-h-screen">
 
-            <Row gutter={24} className="mt-5">
-
+            <Row gutter={24}>
                 <Col span={6}>
                     <ProfileSidebar userName={profileData?.name} />
                 </Col>
@@ -437,32 +443,29 @@ const MySaramin = () => {
                         className="mb-5"
                         actions={[
                             <Upload
-                                key="import"
-                                maxCount={1}
+                                key="upload"
                                 accept=".pdf,.doc,.docx"
+                                maxCount={1}
                                 beforeUpload={() => false}
-                                onChange={({ file }) => handleUpload({ file })}
+                                onChange={handleUploadCV}
                             >
-                                <Button type="primary" icon={<DownloadOutlined />} loading={resumeLoading}>
-                                    Nhập CV của bạn
+                                <Button
+                                    type="primary"
+                                    icon={<UploadOutlined />}
+                                    loading={resumeLoading}
+                                >
+                                    Tải CV lên
                                 </Button>
                             </Upload>,
-                            <Button 
-                                key="save" 
-                                icon={<SaveOutlined />}
-                                onClick={() => {
-                                    form.submit();
-                                }}
-                            >
-                                Lưu lại
+                            <Button key="save" icon={<SaveOutlined />} onClick={() => form.submit()}>
+                                Lưu hồ sơ
                             </Button>,
                         ]}
                     >
-                        <h2>Saramin CV</h2>
-                        <p>
-                            Nâng cấp CV của bạn theo chuẩn ATS bằng cách tải lên, chuyển đổi, và
-                            tải CV Saramin dưới dạng PDF để ứng tuyển công việc với định dạng thân thiện với ATS.
-                        </p>
+                        <h2>Quản lý CV</h2>
+                        {mainResume && (
+                            <Tag color="green">CV chính: {mainResume.name}</Tag>
+                        )}
                     </Card>
 
                     <GeneralInformationForm

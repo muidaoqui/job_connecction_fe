@@ -31,6 +31,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 export default function AdminPendingJobs() {
+  const API_URL = "http://localhost:8080/api/admin";
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -55,7 +56,7 @@ export default function AdminPendingJobs() {
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("http://localhost:8080/api/admin/jobs");
+      const res = await apiFetch(`${API_URL}/jobs`);
       if (!res.ok) throw new Error("Failed to fetch jobs");
       const json = await res.json();
       setJobs(Array.isArray(json.data) ? json.data : []);
@@ -72,10 +73,9 @@ export default function AdminPendingJobs() {
   const handleApprove = async (jobId) => {
     setLoading(true);
     try {
-      const res = await apiFetch(
-        `http://localhost:8080/api/admin/jobs/${jobId}/approve`,
-        { method: "PUT" }
-      );
+      const res = await apiFetch(`${API_URL}/jobs/${jobId}/approve`, {
+        method: "PUT",
+      });
       if (!res.ok) throw new Error("Approve failed");
       notification.success({ message: "Đã duyệt tin tuyển dụng thành công" });
       fetchJobs();
@@ -92,10 +92,9 @@ export default function AdminPendingJobs() {
   const handleReject = async (jobId) => {
     setLoading(true);
     try {
-      const res = await apiFetch(
-        `http://localhost:8080/api/admin/jobs/${jobId}/reject`,
-        { method: "PUT" }
-      );
+      const res = await apiFetch(`${API_URL}/jobs/${jobId}/reject`, {
+        method: "PUT",
+      });
       if (!res.ok) throw new Error("Reject failed");
       notification.info({ message: "Đã từ chối tin tuyển dụng" });
       fetchJobs();

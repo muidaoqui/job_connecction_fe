@@ -22,6 +22,8 @@ import CompanyDetail from "./pages/customer/CompanyDetail";
 import CusJobDetail from "./pages/customer/JobDetail";
 import CusJobSearch from "./pages/customer/JobSearch";
 import ApplyJob from "./pages/customer/ApplyJob";
+
+/* ================= CUSTOMER PROFILE ================= */
 import Profile from "./pages/customer/profile/Profile";
 import MySaramin from "./pages/customer/profile/MySaramin";
 import JobMana from "./pages/customer/profile/JobMana";
@@ -29,8 +31,11 @@ import CVMana from "./pages/customer/profile/CVMana";
 import EmailMana from "./pages/customer/profile/EmailMana";
 import PerTest from "./pages/customer/profile/PerTest";
 import Navbar from "./pages/customer/profile/Navbar";
+
+/* ================= JOB ================= */
 import JobSearch from "./pages/JobSearch";
 import JobDetail from "./pages/customer/JobDetail";
+
 /* ================= AUTH ================= */
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -51,7 +56,7 @@ import Verification from "./pages/recruiter/Verification";
 /* ================= ADMIN ================= */
 import AdminDashboard from "./pages/admin/Dashboard";
 import UsersPage from "./pages/admin/User";
-import AdminPendingJobs from "./pages/admin/Job";
+import AdminPendingJobs from "./pages/admin/Jobs";
 import RecruiterVerification from "./pages/admin/RecruiterVerification";
 
 import "react-toastify/dist/ReactToastify.css";
@@ -69,22 +74,22 @@ function App() {
       <ToastContainer position="top-right" autoClose={3000} />
 
       <Routes>
-        {/* ================= CUSTOMER + RECRUITER LAYOUT ================= */}
+        {/* ================= CUSTOMER + RECRUITER ================= */}
         <Route path="/" element={<CustomerLayout />}>
-        {/* ROUTE ĐĂNG KÝ RECRUITER */}
-        
-        {/* -------- CUSTOMER PROFILE -------- */}
-<Route path="customer" element={<Profile />}>
-  <Route path="navbar" element={<Navbar />} />
-  <Route path="mysaramin" element={<MySaramin />} />
-  <Route path="jobmanagement" element={<JobMana />} />
-  <Route path="cvmanagement" element={<CVMana />} />
-  <Route path="emailmanagement" element={<EmailMana />} />
-  <Route path="pertest" element={<PerTest />} />
+          {/* -------- CUSTOMER PROFILE -------- */}
+          <Route path="customer" element={<Profile />}>
+            <Route path="navbar" element={<Navbar />} />
+            <Route path="mysaramin" element={<MySaramin />} />
+            <Route path="jobmanagement" element={<JobMana />} />
+            <Route path="cvmanagement" element={<CVMana />} />
+            <Route path="emailmanagement" element={<EmailMana />} />
+            <Route path="pertest" element={<PerTest />} />
+          </Route>
 
-</Route>
-  <Route path="jobs" element={<JobSearch />} />
-<Route path="jobs/:id" element={<JobDetail />} />
+          {/* -------- JOB -------- */}
+          <Route path="jobs" element={<JobSearch />} />
+          <Route path="jobs/:id" element={<JobDetail />} />
+
           {/* -------- CUSTOMER -------- */}
           <Route index element={<Home />} />
           <Route path="login" element={<Login />} />
@@ -99,10 +104,8 @@ function App() {
           <Route path="job/:id" element={<CusJobDetail />} />
           <Route path="job-search" element={<CusJobSearch />} />
           <Route path="apply-job/:id" element={<ApplyJob />} />
-          
 
           {/* -------- RECRUITER -------- */}
-          
           <Route
             path="recruiter/dashboard"
             element={
@@ -139,7 +142,6 @@ function App() {
             }
           />
 
-          {/* Danh sách ứng viên */}
           <Route
             path="recruiter/applicants"
             element={
@@ -149,7 +151,6 @@ function App() {
             }
           />
 
-          {/* Ứng viên theo từng job (GIỮ CỦA BẠN ANH) */}
           <Route
             path="recruiter/applicants/:jobId"
             element={
@@ -222,7 +223,6 @@ function App() {
             element={<RecruiterVerification />}
           />
         </Route>
-        
       </Routes>
     </Router>
   );

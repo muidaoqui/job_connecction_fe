@@ -26,6 +26,7 @@ import {
 } from "../../services/admin";
 
 export default function RecruiterVerification() {
+  const BASE_URL = "http://localhost:8080";
   const [loading, setLoading] = useState(false);
   const [recruiters, setRecruiters] = useState([]);
 
@@ -207,7 +208,9 @@ export default function RecruiterVerification() {
               <div>
                 <p className="font-medium">Giấy phép kinh doanh</p>
                 {detailModal.data.businessLicense ? (
-                  <Image src={detailModal.data.businessLicense} />
+                  <Image
+                    src={`${BASE_URL}/${detailModal.data.businessLicense}`}
+                  />
                 ) : (
                   <p className="text-gray-400">Không có</p>
                 )}
@@ -216,7 +219,7 @@ export default function RecruiterVerification() {
               <div>
                 <p className="font-medium">CMND/CCCD mặt trước</p>
                 {detailModal.data.idCardFront ? (
-                  <Image src={detailModal.data.idCardFront} />
+                  <Image src={`${BASE_URL}/${detailModal.data.idCardFront}`} />
                 ) : (
                   <p className="text-gray-400">Không có</p>
                 )}
@@ -225,7 +228,7 @@ export default function RecruiterVerification() {
               <div>
                 <p className="font-medium">CMND/CCCD mặt sau</p>
                 {detailModal.data.idCardBack ? (
-                  <Image src={detailModal.data.idCardBack} />
+                  <Image src={`${BASE_URL}/${detailModal.data.idCardBack}`} />
                 ) : (
                   <p className="text-gray-400">Không có</p>
                 )}

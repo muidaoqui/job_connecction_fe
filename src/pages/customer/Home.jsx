@@ -5,7 +5,7 @@ import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { message } from "antd";
 import useSavedJobs from "../../hooks/useSavedJobs";
 import { toast } from "react-toastify";
-
+import { jwtDecode } from "jwt-decode";
 
 function PrevArrow({ onClick }) {
   return (
@@ -50,6 +50,19 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [hotJobs, setHotJobs] = useState([]);
   const [followingCompanies, setFollowingCompanies] = useState([]);
+  const [userRole, setUserRole] = useState(null);
+
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      setUserRole(decoded.role);
+    } catch (err) {
+      console.log("Token invalid");
+    }
+  }
+}, []);
 
 
   // Recommended jobs state
@@ -350,6 +363,39 @@ function Home() {
     <div className="w-full">
 
       {/* ========== SLIDER TOP COMPANIES ========== */}
+      {isLoggedIn && userRole === "candidate" && (
+  <div className="max-w-6xl mx-auto mt-8 px-6">
+    <div
+      className="relative rounded-3xl overflow-hidden shadow-xl bg-cover bg-center"
+      style={{
+        backgroundImage: "url('/src/assets/recruiter-bg.png')",
+      }}
+    >
+      {/* OVERLAY XANH */}
+      <div className="absolute inset-0 bg-blue-700/40"></div>
+
+      <div className="relative z-10 p-10 flex flex-col md:flex-row items-center justify-between gap-8">
+        {/* TEXT */}
+        <div className="bg-blue-900/60 backdrop-blur-md rounded-2xl p-6 max-w-xl">
+  <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-3">
+    Bạn đang tuyển dụng nhân tài?
+  </h2>
+  <p className="text-slate-200 text-lg leading-relaxed">
+    Tạo hồ sơ nhà tuyển dụng, đăng tin tuyển dụng và tiếp cận ứng viên chất lượng chỉ trong vài phút.
+  </p>
+</div>
+
+        {/* BUTTON */}
+        <button
+          onClick={() => window.location.href = "/recruiter/profile"}
+          className="bg-white text-blue-700 font-bold px-8 py-4 rounded-2xl shadow-lg hover:scale-105 transition"
+        >
+          🚀 Trở thành Nhà tuyển dụng
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       <div className="w-full my-4 relative">
         <Slider {...sliderSettings}>
           {topCompaniesLoading ? (

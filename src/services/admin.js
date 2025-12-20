@@ -71,7 +71,7 @@ export const approveRecruiter = async (id) => {
   const token = getToken();
 
   const res = await axios.patch(
-    `${API_URL}/recruiters/${id}/approve`,
+    `${API_URL}/recruiter/approve/${id}`,
     {},
     {
       headers: { Authorization: `Bearer ${token}` },
@@ -85,10 +85,64 @@ export const rejectRecruiter = async (id, note) => {
   const token = getToken();
 
   const res = await axios.patch(
-    `${API_URL}/recruiters/${id}/reject`,
+    `${API_URL}/recruiter/reject/${id}`,
     { note }, // có thể gửi lý do từ chối
     {
       headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+
+  return res.data;
+};
+
+/* ================================
+   Từ chối tin tuyển dụng
+================================ */
+export const rejectJob = async (jobId) => {
+  const token = getToken();
+
+  const res = await axios.put(
+    `${API_URL}/jobs/${jobId}/reject`,
+    {}, // body rỗng
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return res.data; // backend nên trả job đã update
+};
+
+/* ================================
+   Lấy danh sách tin tuyển dụng (Admin)
+================================ */
+export const getAllJobs = async () => {
+  const token = getToken();
+
+  const res = await axios.get(`${API_URL}/jobs`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return res.data;
+  // backend nên trả: { data: [...] }
+};
+
+/* ================================
+   Duyệt tin tuyển dụng (Admin)
+================================ */
+export const approveJob = async (jobId) => {
+  const token = getToken();
+
+  const res = await axios.put(
+    `${API_URL}/jobs/${jobId}/approve`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }
   );
 

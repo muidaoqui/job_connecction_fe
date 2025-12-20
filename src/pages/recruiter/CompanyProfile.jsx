@@ -139,11 +139,19 @@ export default function CompanyProfile() {
       });
 
       if (res.data.success) {
-        alert("Lưu thành công!");
-        localStorage.setItem("company", JSON.stringify(res.data.data));
-      } else {
-        alert("Lưu thất bại: " + res.data.message);
-      }
+  const companyData = res.data.data;
+
+  // 🔥 LƯU COMPANY ĐỂ DÙNG Ở DASHBOARD & PUBLIC PAGE
+  localStorage.setItem("company", JSON.stringify(companyData));
+  localStorage.setItem("companyId", companyData._id);
+
+  alert("Lưu thành công!");
+
+  // 👉 quay về dashboard cho recruiter thấy nút xem trang công ty
+  window.location.href = "/recruiter/dashboard";
+} else {
+  alert("Lưu thất bại: " + res.data.message);
+}
     } catch (error) {
       console.error(error);
       alert("Lỗi khi lưu: " + (error.response?.data?.message || "Unknown error"));

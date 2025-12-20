@@ -493,7 +493,16 @@ function Home() {
                 </button>
               </div>
             </div>
+            
           ))}
+        </div>
+        <div className="text-center mt-10 mb-10">
+          <button
+            onClick={() => window.location.href = "/job-search"}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold shadow-md"
+          >
+            Xem Tất Cả Công Việc →
+          </button>
         </div>
       </section>
 
@@ -547,6 +556,18 @@ function Home() {
                 </div>
               </div>
             ))}
+          </div>
+          <div>
+            {!needsProfile && recommendedJobs.length > 0 && (
+            <div className="text-center mt-6 mb-10">
+              <button
+                onClick={() => window.location.href = "/job-search"}
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold shadow-md"
+              >
+                Xem Thêm Công Việc →
+              </button>
+            </div>
+          )}
           </div>
         </section>
       )}

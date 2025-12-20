@@ -519,13 +519,13 @@ function Home() {
 
                 <div className="flex items-center gap-3 mb-3">
                   <img
-                    src={job.companyId?.logo}
+                    src={job.companyLogo}
                     className="w-12 h-12 object-contain border rounded-md"
                   />
                   <div>
                     <h3 className="font-bold text-green-600">{job.title}</h3>
                     <p className="text-sm font-semibold">
-                      {job.companyId?.name}
+                      {job.companyName}
                     </p>
                   </div>
                 </div>

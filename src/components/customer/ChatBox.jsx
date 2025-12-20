@@ -42,17 +42,17 @@ const ChatBox = () => {
               text: m.content
             }));
             setMessages(loaded.length > 0 ? loaded : [
-              { from: "bot", text: "Xin chào! Tôi có thể giúp gì cho bạn?" }
+              { from: "bot", text: `Xin chào ${data.name}! Tôi có thể giúp gì cho bạn?` }
             ]);
           } else {
             setMessages([
-              { from: "bot", text: "Không thể tải hội thoại. Vui lòng thử lại sau." }
+              { from: "bot", text: `Xin chào ${data.name}! Tôi có thể giúp gì cho bạn?` }
             ]);
           }
         })
         .catch(() => {
           setMessages([
-            { from: "bot", text: "Không thể tải hội thoại. Vui lòng thử lại sau." }
+            { from: "bot", text: "Xin chào! Tôi có thể giúp gì cho bạn?" }
           ]);
         });
     }
@@ -65,7 +65,7 @@ const ChatBox = () => {
     setInput("");
     setMessages((prev) => [...prev, { from: "user", text: userMessage }]);
     setLoading(true);
-    setMessages((prev) => [...prev, { from: "bot", text: "Đang xử lý...", typing: true }]);
+    setMessages((prev) => [...prev, { from: "bot", text: "Đang suy nghĩ...", typing: true }]);
 
     const token = getAccessToken();
     try {

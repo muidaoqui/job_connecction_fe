@@ -150,25 +150,28 @@ export default function Applicants() {
   };
 
   const fetchApps = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `${API}/api/jobs/applications/all`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setApps(res.data.apps || []);
-      setLoading(false);
-    } catch (err) {
-      console.log("Lỗi tải ứng viên:", err);
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    const token = localStorage.getItem("token");
 
+    const res = await axios.get(
+      `${API}/api/recruiter/applications`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("📦 recruiter applications:", res.data);
+
+setApps(res.data.applications || []);
+  } catch (err) {
+    console.log("❌ Lỗi tải ứng viên:", err);
+  } finally {
+    setLoading(false);
+  }
+};
   const updateStatus = async (appId, status) => {
     try {
       const token = localStorage.getItem("token");

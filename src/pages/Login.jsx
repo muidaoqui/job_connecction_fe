@@ -143,6 +143,11 @@ localStorage.setItem("user", JSON.stringify(user));
             )}
 
             <p className="text-center text-sm">
+              <Link to="/forgot-password" className="text-cyan-600 hover:underline mr-2">
+                Quên mật khẩu?
+              </Link>
+            </p>
+            <p className="text-center text-sm">
               Chưa có tài khoản?{" "}
               <Link to="/register" className="text-cyan-600 hover:underline">
                 Đăng ký

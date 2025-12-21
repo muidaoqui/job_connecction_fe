@@ -6,6 +6,7 @@ import { SaveOutlined, HeartOutlined, ShareAltOutlined, ArrowLeftOutlined, Uploa
 import { openProtectedFile } from "../../utils/fileHelpers";
 import { useResumeManagement } from "../../hooks/useResumeManagement";
 import { getProfile } from "../../api/profileAPI";
+import { toast } from "react-toastify";
 
 const JobDetail = () => {
   const params = useParams();
@@ -179,7 +180,7 @@ const JobDetail = () => {
       );
 
       message.success("Ứng tuyển thành công!");
-      alert("Ứng tuyển thành công!");
+      toast.success("Ứng tuyển thành công!");
       setShowApplyModal(false);
 
     } catch (err) {

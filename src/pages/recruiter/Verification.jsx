@@ -17,9 +17,12 @@ import {
   CloseCircleTwoTone,
   ClockCircleTwoTone,
 } from "@ant-design/icons";
+import {
+  getRecruiterStatus,
+  submitRecruiterVerification,
+} from "../../services/admin";
 
 export default function RecruiterVerification() {
-  const API_URL = "http://localhost:8080/api/admin";
   const user = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("token");
 
@@ -34,22 +37,14 @@ export default function RecruiterVerification() {
   ============================ */
   const fetchRecruiterStatus = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(`${API_URL}/recruiter/${user._id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setRecruiter(res.data);
+      const data = await getRecruiterStatus(user._id);
+      setRecruiter(data);
     } catch (err) {
       setRecruiter(null);
     } finally {
       setFetching(false);
     }
   };
-
   useEffect(() => {
     fetchRecruiterStatus();
   }, []);
@@ -61,23 +56,7 @@ export default function RecruiterVerification() {
     try {
       setLoading(true);
 
-      const formData = new FormData();
-      formData.append("companyName", values.companyName);
-      formData.append("taxCode", values.taxCode);
-      formData.append("phone", values.phone);
-      formData.append("address", values.address);
-      if (values.website) formData.append("website", values.website);
-
-      formData.append(
-        "businessLicense",
-        values.businessLicense[0].originFileObj
-      );
-      formData.append("idCardFront", values.idCardFront[0].originFileObj);
-      formData.append("idCardBack", values.idCardBack[0].originFileObj);
-
-      await axios.post(`${API_URL}/verify/${user._id}`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await submitRecruiterVerification(user._id, values);
 
       message.success("Gửi yêu cầu xác thực thành công!");
       setConfirmVisible(false);

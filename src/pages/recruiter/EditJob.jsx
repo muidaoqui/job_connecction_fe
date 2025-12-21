@@ -5,7 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 export default function EditJob() {
   const { id } = useParams(); // lấy job id từ URL
   const navigate = useNavigate();
-
+  const API = import.meta.env.VITE_API_URL;
   const [job, setJob] = useState({
     title: "",
     location: "",
@@ -19,7 +19,7 @@ export default function EditJob() {
   // Lấy thông tin job theo ID
   useEffect(() => {
     axios
-      .get(`http://localhost:8080/api/jobs/${id}`)
+      .get(`${API}/api/jobs/${id}`)
       .then((res) => {
         setJob(res.data.job); 
         setLoading(false);
@@ -32,7 +32,7 @@ export default function EditJob() {
     e.preventDefault();
 
     try {
-      await axios.put(`http://localhost:8080/api/jobs/${id}`, job);
+      await axios.put(`${API}/api/jobs/${id}`, job);
       alert("Cập nhật thành công!");
       navigate("/recruiter/manage-jobs"); // quay về trang quản lý job
     } catch (error) {

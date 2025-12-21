@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
-
-const API_CONVERSATION_URL = "http://localhost:8080/api/llm/conversation";
-const API_CHAT_URL = "http://localhost:8080/api/llm/chat";
+const API = import.meta.env.VITE_API_URL;
+const API_CONVERSATION_URL = `${API}/api/llm/conversation`;
+const API_CHAT_URL = `${API}/api/llm/chat`;
 
 function getAccessToken() {
   return localStorage.getItem("token");

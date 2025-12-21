@@ -3,14 +3,14 @@ import axios from "axios";
 
 export default function ReviewApplications() {
   const [applications, setApplications] = useState([]);
-
+  const API = import.meta.env.VITE_API_URL;
   useEffect(() => {
     fetchApplications();
   }, []);
 
   const fetchApplications = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/recruiter/applicants/me");
+      const res = await axios.get(`${API}/api/recruiter/applicants/me`);
       setApplications(res.data.applications || []);
     } catch (err) {
       console.error("Lỗi lấy ứng viên:", err);
@@ -20,8 +20,8 @@ export default function ReviewApplications() {
   const updateStatus = async (appId, status) => {
     try {
       await axios.put(
-  `http://localhost:8080/api/recruiter/applicants/${appId}/status`,
-  { status: newStatus },
+  `${API}/api/recruiter/applicants/${appId}/status`,
+  { status },
   { headers: { Authorization: `Bearer ${token}` } }
 );
 

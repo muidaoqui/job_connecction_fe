@@ -12,10 +12,10 @@ export default function JobSearch() {
   const [location, setLocation] = useState("");
   const [jobType, setJobType] = useState("");
   const [jobs, setJobs] = useState([]);
-
+  const API = import.meta.env.VITE_API_URL;
   const handleSearch = () => {
     axios
-      .get("http://localhost:8080/api/jobs", {
+      .get(`${API}/api/jobs`, {
         params: { keyword, location, jobType },
       })
       .then((res) => setJobs(res.data))

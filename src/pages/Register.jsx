@@ -6,7 +6,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 function Register() {
-  const BASE_URL = "http://localhost:8080";
+  const API = import.meta.env.VITE_API_URL;
 
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
@@ -65,13 +65,13 @@ function Register() {
     try {
       setLoading(true);
 
-      await axios.post(`${BASE_URL}/api/auth/register`, {
+      await axios.post(`${API}/api/auth/register`, {
         name: fullname,
         email,
         password: pass,
       });
 
-      await axios.post(`${BASE_URL}/api/auth/email/send-otp`, { email });
+      await axios.post(`${API}/api/auth/email/send-otp`, { email });
 
       setShowOtpForm(true);
       setMessage("Vui lòng kiểm tra email và nhập mã OTP để xác thực!");
@@ -98,7 +98,7 @@ function Register() {
     try {
       setLoading(true);
 
-      await axios.post(`${BASE_URL}/api/auth/email/verify-otp`, {
+      await axios.post(`${API}/api/auth/email/verify-otp`, {
         email,
         otp,
       });
@@ -118,7 +118,7 @@ function Register() {
   const handleResendOtp = async () => {
     try {
       setLoading(true);
-      await axios.post(`${BASE_URL}/api/auth/email/send-otp`, { email });
+      await axios.post(`${API}/api/auth/email/send-otp`, { email });
       toast.success("Đã gửi lại mã OTP");
     } catch (err) {
       toast.error(err.response?.data?.message || "Không gửi lại được OTP");

@@ -40,6 +40,7 @@ const StepIndicator = memo(({ step }) => {
     { id: 2, label: "Chi tiết công việc" },
     { id: 3, label: "Xác nhận" },
   ];
+  const API = import.meta.env.VITE_API_URL;
 
   return (
     <div className="flex items-center justify-center gap-8 mb-10">
@@ -96,7 +97,7 @@ export default function CreateJob() {
       if (!token) return alert("Bạn chưa đăng nhập!");
 
       await axios.post(
-        "http://localhost:8080/api/jobs",
+        `${API}/api/jobs`,
         {
           title,
           description,

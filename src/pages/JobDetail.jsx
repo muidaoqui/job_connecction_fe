@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 export default function JobDetail() {
   const { id } = useParams();
   const [job, setJob] = useState(null);
-
+  const API = import.meta.env.VITE_API_URL;
   const [showApply, setShowApply] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -18,7 +18,7 @@ export default function JobDetail() {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8080/api/jobs/${id}`)
+      .get(`${API}/api/jobs/${id}`)
       .then((res) => setJob(res.data.job))
       .catch(() => console.log("Không tải được job"));
   }, [id]);
@@ -35,7 +35,7 @@ export default function JobDetail() {
     formData.append("cvFile", cvFile);
 
     try {
-      await axios.post(`http://localhost:8080/api/jobs/${id}/apply`, formData, {
+      await axios.post(`${API}/api/jobs/${id}/apply`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

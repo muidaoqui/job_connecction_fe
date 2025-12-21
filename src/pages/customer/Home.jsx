@@ -164,7 +164,7 @@ function Home() {
 
       try {
         const res = await axios.get(
-          "http://localhost:8080/api/candidate/saved-jobs",
+          `${API}/api/candidate/saved-jobs`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

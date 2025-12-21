@@ -6,13 +6,14 @@ export default function JobApplicants() {
   const { jobId } = useParams();
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
+  const API = import.meta.env.VITE_API_URL;
 
   const token = localStorage.getItem("token");
 
   const fetchApplicants = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/recruiter/applications/job/${jobId}`,
+        `${API}/api/recruiter/applications/job/${jobId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -36,7 +37,7 @@ export default function JobApplicants() {
   const updateStatus = async (applicationId, status) => {
     try {
       await axios.put(
-        `http://localhost:8080/api/recruiter/applications/${applicationId}/status`,
+        `${API}/api/recruiter/applications/${applicationId}/status`,
         { status },
         {
           headers: {

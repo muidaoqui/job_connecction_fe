@@ -19,7 +19,8 @@ import {
 } from "@ant-design/icons";
 
 export default function RecruiterVerification() {
-  const API_URL = "http://localhost:8080/api/admin";
+  const API = import.meta.env.VITE_API_URL;
+  const API_URL = `${API}/api/admin`;
   const user = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("token");
 

@@ -6,11 +6,11 @@ export default function ResetPassword() {
   const { token } = useParams();
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-
+  const API = import.meta.env.VITE_API_URL;
   const handleReset = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`http://localhost:8080/api/auth/reset-password/${token}`, {
+      await axios.post(`${API}/api/auth/reset-password/${token}`, {
         password,
       });
       setMessage("✅ Đặt lại mật khẩu thành công!");

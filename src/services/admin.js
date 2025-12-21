@@ -1,7 +1,7 @@
 // src/services/admin.service.js
 import axios from "axios";
-
-const API_URL = "http://localhost:8080/api/admin";
+const API = import.meta.env.VITE_API_URL;
+const API_URL = `${API}/api/admin`;
 
 // Lấy token function
 function getToken() {

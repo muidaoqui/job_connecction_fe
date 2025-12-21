@@ -5,10 +5,10 @@ import { MapPin } from "lucide-react";
 
 export default function ManageJobs() {
   const [jobs, setJobs] = useState([]);
-
+  const API = import.meta.env.VITE_API_URL;
   const fetchJobs = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/jobs");
+      const res = await axios.get(`${API}/api/jobs`);
       // 🔥 FIX CHỖ NÀY
       setJobs(res.data.data || []);
     } catch (err) {
@@ -25,7 +25,7 @@ export default function ManageJobs() {
     if (!window.confirm("Bạn có chắc chắn muốn xoá tin này?")) return;
 
     try {
-      await axios.delete(`http://localhost:8080/api/jobs/${id}`);
+      await axios.delete(`${API}/api/jobs/${id}`);
       alert("Xoá thành công!");
       fetchJobs();
     } catch (err) {

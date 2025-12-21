@@ -5,7 +5,7 @@ export default function RecruiterProfile() {
   const [loading, setLoading] = useState(true);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
-
+  const API = import.meta.env.VITE_API_URL;
   const [form, setForm] = useState({
     fullName: "",
     position: "",
@@ -30,7 +30,7 @@ export default function RecruiterProfile() {
   const fetchRecruiterProfile = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/recruiter/profile/me",
+        `${API}/api/recruiter/profile/me`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -65,7 +65,7 @@ export default function RecruiterProfile() {
   const fetchCompany = async () => {
   try {
     const res = await axios.get(
-      "http://localhost:8080/api/company/profile",
+      `${API}/api/company/profile`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -118,7 +118,7 @@ export default function RecruiterProfile() {
       }
 
       const res = await axios.post(
-  "http://localhost:8080/api/recruiter/profile/me",
+  `${API}/api/recruiter/profile/me`,
   formData,
   {
     headers: {

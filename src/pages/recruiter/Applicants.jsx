@@ -11,14 +11,14 @@ export default function Applicants() {
   const [translating, setTranslating] = useState(false);
   const [translationResult, setTranslationResult] = useState("");
   const MAX_CV_LENGTH = 50000;
-
+  const API = import.meta.env.VITE_API_URL;
   // Hàm xem CV
   const handleViewCV = async (filePath, name) => {
     if (!filePath) return alert("Không có file CV");
     try {
       setCvModal({ open: true, content: "Đang tải CV...", title: name || "CV Ứng viên" });
       const res = await axios.post(
-        "http://localhost:8080/api/rags/read-pdf",
+        `${API}/api/rags/read-pdf`,
         { filePath },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -89,7 +89,7 @@ export default function Applicants() {
     try {
       setTranslating(true);
       const res = await axios.post(
-        "http://localhost:8080/api/llm/translate",
+        `${API}/api/llm/translate`,
         {
           text: contextMenu.selectedText,
           input_language: "English",
@@ -117,7 +117,7 @@ export default function Applicants() {
     try {
       setTranslating(true);
       const res = await axios.post(
-        "http://localhost:8080/api/llm/summarize",
+        `${API}/api/llm/summarize`,
         {
           text: contextMenu.selectedText,
           language: "English" // hoặc auto-detect
@@ -154,7 +154,7 @@ export default function Applicants() {
       setLoading(true);
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        "http://localhost:8080/api/jobs/applications/all",
+        `${API}/api/jobs/applications/all`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -173,7 +173,7 @@ export default function Applicants() {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:8080/api/jobs/applications/${appId}/status`,
+        `${API}/api/jobs/applications/${appId}/status`,
         { status },
         {
           headers: { Authorization: `Bearer ${token}` },

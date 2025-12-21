@@ -168,7 +168,7 @@ const JobDetail = () => {
 
     try {
       await axios.post(
-        `http://localhost:8080/api/jobs/${jobId}/apply`,
+        `${VITE_API_URL}/api/jobs/${jobId}/apply`,
         formData,
         {
           headers: {

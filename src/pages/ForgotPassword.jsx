@@ -4,11 +4,11 @@ import axios from "axios";
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-
+  const API = import.meta.env.VITE_API_URL;
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:8080/api/auth/forgot-password", { email });
+      const res = await axios.post(`${API}/api/auth/forgot-password`, { email });
       setMessage("📧 Email đặt lại mật khẩu đã được gửi!");
     } catch (err) {
       setMessage("❌ Không tìm thấy email!");

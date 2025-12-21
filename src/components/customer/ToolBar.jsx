@@ -4,6 +4,8 @@ import { SearchOutlined } from "@ant-design/icons";
 import logo from "../../assets/logo.png";
 import SearchInput from "../../components/SearchInput";
 
+const user = JSON.parse(localStorage.getItem("user"));
+
 function ToolBar() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -78,46 +80,48 @@ function ToolBar() {
 
         {/* Menu phải */}
 <div className="hidden lg:flex items-center gap-6 text-white font-semibold ml-auto pr-6">
-
-  {/* Dropdown Nhà tuyển dụng */}
+{user?.role === "recruiter" && (
   <div className="relative group">
+    <button className="hover:text-yellow-300 transition">
+      Nhà tuyển dụng
+    </button>
 
-    {/* Dropdown */}
     <div
-      className="absolute left-0 top-full bg-white text-gray-700 shadow-xl rounded-lg w-56 p-2
-      opacity-0 invisible 
+      className="absolute left-0 top-full bg-white text-gray-700 shadow-xl
+      rounded-lg w-56 p-2 opacity-0 invisible
       group-hover:opacity-100 group-hover:visible
-      transition-all duration-200 ease-out z-[9999]"
+      transition-all duration-200 z-[9999]"
     >
       <button
-        onClick={() => requireLogin(() => navigate('/recruiter/create-job'))}
-        className='block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md'
+        onClick={() => navigate("/recruiter/dashboard")}
+        className="block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md"
+      >
+        Trang tổng quan
+      </button>
+
+      <button
+        onClick={() => navigate("/recruiter/create-job")}
+        className="block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md"
       >
         Đăng tin tuyển dụng
       </button>
 
       <button
-        onClick={() => requireLogin(() => navigate('/recruiter/manage-jobs'))}
-        className='block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md'
+        onClick={() => navigate("/recruiter/manage-jobs")}
+        className="block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md"
       >
         Quản lý tin tuyển dụng
       </button>
 
       <button
-        onClick={() => requireLogin(() => navigate('/recruiter/applicants'))}
-        className='block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md'
+        onClick={() => navigate("/recruiter/applicants")}
+        className="block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md"
       >
         Danh sách ứng viên
       </button>
-
-      <button
-        onClick={() => requireLogin(() => navigate('/recruiter/dashboard'))}
-        className='block w-full text-left px-4 py-2 hover:bg-blue-100 rounded-md'
-      >
-        Trang tổng quan
-      </button>
     </div>
   </div>
+)}
 
   {/* Email - Click to go to profile */}
   {user && (

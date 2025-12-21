@@ -16,23 +16,38 @@ export default function RecruiterDashboard() {
   });
 
   /* ================= FETCH COMPANY ================= */
+  useEffect(() => {
+  // 🔥 ƯU TIÊN LẤY COMPANY TỪ LOCALSTORAGE
+  const storedCompany = localStorage.getItem("company");
+
+  if (storedCompany) {
+    setCompany(JSON.parse(storedCompany));
+    return;
+  }
+
+  // ⬇️ FALLBACK: gọi API nếu local chưa có
   const fetchCompany = async () => {
     try {
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/company/profile`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
-      setCompany(res.data.data);
-    } catch (err) {
-      console.log("❌ fetchCompany error:", err);
+
+      if (res.data?.data) {
+        setCompany(res.data.data);
+        localStorage.setItem("company", JSON.stringify(res.data.data));
+      }
+    } catch (error) {
+      console.log("❌ fetchCompany error:", error);
     }
   };
 
-  useEffect(() => {
-    if (token) fetchCompany();
-  }, [token]);
+  if (token) fetchCompany();
+}, [token]);
 
   /* ================= FETCH STATS ================= */
   useEffect(() => {

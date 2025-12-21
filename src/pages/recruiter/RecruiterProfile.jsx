@@ -117,23 +117,35 @@ export default function RecruiterProfile() {
         formData.append("avatar", avatarFile);
       }
 
-      await axios.post(
-        "http://localhost:8080/api/recruiter/profile/me",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const res = await axios.post(
+  "http://localhost:8080/api/recruiter/profile/me",
+  formData,
+  {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      "Content-Type": "multipart/form-data",
+    },
+  }
+);
 
-      alert("✅ Lưu hồ sơ nhà tuyển dụng thành công!");
-    } catch (err) {
-      console.error(err);
-      alert("❌ Lỗi khi lưu hồ sơ!");
-    }
-  };
+const storedUser = JSON.parse(localStorage.getItem("user"));
+
+if (storedUser) {
+  storedUser.role = "recruiter";
+  storedUser.hasRecruiterProfile = true;
+  localStorage.setItem("user", JSON.stringify(storedUser));
+}
+
+// ✅ THÔNG BÁO
+alert("✅ Lưu hồ sơ nhà tuyển dụng thành công!");
+
+// 🔁 QUAY VỀ TRANG CHỦ
+window.location.href = "/";
+} catch (err) {
+    console.error(err);
+    alert("❌ Lỗi khi lưu hồ sơ!");
+  }
+};
 
   /* ================= UI ================= */
   if (loading) {

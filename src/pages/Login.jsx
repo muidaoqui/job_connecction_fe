@@ -53,10 +53,10 @@ function Login() {
         return;
       }
 
-      // Lưu token và thông tin user vào localStorage
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("token", res.data.token);
+
+// Lưu token và user
+localStorage.setItem("token", token);
+localStorage.setItem("user", JSON.stringify(user));
       toast.success("Đăng nhập thành công!");
 
       // Điều hướng dựa vào role

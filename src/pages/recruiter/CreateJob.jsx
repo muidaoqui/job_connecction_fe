@@ -1,6 +1,8 @@
 import { useState, memo, useMemo } from "react";
 import axios from "axios";
 
+const API = import.meta.env.VITE_API_URL;
+
 /* ===================== CONSTANTS ===================== */
 const LOCATIONS = [
   "Hồ Chí Minh",
@@ -40,7 +42,7 @@ const StepIndicator = memo(({ step }) => {
     { id: 2, label: "Chi tiết công việc" },
     { id: 3, label: "Xác nhận" },
   ];
-  const API = import.meta.env.VITE_API_URL;
+  
 
   return (
     <div className="flex items-center justify-center gap-8 mb-10">

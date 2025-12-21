@@ -26,7 +26,7 @@ import {
 } from "../../services/admin";
 
 export default function RecruiterVerification() {
-  const BASE_URL = "http://localhost:8080";
+  const BASE_URL = import.meta.env.VITE_API_URL;
   const [loading, setLoading] = useState(false);
   const [recruiters, setRecruiters] = useState([]);
 

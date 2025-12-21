@@ -5,7 +5,7 @@ import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { message } from "antd";
 import useSavedJobs from "../../hooks/useSavedJobs";
 import { toast } from "react-toastify";
-import { jwtDecode } from "jwt-decode";
+// import { jwtDecode } from "jwt-decode";
 
 function PrevArrow({ onClick }) {
   return (
@@ -40,7 +40,7 @@ const sliderSettings = {
   slidesToScroll: 1,
   prevArrow: <PrevArrow />,
   nextArrow: <NextArrow />,
-  lazyLoad: 'ondemand',
+  lazyLoad: "ondemand",
 };
 
 function Home() {
@@ -64,7 +64,6 @@ function Home() {
     }
   }, []);
 
-
   // Recommended jobs state
   const [recommendedJobs, setRecommendedJobs] = useState([]);
   const [recommendedLoading, setRecommendedLoading] = useState(false);
@@ -79,7 +78,6 @@ function Home() {
   const [topCompaniesLoading, setTopCompaniesLoading] = useState(false);
   const [recruitersLoading, setRecruitersLoading] = useState(false);
   const { savedJobsMap, toggleSaveJob } = useSavedJobs();
-
 
   // Check if user is logged in
   useEffect(() => {
@@ -119,7 +117,6 @@ function Home() {
   //     } catch (err) {
   //       console.error("Lỗi khi lấy recommended jobs:", err);
   //       console.error("Error response:", err.response?.data);
-
 
   //       if (err.response?.status === 404 || err.response?.status === 401) {
   //         setNeedsProfile(true);
@@ -218,7 +215,6 @@ function Home() {
     fetchTopCompanies();
   }, []);
 
-
   // Fetch recommended jobs for candidate
   useEffect(() => {
     const fetchRecommendedJobs = async () => {
@@ -230,12 +226,15 @@ function Home() {
 
       setRecommendedLoading(true);
       try {
-        console.log("Fetching recommendations with token:", token.substring(0, 20) + "...");
+        console.log(
+          "Fetching recommendations with token:",
+          token.substring(0, 20) + "..."
+        );
 
         const res = await axios.get(
           `${API}/api/embeddings/recommendations/jobs?limit=6`,
           {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
 
@@ -251,7 +250,6 @@ function Home() {
       } catch (err) {
         console.error("Lỗi khi lấy recommended jobs:", err);
         console.error("Error response:", err.response?.data);
-
 
         if (err.response?.status === 404 || err.response?.status === 401) {
           setNeedsProfile(true);
@@ -274,15 +272,23 @@ function Home() {
       const isSaved = savedJobsMap[jobId];
 
       if (isSaved) {
-        await axios.post(`${API}/api/jobs/${jobId}/unsave`, {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await axios.post(
+          `${API}/api/jobs/${jobId}/unsave`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setSavedJobsMap((prev) => ({ ...prev, [jobId]: false }));
         message.success("Đã bỏ lưu công việc");
       } else {
-        await axios.post(`${API}/api/jobs/${jobId}/save`, {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await axios.post(
+          `${API}/api/jobs/${jobId}/save`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setSavedJobsMap((prev) => ({ ...prev, [jobId]: true }));
         message.success("Đã lưu công việc");
       }
@@ -292,22 +298,17 @@ function Home() {
     }
   };
 
-
-
   const fetchFollowingCompanies = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `${API}/api/company/following`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.get(`${API}/api/company/following`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       // Lấy ra mảng companyId
-      const ids = res.data.data.map(item => item.companyId._id);
+      const ids = res.data.data.map((item) => item.companyId._id);
       setFollowingCompanies(ids);
     } catch (error) {
       console.error("Fetch following companies error", error);
@@ -329,16 +330,14 @@ function Home() {
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setFollowingCompanies(prev =>
-          prev.filter(id => id !== companyId)
-        );
+        setFollowingCompanies((prev) => prev.filter((id) => id !== companyId));
       } else {
         await axios.post(
           `${API}/api/company/${companyId}/follow`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setFollowingCompanies(prev => [...prev, companyId]);
+        setFollowingCompanies((prev) => [...prev, companyId]);
       }
     } catch (error) {
       if (error.response?.status === 400) {
@@ -349,7 +348,6 @@ function Home() {
     }
   };
 
-
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -357,11 +355,8 @@ function Home() {
     }
   }, []);
 
-
-
   return (
     <div className="w-full">
-
       {/* ========== SLIDER TOP COMPANIES ========== */}
       {isLoggedIn && userRole === "candidate" && (
         <div className="max-w-6xl mx-auto mt-8 px-6">
@@ -381,13 +376,14 @@ function Home() {
                   Bạn đang tuyển dụng nhân tài?
                 </h2>
                 <p className="text-slate-200 text-lg leading-relaxed">
-                  Tạo hồ sơ nhà tuyển dụng, đăng tin tuyển dụng và tiếp cận ứng viên chất lượng chỉ trong vài phút.
+                  Tạo hồ sơ nhà tuyển dụng, đăng tin tuyển dụng và tiếp cận ứng
+                  viên chất lượng chỉ trong vài phút.
                 </p>
               </div>
 
               {/* BUTTON */}
               <button
-                onClick={() => window.location.href = "/recruiter/profile"}
+                onClick={() => (window.location.href = "/recruiter/profile")}
                 className="bg-white text-blue-700 font-bold px-8 py-4 rounded-2xl shadow-lg hover:scale-105 transition"
               >
                 🚀 Trở thành Nhà tuyển dụng
@@ -399,18 +395,43 @@ function Home() {
       <div className="w-full my-4 relative">
         <Slider {...sliderSettings}>
           {topCompaniesLoading ? (
-            <div className="flex justify-center items-center h-[400px]"><p>Đang tải công ty...</p></div>
+            <div className="flex justify-center items-center h-[400px]">
+              <p>Đang tải công ty...</p>
+            </div>
           ) : topCompanies.length === 0 ? (
-            <div className="flex justify-center items-center h-[400px]"><p>Hiện chưa có công ty</p></div>
+            <div className="flex justify-center items-center h-[400px]">
+              <p>Hiện chưa có công ty</p>
+            </div>
           ) : (
-            topCompanies.map(c => (
+            topCompanies.map((c) => (
               <div key={c._id} className="px-2">
                 <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition cursor-pointer">
-                  {c.coverImage && <img src={c.coverImage} alt={c.name} className="w-full h-full object-cover" />}
+                  {c.coverImage && (
+                    <img
+                      src={c.coverImage}
+                      alt={c.name}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center p-6">
-                    {c.logo && <img src={c.logo} alt={c.name} className="h-24 object-contain mb-4" />}
-                    <h2 className="text-3xl font-bold text-white mb-4">{c.name}</h2>
-                    <button onClick={() => window.location.href = `/company/${c._id}`} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition">Xem Chi Tiết</button>
+                    {c.logo && (
+                      <img
+                        src={c.logo}
+                        alt={c.name}
+                        className="h-24 object-contain mb-4"
+                      />
+                    )}
+                    <h2 className="text-3xl font-bold text-white mb-4">
+                      {c.name}
+                    </h2>
+                    <button
+                      onClick={() =>
+                        (window.location.href = `/company/${c._id}`)
+                      }
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+                    >
+                      Xem Chi Tiết
+                    </button>
                   </div>
                 </div>
               </div>
@@ -421,23 +442,35 @@ function Home() {
 
       {/* ========== COMPANIES LIST ========== */}
       <div className="bg-gradient-to-b from-white to-blue-100 my-4 px-10">
-        <h1 className="text-3xl text-blue-600 font-bold ml-10">NHÀ TUYỂN DỤNG NỔI BẬT</h1>
+        <h1 className="text-3xl text-blue-600 font-bold ml-10">
+          NHÀ TUYỂN DỤNG NỔI BẬT
+        </h1>
 
         <div className="flex gap-4 justify-around my-6 py-4 flex-wrap">
           {companiesLoading ? (
-            <p className="text-gray-500 w-full text-center">Đang tải công ty...</p>
+            <p className="text-gray-500 w-full text-center">
+              Đang tải công ty...
+            </p>
           ) : companies.length === 0 ? (
-            <p className="text-gray-500 w-full text-center">Hiện chưa có công ty</p>
+            <p className="text-gray-500 w-full text-center">
+              Hiện chưa có công ty
+            </p>
           ) : (
             companies.map((company) => (
               <button
                 key={company.companyId}
-                onClick={() => window.location.href = `/company/${company._id}`}
+                onClick={() =>
+                  (window.location.href = `/company/${company._id}`)
+                }
                 className="hover:scale-110 transition-transform duration-300 flex items-center justify-center p-2 rounded-lg hover:bg-white hover:shadow-md"
                 title={company.name}
               >
                 {company.logo ? (
-                  <img src={company.logo} alt={company.name} className="h-16 object-contain" />
+                  <img
+                    src={company.logo}
+                    alt={company.name}
+                    className="h-16 object-contain"
+                  />
                 ) : (
                   <div className="h-16 w-16 bg-gray-200 rounded flex items-center justify-center text-sm font-semibold text-gray-600">
                     {company.name.substring(0, 3)}
@@ -449,7 +482,6 @@ function Home() {
         </div>
       </div>
       {/* ========== Recommendations JOBS ========== */}
-
 
       <section className="px-10 my-10">
         <h1 className="text-3xl text-blue-600 font-bold mb-6">
@@ -470,9 +502,7 @@ function Home() {
                 />
                 <div>
                   <h3 className="font-bold text-blue-600">{job.title}</h3>
-                  <p className="text-sm font-semibold">
-                    {job.companyId?.name}
-                  </p>
+                  <p className="text-sm font-semibold">{job.companyId?.name}</p>
                 </div>
               </div>
 
@@ -493,12 +523,11 @@ function Home() {
                 </button>
               </div>
             </div>
-            
           ))}
         </div>
         <div className="text-center mt-10 mb-10">
           <button
-            onClick={() => window.location.href = "/job-search"}
+            onClick={() => (window.location.href = "/job-search")}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold shadow-md"
           >
             Xem Tất Cả Công Việc →
@@ -533,9 +562,7 @@ function Home() {
                   />
                   <div>
                     <h3 className="font-bold text-green-600">{job.title}</h3>
-                    <p className="text-sm font-semibold">
-                      {job.companyName}
-                    </p>
+                    <p className="text-sm font-semibold">{job.companyName}</p>
                   </div>
                 </div>
 
@@ -559,23 +586,27 @@ function Home() {
           </div>
           <div>
             {!needsProfile && recommendedJobs.length > 0 && (
-            <div className="text-center mt-6 mb-10">
-              <button
-                onClick={() => window.location.href = "/job-search"}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold shadow-md"
-              >
-                Xem Thêm Công Việc →
-              </button>
-            </div>
-          )}
+              <div className="text-center mt-6 mb-10">
+                <button
+                  onClick={() => (window.location.href = "/job-search")}
+                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold shadow-md"
+                >
+                  Xem Thêm Công Việc →
+                </button>
+              </div>
+            )}
           </div>
         </section>
       )}
 
       {/* ========== COMPANIES GRID FULL ========== */}
       <div className="flex flex-col gap-2 my-4 px-10 min-h-screen bg-gradient-to-b from-blue-50 to-white">
-        <h1 className="text-3xl text-blue-600 font-bold ml-10 mt-6">🏢 CÔNG TY NỔI BẬT</h1>
-        <p className="ml-10 text-gray-600 mb-4">Khám phá các công ty hàng đầu đang tuyển dụng</p>
+        <h1 className="text-3xl text-blue-600 font-bold ml-10 mt-6">
+          🏢 CÔNG TY NỔI BẬT
+        </h1>
+        <p className="ml-10 text-gray-600 mb-4">
+          Khám phá các công ty hàng đầu đang tuyển dụng
+        </p>
 
         <div className="grid grid-cols-3 gap-6 mt-6">
           {companiesLoading ? (
@@ -587,13 +618,21 @@ function Home() {
               <div
                 key={company._id}
                 className="border rounded-xl p-6 bg-white shadow hover:shadow-lg transition cursor-pointer"
-                onClick={() => window.location.href = `/company/${company._id}`}
+                onClick={() =>
+                  (window.location.href = `/company/${company._id}`)
+                }
               >
                 {company.logo && (
-                  <img src={company.logo} alt={company.name} className="w-full h-20 object-contain mb-4" />
+                  <img
+                    src={company.logo}
+                    alt={company.name}
+                    className="w-full h-20 object-contain mb-4"
+                  />
                 )}
                 <h2
-                  onClick={() => window.location.href = `/company/${company._id}`}
+                  onClick={() =>
+                    (window.location.href = `/company/${company._id}`)
+                  }
                   className="cursor-pointer text-xl font-bold text-blue-600"
                 >
                   {company.name}
@@ -614,26 +653,24 @@ function Home() {
                         followingCompanies.includes(company._id)
                       );
                     }}
-                    className={`mt-4 w-1/2 py-2 rounded-lg font-semibold transition ${followingCompanies.includes(company._id)
-                      ? "bg-gray-300 text-gray-700 hover:bg-gray-400"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
-                      }`}
+                    className={`mt-4 w-1/2 py-2 rounded-lg font-semibold transition ${
+                      followingCompanies.includes(company._id)
+                        ? "bg-gray-300 text-gray-700 hover:bg-gray-400"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
+                    }`}
                   >
                     {followingCompanies.includes(company._id)
                       ? "Bỏ theo dõi"
                       : "Theo dõi"}
                   </button>
-
-
                 </div>
-
               </div>
             ))
           )}
         </div>
         <div className="text-center mt-10 mb-10">
           <button
-            onClick={() => window.location.href = "/companies"}
+            onClick={() => (window.location.href = "/companies")}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold shadow-md"
           >
             Xem Tất Cả Công Ty →

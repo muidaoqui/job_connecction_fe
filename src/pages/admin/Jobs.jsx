@@ -30,8 +30,8 @@ import {
   AlertCircle,
   RefreshCw,
 } from "lucide-react";
+import { rejectJob, getAllJobs, approveJob } from "../../services/admin";
 export default function AdminPendingJobs() {
-  const API_URL = "http://localhost:8080/api/admin";
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -56,14 +56,12 @@ export default function AdminPendingJobs() {
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch(`${API_URL}/jobs`);
-      if (!res.ok) throw new Error("Failed to fetch jobs");
-      const json = await res.json();
-      setJobs(Array.isArray(json.data) ? json.data : []);
+      const data = await getAllJobs();
+      setJobs(Array.isArray(data.data) ? data.data : []);
     } catch (err) {
       notification.error({
         message: "Không thể tải danh sách tin tuyển dụng",
-        description: err.message || "Lỗi kết nối server",
+        description: err?.response?.data?.message || "Lỗi kết nối server",
       });
     } finally {
       setLoading(false);
@@ -73,16 +71,15 @@ export default function AdminPendingJobs() {
   const handleApprove = async (jobId) => {
     setLoading(true);
     try {
-      const res = await apiFetch(`${API_URL}/jobs/${jobId}/approve`, {
-        method: "PUT",
+      await approveJob(jobId);
+      notification.success({
+        message: "Đã duyệt tin tuyển dụng thành công",
       });
-      if (!res.ok) throw new Error("Approve failed");
-      notification.success({ message: "Đã duyệt tin tuyển dụng thành công" });
       fetchJobs();
     } catch (err) {
       notification.error({
         message: "Duyệt thất bại",
-        description: err.message,
+        description: err?.response?.data?.message || "Có lỗi xảy ra",
       });
     } finally {
       setLoading(false);
@@ -92,16 +89,15 @@ export default function AdminPendingJobs() {
   const handleReject = async (jobId) => {
     setLoading(true);
     try {
-      const res = await apiFetch(`${API_URL}/jobs/${jobId}/reject`, {
-        method: "PUT",
+      await rejectJob(jobId);
+      notification.info({
+        message: "Đã từ chối tin tuyển dụng",
       });
-      if (!res.ok) throw new Error("Reject failed");
-      notification.info({ message: "Đã từ chối tin tuyển dụng" });
       fetchJobs();
     } catch (err) {
       notification.error({
         message: "Từ chối thất bại",
-        description: err.message,
+        description: err?.response?.data?.message || "Có lỗi xảy ra",
       });
     } finally {
       setLoading(false);
